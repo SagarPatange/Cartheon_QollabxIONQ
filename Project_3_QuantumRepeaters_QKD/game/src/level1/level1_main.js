@@ -4,8 +4,9 @@
  *
  * The level opens like a story. A lesson note introduces the memories (3 slots, one Rydberg atom each), then a prompt
  * asks for Space. The first Space freezes the photons just after the atoms emit them, with a lesson on what that
- * means; Space again lets them fly on. After the first Bell pair's lesson, the settings panel opens for a short tour:
- * one tip per setting, Space for the next.
+ * means; Space again lets them fly on. The first try with no click, one click and two clicks each get a lesson; if
+ * two clicks have not happened by try FORCED_TWO_CLICK_TRY, that try shows them. After the one-click lesson the
+ * settings panel opens for a short tour: one tip per setting, pointing at it from beside the panel, Space for next.
  *
  * Space (or a click on the scene) sends photons; each click at the BSM stores a Bell pair in both towers (3 slots),
  * and Mario and Luigi jump. Pairs decohere after the memory lifetime. The first click and the first decoherence pause
@@ -16,8 +17,9 @@
  */
 
 import {
-    CLICK_LESSON, DECOHERENCE_LESSON, EMISSION_LESSON, FIRST_SEND_PROMPT, MEMORY_LESSON, SETTINGS_TOUR,
-    describeClickLesson, describeDecoherenceLesson, describeEmissionLesson, describeMemoryLesson,
+    CLICK_LESSON, DECOHERENCE_LESSON, EMISSION_LESSON, FIRST_SEND_PROMPT, MEMORY_LESSON, NO_CLICK_LESSON,
+    SETTINGS_TOUR, TWO_CLICK_LESSON, describeClickLesson, describeDecoherenceLesson, describeEmissionLesson,
+    describeMemoryLesson, describeNoClickLesson, describeTwoClickLesson,
 } from "./level1_lessons.js";
 import {
     MEMORY_SLOT_COUNT, computeHeraldProbability, countPairs, createLevel1State, decohereExpiredPairs, sendPhotons,
@@ -29,7 +31,7 @@ import {
     BSM_NOTE, LOCKED_CONTINUE_TEXT, MARIO_NOTE, READY_CONTINUE_TEXT, buildLevel1Track, playPairJump,
     renderLevel1Scene, showLessonNote, unlockLessonNote,
 } from "./render_level1.js";
-import { findElementsById, fitTrackToWorld, playGoalIntro, renderKeyHints } from "../page_helpers.js";
+import { findElementsById, fitTrackToWorld, playGoalIntro } from "../page_helpers.js";
 import { GEAR_SPRITE, drawSprite } from "../pixel_sprites.js";
 import { createSeededRandom } from "../seeded_random.js";
 import { buildSettingsRows, highlightSettingRow } from "../settings_panel.js";
@@ -40,7 +42,12 @@ const CLOCK_TICK_MS = 100;
 // How long a decohered qubit fizzles before its slot shows empty.
 const FIZZLE_MS = 900;
 // A lesson note stays up at least this long (real time) before Space or a click can put it away, so it gets read.
-const LESSON_READ_MS = 2000;
+const LESSON_READ_MS = 3000;
+// The story shows two clicks by this try at the latest (the first try is the frozen emission one).
+const FORCED_TWO_CLICK_TRY = 3;
+// Room between the tour tip and the settings panel (where its arrow sits), and between the tip and the window edge.
+const TOUR_TIP_GAP_PX = 18;
+const TOUR_TIP_MARGIN_PX = 8;
 const HUD_DIGIT_COUNT = 3;
 const PERCENT = 100;
 const MS_PER_SECOND = 1000;
@@ -58,7 +65,10 @@ function startLevel1() {
     elements.scene = buildLevel1Track(elements.trackElement);
     elements.storyPromptElement.textContent = FIRST_SEND_PROMPT;
     fitTrackToWorld(elements, TRACK_SIZE);
-    window.addEventListener("resize", () => fitTrackToWorld(elements, TRACK_SIZE));
+    window.addEventListener("resize", () => {
+        fitTrackToWorld(elements, TRACK_SIZE);
+        renderSettingsTour(game, elements);
+    });
 
     // isStarted stays false until the goal has typed itself out; until then keys and clicks do nothing.
     const game = {
@@ -75,6 +85,7 @@ function startLevel1() {
     elements.settingsButton.addEventListener("click", () => toggleSettings(game, elements));
     elements.settingsCloseButton.addEventListener("click", () => toggleSettings(game, elements));
     elements.settingsTour.addEventListener("click", () => advanceSettingsTour(game, elements));
+    elements.tourBackdrop.addEventListener("click", () => advanceSettingsTour(game, elements));
     document.addEventListener("keydown", (keyEvent) => handleLevel1Key(game, elements, keyEvent));
     setInterval(() => tickClock(game, elements), CLOCK_TICK_MS);
     playGoalIntro(elements.statusElement).then(() => {
@@ -93,7 +104,6 @@ function findLevel1Elements() {
         trackElement: "track",
         worldElement: "world",
         scrollerElement: "track-scroller",
-        keyHintsElement: "key-hints",
         statusElement: "status-banner",
         storyPromptElement: "story-prompt",
         pauseBadge: "pause-badge",
@@ -105,6 +115,8 @@ function findLevel1Elements() {
         settingsSummary: "settings-summary",
         settingsCloseButton: "settings-close",
         settingsTour: "settings-tour",
+        tourBackdrop: "tour-backdrop",
+        hudElement: "hud",
         settingsTourText: "settings-tour-text",
         settingsTourContinue: "settings-tour-continue",
     });
@@ -312,11 +324,13 @@ function advanceSettingsTour(game, elements) {
 
 
 /**
- * The tour's tip box at the top of the panel, and the setting it points at; hidden when no tour is under way.
+ * The tour's tip, beside the panel and pointing at the setting it is about (or at the panel's title for the last
+ * tip); hidden when no tour is under way.
  */
 function renderSettingsTour(game, elements) {
     const isTouring = game.tourStepIndex !== null;
     elements.settingsTour.hidden = !isTouring;
+    elements.tourBackdrop.hidden = !isTouring;
     if (!isTouring) {
         highlightSettingRow(elements.settingsRows, null);
         return;
@@ -326,6 +340,39 @@ function renderSettingsTour(game, elements) {
     elements.settingsTour.classList.toggle("is-locked", game.isTourLocked);
     elements.settingsTourContinue.textContent = game.isTourLocked ? LOCKED_CONTINUE_TEXT : READY_CONTINUE_TEXT;
     highlightSettingRow(elements.settingsRows, step.settingId);
+    const targetElement = step.settingId === null
+        ? null
+        : elements.settingsRows.querySelector(`[data-setting-id="${step.settingId}"]`);
+    placeTourTip(elements, targetElement);
+}
+
+
+/**
+ * Put the tour tip just left of the settings panel, below the HUD, level with its target, with its arrow on the
+ * target's middle. With no target (the last tip) it sits halfway down the window without an arrow. Uses the panel's
+ * open width, so it lands right even while the panel is still sliding in. On a window too narrow for both, the tip
+ * sits over the panel's left edge without an arrow.
+ */
+function placeTourTip(elements, targetElement) {
+    const tipElement = elements.settingsTour;
+    const tipHeightPx = tipElement.offsetHeight;
+    const lowestTopPx = elements.hudElement.getBoundingClientRect().bottom + TOUR_TIP_MARGIN_PX;
+    const highestTopPx = window.innerHeight - tipHeightPx - TOUR_TIP_MARGIN_PX;
+    let targetMiddlePx = window.innerHeight / 2;
+    if (targetElement !== null) {
+        const targetRect = targetElement.getBoundingClientRect();
+        targetMiddlePx = targetRect.top + targetRect.height / 2;
+    }
+    const centredTopPx = targetMiddlePx - tipHeightPx / 2;
+    const topPx = Math.max(lowestTopPx, Math.min(highestTopPx, centredTopPx));
+    const panelLeftPx = window.innerWidth - elements.settingsPanel.offsetWidth;
+    const besidePanelPx = panelLeftPx - TOUR_TIP_GAP_PX - tipElement.offsetWidth;
+    const hasRoomBeside = besidePanelPx >= TOUR_TIP_MARGIN_PX;
+    const hasArrow = hasRoomBeside && targetElement !== null;
+    tipElement.classList.toggle("has-arrow", hasArrow);
+    tipElement.style.left = `${hasRoomBeside ? besidePanelPx : TOUR_TIP_MARGIN_PX}px`;
+    tipElement.style.top = `${topPx}px`;
+    tipElement.style.setProperty("--arrow-top", `${targetMiddlePx - topPx}px`);
 }
 
 
@@ -366,14 +413,29 @@ function flyPhotons(game, elements) {
     setTimeout(() => {
         elements.scene.linkElement.classList.remove("is-sending");
         const heraldProbability = computeHeraldProbability(toLinkPhysics(game.settings));
-        game.state = sendPhotons(game.state, game.clockMs, game.nextRandomFloat, heraldProbability);
+        const isTwoClickForced = isTwoClickDue(game);
+        game.state = sendPhotons(game.state, game.clockMs, game.nextRandomFloat, heraldProbability, isTwoClickForced);
         game.isAnimating = false;
         if (game.state.lastAttemptSucceeded) {
             playPairJump(elements.scene);
             openLessonOnce(game, elements, CLICK_LESSON, BSM_NOTE, describeClickLesson(game.state.clickedDetector));
+        } else if (game.state.hadTwoClicks) {
+            openLessonOnce(game, elements, TWO_CLICK_LESSON, BSM_NOTE, describeTwoClickLesson());
+        } else {
+            openLessonOnce(game, elements, NO_CLICK_LESSON, BSM_NOTE, describeNoClickLesson());
         }
         renderLevel1(game, elements);
     }, tryDurationMs);
+}
+
+
+/**
+ * The story owes the player a two-click try: none has happened yet, and this is try FORCED_TWO_CLICK_TRY.
+ */
+function isTwoClickDue(game) {
+    const hasSeenTwoClicks = game.lessonsSeen.has(TWO_CLICK_LESSON);
+    const tryNumber = game.state.attemptCount + 1;
+    return !hasSeenTwoClicks && tryNumber === FORCED_TWO_CLICK_TRY;
 }
 
 
@@ -392,28 +454,30 @@ function resetLevel1(game, elements) {
 
 
 /**
- * Draw the scene, the HUD (tries, Ψ+ pairs), the pause sign, the settings summary and the key hints.
+ * Draw the scene, the HUD (tries, Ψ+ pairs), the pause sign, the Space prompt and the settings summary.
  */
 function renderLevel1(game, elements) {
     game.lifetimeMs = computeLifetimeMs(game.settings);
     renderLevel1Scene(elements.scene, game);
     elements.triesElement.textContent = String(game.state.attemptCount).padStart(HUD_DIGIT_COUNT, "0");
     elements.pairsElement.textContent = `${countPairs(game.state)}/${MEMORY_SLOT_COUNT}`;
-    elements.pauseBadge.hidden = !isPaused(game);
-    elements.storyPromptElement.hidden = !isWaitingForFirstSend(game);
+    // A lesson note or tour tip already says the game is waiting, so the badge only shows for the settings panel.
+    const isShowingMessage = game.openLesson !== null || game.tourStepIndex !== null;
+    elements.pauseBadge.hidden = !isPaused(game) || isShowingMessage;
+    elements.storyPromptElement.hidden = !canZapAtoms(game);
     elements.settingsSummary.textContent = describeSettingsEffect(game.settings);
     renderSettingsTour(game, elements);
-    renderKeyHints(elements.keyHintsElement, listLevel1KeyHints(game));
 }
 
 
 /**
- * The memory lesson is done but the player has not pressed Space yet: the sky asks for it.
+ * Space would zap the atoms right now (the memories have been introduced, nothing is paused or in flight, and a
+ * slot is free), so the sky asks for it.
  */
-function isWaitingForFirstSend(game) {
+function canZapAtoms(game) {
     const hasMetMemories = game.lessonsSeen.has(MEMORY_LESSON);
-    const hasSentPhotons = game.lessonsSeen.has(EMISSION_LESSON);
-    return hasMetMemories && !hasSentPhotons && !isPaused(game);
+    const hasFreeSlot = countPairs(game.state) < MEMORY_SLOT_COUNT;
+    return game.isStarted && hasMetMemories && !isPaused(game) && !game.isAnimating && hasFreeSlot;
 }
 
 
@@ -423,36 +487,7 @@ function isWaitingForFirstSend(game) {
 function describeSettingsEffect(settings) {
     const chancePercent = Math.round(computeHeraldProbability(toLinkPhysics(settings)) * PERCENT);
     const trySeconds = (computeTryDurationMs(settings) / MS_PER_SECOND).toFixed(1);
-    return `Chance a try clicks: ${chancePercent}%. Each try takes ${trySeconds} s.`;
-}
-
-
-/**
- * The keys that do something right now.
- */
-function listLevel1KeyHints(game) {
-    if (!game.isStarted) {
-        return [];
-    }
-    if (game.tourStepIndex !== null && !game.isTourLocked) {
-        return [{ key: "Space", action: "Next tip" }, { key: "Esc", action: "Skip tour" }];
-    }
-    if (game.isSettingsOpen) {
-        return [{ key: "Esc", action: "Close settings" }];
-    }
-    if (game.openLesson !== null && game.isLessonLocked) {
-        return [];
-    }
-    if (game.openLesson !== null) {
-        return [{ key: "Space", action: "Continue" }];
-    }
-    const pairCount = countPairs(game.state);
-    const hints = [];
-    if (pairCount < MEMORY_SLOT_COUNT) {
-        hints.push({ key: "Space", action: "Send photons" });
-    }
-    hints.push({ key: "R", action: "Reset" }, { key: "Esc", action: "Settings" });
-    return hints;
+    return `Chance a try makes a pair: ${chancePercent}%. Each try takes ${trySeconds} s.`;
 }
 
 

@@ -1,15 +1,16 @@
 /**
- * Where the dispatch map's data comes from. Locally the page fetches the JSON files written by the tools in
- * tools/. On Qollab, JavaScript cannot read project files, so only this module changes there: it will ask Python
- * for the same objects.
+ * Where the page's data comes from. Locally the page fetches the JSON files and asks tools/serve.py to simulate a
+ * week. On Qollab, JavaScript cannot read project files and there is no server, so only this module changes there:
+ * it will call the same Python functions through the runtime.
  */
 
 async function fetchJson(path) {
     const response = await fetch(path);
+    const body = await response.json();
     if (!response.ok) {
-        throw new Error(`could not load ${path} (HTTP ${response.status}); run the tools in tools/ first`);
+        throw new Error(body.error ?? `could not load ${path} (HTTP ${response.status})`);
     }
-    return response.json();
+    return body;
 }
 
 /** The 20 lane cities with coordinates and loads sent and received. */
@@ -22,12 +23,13 @@ export function loadLanes() {
     return fetchJson("data/dispatch_map/lanes.json");
 }
 
-/** Real road paths between lane cities (© OpenStreetMap contributors, ODbL). */
+/** Real road paths between every pair of lane cities (© OpenStreetMap contributors, ODbL). */
 export function loadRoutePaths() {
     return fetchJson("data/osm_routes/lane_routes.json");
 }
 
-/** One year of loads as a compact table (see data/dispatch_map/README.md). */
-export function loadYear(year) {
-    return fetchJson(`data/dispatch_map/loads_${year}.json`);
+/** Simulate seven days from startDate with a policy and seed; returns the replay (see freight_sim/replay.py). */
+export function runSimulation(startDate, policyName, seed) {
+    const query = new URLSearchParams({ start: startDate, policy: policyName, seed: String(seed) });
+    return fetchJson(`/api/simulate?${query}`);
 }

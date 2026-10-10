@@ -7,13 +7,15 @@ import assert from "node:assert/strict";
 
 import {
     LUIGI_SIDE, MARIO_SIDE, MEMORY_SLOT_COUNT, MINUS_DETECTOR, PAIRS_TO_CLEAR, PAIR_LIFETIME_MS, PLUS_DETECTOR,
+    TWO_CLICK_SHARE,
     computeHeraldProbability, countPairs, createLevel1State, decohereExpiredPairs, findLifeLeft, isRoundCleared,
     sendPhotons,
 } from "../../src/level1/level1_protocol.js";
 
 const HERALD_PROBABILITY = 0.3;
 const ALWAYS_SUCCEED = () => 0;
-const ALWAYS_FAIL = () => HERALD_PROBABILITY;
+// Above both the one-click and two-click ranges, so nothing clicks.
+const ALWAYS_FAIL = () => 0.99;
 const LIFETIME_MS = PAIR_LIFETIME_MS;
 
 
@@ -34,7 +36,33 @@ test("a lost photon stores nothing and counts the attempt", () => {
     assert.equal(state.attemptCount, 1);
     assert.equal(state.lastAttemptSucceeded, false);
     assert.equal(state.clickedDetector, null);
+    assert.equal(state.hadTwoClicks, false);
     assert.equal(countPairs(state), 0);
+});
+
+
+test("a draw just above the herald chance gives two clicks: a miss that stores nothing", () => {
+    const justAbove = () => HERALD_PROBABILITY;
+    const twoClickLimit = HERALD_PROBABILITY * (1 + TWO_CLICK_SHARE);
+    const state = sendPhotons(createLevel1State(), 0, justAbove, HERALD_PROBABILITY);
+    assert.equal(state.hadTwoClicks, true);
+    assert.equal(state.lastAttemptSucceeded, false);
+    assert.equal(countPairs(state), 0);
+    const pastLimit = sendPhotons(createLevel1State(), 0, () => twoClickLimit, HERALD_PROBABILITY);
+    assert.equal(pastLimit.hadTwoClicks, false);
+});
+
+
+test("a forced two-click try still uses up exactly one draw, so the random sequence stays the same", () => {
+    let drawCount = 0;
+    const countingDraw = () => {
+        drawCount += 1;
+        return 0;
+    };
+    const state = sendPhotons(createLevel1State(), 0, countingDraw, HERALD_PROBABILITY, true);
+    assert.equal(state.hadTwoClicks, true);
+    assert.equal(countPairs(state), 0);
+    assert.equal(drawCount, 1);
 });
 
 

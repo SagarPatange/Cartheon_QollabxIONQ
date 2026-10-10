@@ -1,6 +1,6 @@
 /*
  * Level 1 additions on top of world.css, towers.css, qkd.css and bsm_link.css: the page layout, a two-node track,
- * and a red fiber after a failed attempt. Classes are set by src/level1/level1_main.js.
+ * and the story-mode lessons. Classes are set by src/level1/level1_main.js.
  */
 
 /* The two towers fill the window: HUD on top, controls at the bottom, the world takes everything between. */
@@ -23,12 +23,6 @@
 .level1-track {
     height: 470px;
     min-width: 870px;
-}
-
-/* A failed attempt flashes the fiber red once instead of flickering forever. */
-.qkd-link.is-tapped .fiber {
-    border-top-color: var(--error-red);
-    opacity: 1;
 }
 
 /* Level 1's orbs are a little bigger than Level 2's: each tower holds one stack of 5 memory slots. */
@@ -84,9 +78,10 @@
     margin: 0;
 }
 
-/* The way on, at the end of the note where the reader already is. */
+/* The way on, at the end of the note where the reader already is. Always one line. */
 .lesson-continue {
     margin-top: 8px;
+    white-space: nowrap;
     color: var(--brick-dark);
 }
 
@@ -95,15 +90,18 @@
     color: var(--idle-gray);
 }
 
-/* Each tower's note hangs from its inner edge, toward the middle of the screen; the BSM's sits centred over it. */
+/* Each tower's note hangs from its inner edge, toward the middle of the screen; the BSM's sits centred over it.
+   Tower notes are narrow enough to end before the BSM Node's label and lamps. */
 .lesson-note.is-mario {
     left: 0;
+    width: 260px;
     translate: 0 0;
 }
 
 .lesson-note.is-luigi {
     left: auto;
     right: 0;
+    width: 260px;
     translate: 0 0;
 }
 

@@ -1,6 +1,6 @@
 /*
  * The slide-in settings panel (src/settings_panel.js): it slides in from the right edge while the game is paused.
- * Grey and compact: each setting is a plain row (name and value chip, slider, its range), split from the next by a
+ * Pale sky blue and compact: each setting is a plain row (name and value chip, slider, its range), split from the next by a
  * line. The panel is classed link-settings, not settings-panel, because qkd.css (also loaded by Level 1) styles its
  * own .settings-panel.
  */
@@ -18,7 +18,7 @@
     padding: 16px 16px;
     overflow-y: auto;
     color: var(--ink);
-    background: #d4d4d4;
+    background: #c4dafc;
     border-left: var(--pixel) solid var(--ink);
     box-shadow: -8px 0 0 #00000033;
     translate: 100% 0;
@@ -83,7 +83,7 @@
     flex-direction: column;
     gap: 8px;
     padding: 12px 0;
-    border-bottom: 2px solid #a4a4a4;
+    border-bottom: 2px solid #8cb0ec;
 }
 
 .setting-card:first-child {
@@ -112,7 +112,7 @@
     display: flex;
     justify-content: space-between;
     font-size: 7px;
-    color: #5a5a5a;
+    color: #34466e;
 }
 
 /* ---------- Pixel slider: a boxed track filled up to the thumb (--fill, set by the script), a gold block thumb */
@@ -187,17 +187,22 @@
     margin: 0;
     font-size: 8px;
     line-height: 1.6;
-    color: #4a4a4a;
+    color: #34466e;
 }
 
 /* ---------- The HUD's gear button, beside the Map button ---------- */
 
+/* Peach, the colour the settings panel used to be, so it reads apart from the gold Map button. */
 .hud-settings {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     padding: 9px;
+    background: #fcd8a8;
     border: none;
+    box-shadow:
+        inset calc(-1 * var(--pixel)) calc(-1 * var(--pixel)) 0 #d8a868,
+        0 0 0 3px var(--ink);
     cursor: pointer;
 }
 
@@ -220,16 +225,46 @@
     }
 }
 
-/* ---------- The guided tour after the first Bell pair: a tip box, and the setting it points at ---------- */
+/* ---------- The guided tour after the first Bell pair: a tip beside the panel, pointing at its setting ---------- */
 
+/* Placed by level1_main.js: left of the panel, level with its target; --arrow-top is the target's middle. */
 .settings-tour {
+    position: fixed;
+    z-index: 21;
+    width: 250px;
     margin: 0;
-    padding: 10px 12px;
-    font-size: 10px;
+    padding: 12px 14px;
+    font-size: 11px;
     line-height: 1.7;
+    color: var(--ink);
     background: var(--cloud-white);
-    border: 3px solid var(--error-red);
+    border: var(--pixel) solid var(--error-red);
+    box-shadow: 6px 6px 0 #00000040;
     cursor: pointer;
+}
+
+/* The arrow: a red triangle on the tip's right edge, pointing into the panel at the setting. */
+.settings-tour::after {
+    content: "";
+    position: absolute;
+    left: 100%;
+    top: var(--arrow-top, 50%);
+    translate: 0 -50%;
+    border-left: 14px solid var(--error-red);
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+}
+
+.settings-tour:not(.has-arrow)::after {
+    display: none;
+}
+
+/* While the tour runs, the scene dims behind the panel and the tip, so the tip clearly floats on top. */
+.tour-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 19;
+    background: #00000066;
 }
 
 .settings-tour-text,
@@ -238,8 +273,9 @@
 }
 
 .settings-tour-continue {
-    margin-top: 6px;
-    font-size: 8px;
+    margin-top: 8px;
+    font-size: 9px;
+    white-space: nowrap;
     color: var(--brick-dark);
 }
 

@@ -1,6 +1,7 @@
 /**
- * Level 1 as pure state updates: Mario and Luigi each send a photon to the BSM in the middle; each attempt that clicks
- * heralds one Bell pair Ψ⁺, stored in the next free memory slot of both towers (3 slots). A stored pair decoheres a
+ * Level 1 as pure state updates: Mario and Luigi each send a photon to the BSM in the middle. A try ends one of three
+ * ways: no click (a photon was lost), one click (it heralds one Bell pair Ψ⁺), or two clicks (both atoms emitted, so
+ * it links nothing). A heralded pair is stored in the next free memory slot of both towers (3 slots). A stored pair decoheres a
  * memory lifetime after it was made. The round's goal: fill all 3 slots at once, before any pair decoheres.
  *
  * The chance that an attempt clicks comes from the link settings (computeHeraldProbability); the channel is otherwise
@@ -20,6 +21,10 @@ const DECIBELS_PER_DECADE = 10;
 export const PLUS_DETECTOR = "D+";
 export const MINUS_DETECTOR = "D-";
 
+// Both atoms emit in about a quarter of tries; when both of those photons also arrive, each detector clicks. So two
+// clicks come TWO_CLICK_SHARE times as often as one click, taken out of the tries that would otherwise not click.
+export const TWO_CLICK_SHARE = 0.25;
+
 // Which tower's memory qubit gives out first when a pair decoheres.
 export const MARIO_SIDE = "mario";
 export const LUIGI_SIDE = "luigi";
@@ -31,13 +36,15 @@ export const LUIGI_SIDE = "luigi";
  * Each slot holds null or a pair {pairNumber, createdAtMs, decoheringSide}.
  *
  * @returns {{attemptCount: number, lastAttemptSucceeded: boolean | null, clickedDetector: string | null,
- *            slots: (object | null)[], nextPairNumber: number, decoherenceCount: number, hasFilledMemory: boolean}}
+ *            hadTwoClicks: boolean, slots: (object | null)[], nextPairNumber: number, decoherenceCount: number,
+ *            hasFilledMemory: boolean}}
  */
 export function createLevel1State() {
     return {
         attemptCount: 0,
         lastAttemptSucceeded: null,
         clickedDetector: null,
+        hadTwoClicks: false,
         slots: new Array(MEMORY_SLOT_COUNT).fill(null),
         nextPairNumber: 1,
         decoherenceCount: 0,
@@ -65,24 +72,35 @@ export function computeHeraldProbability(link) {
 
 
 /**
- * One heralding attempt. On success one of the BSM's detectors clicks (D+ or D-, equally likely) and a new Ψ⁺ pair
- * goes into the first free slot. The goal is met (for good) once PAIRS_TO_CLEAR pairs are stored at once.
+ * One heralding attempt, decided by one uniform draw u: u < p is one click, p ≤ u < p + p·TWO_CLICK_SHARE is two
+ * clicks, anything else no click (p is the herald probability). On one click, D+ or D- clicks (equally likely) and a
+ * new Ψ⁺ pair goes into the first free slot. The goal is met (for good) once PAIRS_TO_CLEAR pairs are stored at once.
+ *
+ * isTwoClickForced makes this try two clicks whatever u is (the story uses it to show the case early). u is drawn
+ * either way, so the random sequence stays the same.
  *
  * @param {object} state - from createLevel1State or an earlier update.
  * @param {number} nowMs - the game clock when the photons arrive.
  * @param {() => number} nextRandomFloat - uniform draws in [0, 1).
  * @param {number} heraldProbability - from computeHeraldProbability.
+ * @param {boolean} [isTwoClickForced=false]
  * @returns {object} the new state.
  */
-export function sendPhotons(state, nowMs, nextRandomFloat, heraldProbability) {
+export function sendPhotons(state, nowMs, nextRandomFloat, heraldProbability, isTwoClickForced = false) {
     const freeSlot = state.slots.indexOf(null);
     if (freeSlot === -1) {
         throw new Error("every memory slot holds a pair; wait for one to decohere first");
     }
     const attemptCount = state.attemptCount + 1;
-    const isSuccess = nextRandomFloat() < heraldProbability;
+    const outcomeDraw = nextRandomFloat();
+    const twoClickLimit = heraldProbability * (1 + TWO_CLICK_SHARE);
+    const isTwoClicks = isTwoClickForced || (outcomeDraw >= heraldProbability && outcomeDraw < twoClickLimit);
+    if (isTwoClicks) {
+        return { ...state, attemptCount, lastAttemptSucceeded: false, clickedDetector: null, hadTwoClicks: true };
+    }
+    const isSuccess = outcomeDraw < heraldProbability;
     if (!isSuccess) {
-        return { ...state, attemptCount, lastAttemptSucceeded: false, clickedDetector: null };
+        return { ...state, attemptCount, lastAttemptSucceeded: false, clickedDetector: null, hadTwoClicks: false };
     }
     const clickedDetector = drawFromPair(nextRandomFloat, PLUS_DETECTOR, MINUS_DETECTOR);
     const pair = {
@@ -94,7 +112,7 @@ export function sendPhotons(state, nowMs, nextRandomFloat, heraldProbability) {
     slots[freeSlot] = pair;
     const storedPairCount = slots.filter((slotPair) => slotPair !== null).length;
     return {
-        ...state, attemptCount, lastAttemptSucceeded: true, clickedDetector, slots,
+        ...state, attemptCount, lastAttemptSucceeded: true, clickedDetector, hadTwoClicks: false, slots,
         nextPairNumber: state.nextPairNumber + 1,
         hasFilledMemory: state.hasFilledMemory || storedPairCount >= PAIRS_TO_CLEAR,
     };

@@ -1,6 +1,6 @@
 """Tests for tools/build_lane_routes.py: real road paths for each lane, from OSRM, simplified."""
 
-from build_lane_routes import find_city_pairs, parse_osrm_route, simplify_path
+from build_lane_routes import find_all_city_pairs, find_city_pairs, parse_osrm_route, simplify_path
 
 
 def test_city_pairs_are_counted_once_whichever_direction_the_lane_runs():
@@ -44,3 +44,11 @@ def test_simplify_path_drops_points_that_lie_almost_on_a_straight_line():
 def test_simplify_path_keeps_a_corner_bigger_than_the_tolerance():
     path = [[0.0, 0.0], [0.5, 0.5], [1.0, 0.0]]
     assert simplify_path(path, tolerance=0.01) == path
+
+
+def test_all_city_pairs_are_listed_once_in_alphabetical_order():
+    assert find_all_city_pairs(["Memphis, TN", "Dallas, TX", "Atlanta, GA"]) == [
+        ("Atlanta, GA", "Dallas, TX"),
+        ("Atlanta, GA", "Memphis, TN"),
+        ("Dallas, TX", "Memphis, TN"),
+    ]

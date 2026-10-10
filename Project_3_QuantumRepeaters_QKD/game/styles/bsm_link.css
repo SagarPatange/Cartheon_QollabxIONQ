@@ -38,6 +38,55 @@
 }
 
 /*
+ * The fiber: a black cable with a faint cyan core. While photons fly, light pulses run along the core toward the BSM
+ * Node; after a miss the core goes dark. Replaces the dashed line (and its red miss flash) from towers.css.
+ */
+.bsm-link .fiber {
+    bottom: 117px;
+    height: 7px;
+    border-top: none;
+    opacity: 1;
+    background: linear-gradient(to bottom, #4a4a4a 0 2px, #101010 2px 6px, #000000 6px);
+    box-shadow: 0 2px 0 #00000055;
+}
+
+.bsm-link .fiber::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 3px;
+    height: 1px;
+    background: repeating-linear-gradient(90deg, #3cbcfc 0 8px, transparent 8px 20px);
+    opacity: 0.35;
+}
+
+.bsm-link.is-sending .fiber::after {
+    opacity: 1;
+    animation: fiber-pulse 0.5s linear infinite;
+}
+
+@keyframes fiber-pulse {
+    to { background-position: 20px 0; }
+}
+
+.bsm-link.is-tapped .fiber,
+.bsm-link.is-missed .fiber {
+    border-top: none;
+}
+
+.bsm-link.is-tapped .fiber::after,
+.bsm-link.is-missed .fiber::after {
+    opacity: 0.1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bsm-link.is-sending .fiber::after {
+        animation: none;
+    }
+}
+
+/*
  * The BSM: a telecom tower standing on the ground in the middle of the fiber. Its feet are low enough that its
  * crossarm (162 px tall at 6 px per pixel, crossarm 111 px up) meets the fiber at 120 px, so it stands on a
  * concrete footing that fills the 9 px down to the ground. Its label sits above it.
@@ -60,8 +109,13 @@
     translate: -50% 0;
 }
 
+/* Only as wide as its text, so notes beside it have room. */
 .bsm-link .bsm-label {
     z-index: 3;
+    left: 50%;
+    right: auto;
+    width: max-content;
+    translate: -50% 0;
     bottom: 226px;
     font-size: 16px;
     text-shadow: 2px 2px 0 var(--ink);

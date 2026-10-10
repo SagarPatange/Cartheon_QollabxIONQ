@@ -1,156 +1,158 @@
 /**
- * Truckload dispatch map: replays the Kaggle carrier's loads day by day on real US roads.
- * No dispatching happens yet: loads move along their lanes on their scheduled pickup and delivery times.
+ * Truckload dispatch: simulate a week with a dispatch policy, then replay it on the map with live metrics and an
+ * event timeline that explains every decision.
  */
 
-import { loadCities, loadLanes, loadRoutePaths, loadYear } from "./src/data_source.js";
-import { countLoadsPerLane, loadsInTransit, loadsOnDay, rankLanes, summarizeLoads } from "./src/dispatch_day.js";
+import { loadCities, loadLanes, loadRoutePaths, runSimulation } from "./src/data_source.js";
 import { PanelView } from "./src/panel_view.js";
 import { advanceTime } from "./src/playback.js";
+import { metricsUntil } from "./src/run_metrics.js";
+import { TimelineView } from "./src/timeline_view.js";
+import { truckPositions } from "./src/truck_motion.js";
 import { UsMapView } from "./src/us_map_view.js";
 
-const FIRST_YEAR = 2022;
-const LAST_YEAR = 2024;
 const MINUTES_PER_DAY = 24 * 60;
-const SECONDS_PER_MINUTE = 60;
-const BUSIEST_LANE_LIMIT = 5;
-const START_DATE = "2022-03-01";
+const DEFAULT_WEEK_START = "2022-03-07";
 
 const elements = {
-    dateInput: document.getElementById("date-input"),
+    weekInput: document.getElementById("week-input"),
+    policySelect: document.getElementById("policy-select"),
+    seedInput: document.getElementById("seed-input"),
+    simulateButton: document.getElementById("simulate-button"),
     playButton: document.getElementById("play-button"),
     timeSlider: document.getElementById("time-slider"),
     speedSelect: document.getElementById("speed-select"),
+    status: document.getElementById("run-status"),
 };
 
-const replay = {
-    year: FIRST_YEAR,
-    dayOfYear: 0,
-    minuteOfDay: 0,
-    yearFiles: new Map(),
-    isPlaying: false,
-    lastFrameMs: null,
-};
+const playback = { replay: null, minute: 0, isPlaying: false, lastFrameMs: null };
 
 async function start() {
     const [cities, lanes, routePaths] = await Promise.all([loadCities(), loadLanes(), loadRoutePaths()]);
+    const cityPoints = {};
+    for (const city of cities) {
+        cityPoints[`${city.name}, ${city.state}`] = [city.lat, city.lon];
+    }
     const views = {
         mapView: new UsMapView(document.getElementById("map"), cities, lanes, routePaths),
-        panelView: new PanelView(document, cities, lanes),
-        laneCount: lanes.length,
+        panelView: new PanelView(document),
+        timelineView: new TimelineView(document),
+        routePaths,
+        cityPoints,
     };
+    views.timelineView.onFilterChange = () => render(views);
     connectControls(views);
-    await jumpToDate(START_DATE, views);
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    setPlaying(!prefersReducedMotion);
+    elements.weekInput.value = DEFAULT_WEEK_START;
+    await simulateWeek(views);
     requestAnimationFrame((frameMs) => tick(frameMs, views));
 }
 
 function connectControls(views) {
-    elements.dateInput.addEventListener("change", () => jumpToDate(elements.dateInput.value, views));
-    elements.playButton.addEventListener("click", () => setPlaying(!replay.isPlaying));
+    elements.simulateButton.addEventListener("click", () => simulateWeek(views));
+    elements.playButton.addEventListener("click", () => setPlaying(!playback.isPlaying));
     elements.timeSlider.addEventListener("input", () => {
-        replay.minuteOfDay = Number(elements.timeSlider.value);
+        playback.minute = Number(elements.timeSlider.value);
         render(views);
     });
     document.addEventListener("keydown", (event) => {
         const isTypingInControl = ["INPUT", "SELECT", "BUTTON"].includes(document.activeElement?.tagName);
-        if (event.code === "Space" && !isTypingInControl) {
+        if (event.code === "Space" && !isTypingInControl && playback.replay !== null) {
             event.preventDefault();
-            setPlaying(!replay.isPlaying);
+            setPlaying(!playback.isPlaying);
         }
     });
 }
 
-async function jumpToDate(isoDate, views) {
-    const date = new Date(`${isoDate}T00:00:00Z`);
-    replay.year = date.getUTCFullYear();
-    replay.dayOfYear = Math.round((date - Date.UTC(replay.year, 0, 1)) / (MINUTES_PER_DAY * SECONDS_PER_MINUTE * 1000));
-    replay.minuteOfDay = 0;
-    await ensureYearLoaded(replay.year);
-    render(views);
-}
-
-async function ensureYearLoaded(year) {
-    if (!replay.yearFiles.has(year)) {
-        replay.yearFiles.set(year, await loadYear(year));
+/** Run the simulator for the chosen week, policy and seed, then replay it from the first minute. */
+async function simulateWeek(views) {
+    const weekStart = mondayOf(elements.weekInput.value);
+    elements.weekInput.value = weekStart;
+    setPlaying(false);
+    elements.simulateButton.disabled = true;
+    elements.status.textContent = "Simulating…";
+    try {
+        const replay = await runSimulation(weekStart, elements.policySelect.value, Number(elements.seedInput.value));
+        playback.replay = replay;
+        playback.minute = 0;
+        elements.timeSlider.max = String(replay.days * MINUTES_PER_DAY);
+        views.mapView.clearTrucks();
+        views.panelView.showDays(replay);
+        elements.status.textContent =
+            `${replay.trucks.length} trucks · ${replay.summary.loads_tendered.toLocaleString("en-US")} loads tendered · ` +
+            `policy ${replay.policy}, seed ${replay.seed}`;
+        render(views);
+        setPlaying(!window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    } catch (error) {
+        elements.status.textContent = `Could not simulate: ${error.message}`;
+    } finally {
+        elements.simulateButton.disabled = false;
     }
 }
 
+/** The Monday on or before a date, as YYYY-MM-DD: runs always cover Monday to Sunday. */
+function mondayOf(isoDate) {
+    const day = new Date(`${isoDate}T00:00:00Z`);
+    const daysSinceMonday = (day.getUTCDay() + 6) % 7;
+    day.setUTCDate(day.getUTCDate() - daysSinceMonday);
+    return day.toISOString().slice(0, 10);
+}
+
 function setPlaying(isPlaying) {
-    replay.isPlaying = isPlaying;
-    replay.lastFrameMs = null;
+    if (isPlaying && playback.replay !== null && playback.minute >= playback.replay.days * MINUTES_PER_DAY) {
+        playback.minute = 0;
+    }
+    playback.isPlaying = isPlaying;
+    playback.lastFrameMs = null;
     elements.playButton.textContent = isPlaying ? "Pause" : "Play";
 }
 
-/** Move the clock; the speed select gives simulated minutes per real second. */
-async function tick(frameMs, views) {
-    if (replay.isPlaying) {
-        const elapsedMs = replay.lastFrameMs === null ? 0 : frameMs - replay.lastFrameMs;
-        replay.lastFrameMs = frameMs;
+function tick(frameMs, views) {
+    if (playback.isPlaying && playback.replay !== null) {
+        const elapsedMs = playback.lastFrameMs === null ? 0 : frameMs - playback.lastFrameMs;
+        playback.lastFrameMs = frameMs;
         const step = advanceTime({
-            timeS: replay.minuteOfDay,
+            timeS: playback.minute,
             elapsedMs,
             speed: Number(elements.speedSelect.value),
-            endS: MINUTES_PER_DAY,
+            endS: playback.replay.days * MINUTES_PER_DAY,
         });
-        replay.minuteOfDay = step.timeS;
+        playback.minute = step.timeS;
         if (step.isFinished) {
-            await moveToNextDay();
+            setPlaying(false);
         }
         render(views);
     }
     requestAnimationFrame((nextFrameMs) => tick(nextFrameMs, views));
 }
 
-async function moveToNextDay() {
-    replay.minuteOfDay = 0;
-    replay.dayOfYear += 1;
-    const daysInYear = isLeapYear(replay.year) ? 366 : 365;
-    if (replay.dayOfYear < daysInYear) {
-        return;
-    }
-    if (replay.year === LAST_YEAR) {
-        replay.dayOfYear = daysInYear - 1;
-        replay.minuteOfDay = MINUTES_PER_DAY - 1;
-        setPlaying(false);
-        return;
-    }
-    replay.year += 1;
-    replay.dayOfYear = 0;
-    await ensureYearLoaded(replay.year);
-}
-
-function isLeapYear(year) {
-    return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
-}
-
 function render(views) {
-    const yearFile = replay.yearFiles.get(replay.year);
-    if (yearFile === undefined) {
+    const replay = playback.replay;
+    if (replay === null) {
         return;
     }
-    const todaysLoads = loadsOnDay(yearFile, replay.dayOfYear);
-    const loadsPerLane = countLoadsPerLane(todaysLoads, views.laneCount);
-    const loadsOnRoad = loadsInTransit(yearFile, replay.dayOfYear, replay.minuteOfDay);
-    views.mapView.update(loadsOnRoad);
-    views.panelView.update(
-        replay.year,
-        replay.dayOfYear,
-        replay.minuteOfDay,
-        summarizeLoads(todaysLoads),
-        rankLanes(loadsPerLane, BUSIEST_LANE_LIMIT),
-        loadsOnRoad.length,
-    );
-    elements.timeSlider.value = String(Math.floor(replay.minuteOfDay));
-    elements.dateInput.value = isoDate(replay.year, replay.dayOfYear);
+    const positions = truckPositions(replay, playback.minute, views.routePaths, views.cityPoints);
+    views.mapView.showTrucks(positions, replay.out_of_service, views.cityPoints);
+    const fleetCounts = countFleet(positions, replay.out_of_service.length);
+    views.panelView.update(replay, playback.minute, metricsUntil(replay, playback.minute), fleetCounts);
+    views.timelineView.update(replay, playback.minute);
+    elements.timeSlider.value = String(Math.floor(playback.minute));
 }
 
-function isoDate(year, dayOfYear) {
-    return new Date(Date.UTC(year, 0, 1 + dayOfYear)).toISOString().slice(0, 10);
+function countFleet(positions, outOfServiceCount) {
+    const counts = { loaded: 0, empty: 0, parked: 0, outOfService: outOfServiceCount };
+    for (const position of positions) {
+        if (position.phase === "empty") {
+            counts.empty += 1;
+        } else if (position.phase === "parked") {
+            counts.parked += 1;
+        } else {
+            counts.loaded += 1;
+        }
+    }
+    return counts;
 }
 
 start().catch((error) => {
-    document.getElementById("map").textContent = `Could not start the map: ${error.message}`;
+    document.getElementById("map").textContent = `Could not start: ${error.message}`;
     throw error;
 });

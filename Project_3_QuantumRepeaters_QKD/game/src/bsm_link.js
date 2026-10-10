@@ -50,7 +50,19 @@ export function buildBsmLink() {
  * @param {string | null} detectorName - "D+", "D-", or null for no click.
  */
 export function showDetectorClick(linkElement, detectorName) {
+    const litDetectors = detectorName === null ? [] : [detectorName];
+    showDetectorClicks(linkElement, litDetectors);
+}
+
+
+/**
+ * Light exactly the given detectors' lamps: none, one, or both (two clicks).
+ *
+ * @param {HTMLElement} linkElement - from buildBsmLink.
+ * @param {string[]} detectorNames - any of "D+" and "D-".
+ */
+export function showDetectorClicks(linkElement, detectorNames) {
     for (const lampElement of linkElement.querySelectorAll(".detector-lamp")) {
-        lampElement.classList.toggle("is-lit", lampElement.dataset.detector === detectorName);
+        lampElement.classList.toggle("is-lit", detectorNames.includes(lampElement.dataset.detector));
     }
 }

@@ -1,75 +1,67 @@
 /**
- * The US dispatch map: OpenStreetMap streets in grey, the real road path of every lane (thicker for busier city
- * pairs), loads on the road as moving markers, and the 20 lane cities shaded from white (receives more than it
- * sends) to black (sends more than it receives).
- *
- * Lanes are not highlighted per day: with about 78 loads a day on 58 lanes, nearly every lane is used every day.
+ * The US dispatch map. Everything is black, white and grey except the trucks: OpenStreetMap streets in grey,
+ * every lane as a thin grey line on its real road, cities from white (receives more freight than it sends) to
+ * black (sends more). Trucks are purple arrows: solid when loaded, outlined when driving empty, light purple when
+ * parked, grey when out of service.
  */
 
 import * as L from "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet-src.esm.js";
 
-import { cityShade } from "./dispatch_day.js";
-import { pathForLane, pointAlongPath } from "./route_paths.js";
+import { pathForLane } from "./route_paths.js";
+import { cityColor } from "./run_metrics.js";
 
 const LEAFLET_CSS_URL = "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css";
 const TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 const ATTRIBUTION = '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · routes: OSRM';
 
-const LANE_STYLE = { color: "#9a9a9a", opacity: 0.7 };
-// Cities whose label would cover a close neighbour's label get it on the left instead.
+const LANE_STYLE = { color: "#9a9a9a", opacity: 0.7, weight: 1, interactive: false };
+const PURPLE = "#6d28d9";
+// Fill and outline for each truck state.
+const TRUCK_STYLES = {
+    loaded: { fill: PURPLE, stroke: PURPLE },
+    loading: { fill: PURPLE, stroke: PURPLE },
+    unloading: { fill: PURPLE, stroke: PURPLE },
+    empty: { fill: "#ffffff", stroke: PURPLE },
+    parked: { fill: "#c4b5fd", stroke: "#7c3aed" },
+    out_of_service: { fill: "#d4d4d4", stroke: "#737373" },
+};
+const DRIVING_ARROW_PX = 13;
+const PARKED_ARROW_PX = 10;
+// Trucks at a city sit on rings around it, so a busy city shows how many trucks are there.
+const RING_FIRST_RADIUS_PX = 13;
+const RING_STEP_PX = 7;
+const TRUCKS_PER_RING = 12;
+const CITY_RADIUS_PX = 7;
 const LABEL_ON_LEFT = new Set(["Indianapolis"]);
-const LANE_MIN_WEIGHT_PX = 0.75;
-const LANE_MAX_EXTRA_WEIGHT_PX = 1;
-const CITY_MIN_RADIUS_PX = 5;
-const CITY_MAX_EXTRA_RADIUS_PX = 7;
 
 export class UsMapView {
     constructor(container, cities, lanes, routePaths) {
         addLeafletStylesheet();
-        this.map = L.map(container, { zoomSnap: 0.25, attributionControl: true });
+        this.map = L.map(container, { zoomSnap: 0.25 });
         L.tileLayer(TILE_URL, { maxZoom: 12, attribution: ATTRIBUTION }).addTo(this.map);
-        this.lanePaths = lanes.map((lane) => pathForLane(lane, routePaths));
-        this.drawCityPairs(lanes, routePaths);
-        this.transitLayer = L.layerGroup().addTo(this.map);
+        for (const lane of uniqueCityPairs(lanes)) {
+            L.polyline(pathForLane(lane, routePaths), LANE_STYLE).addTo(this.map);
+        }
         this.drawCities(cities);
+        this.truckMarkers = new Map();
         const cityBounds = L.latLngBounds(cities.map((city) => [city.lat, city.lon]));
-        // Extra room on the right, where city labels sit.
         this.map.fitBounds(cityBounds, { paddingTopLeft: [30, 30], paddingBottomRight: [110, 30] });
     }
 
-    /** One line per pair of cities (both directions share a road), weighted by its loads over all three years. */
-    drawCityPairs(lanes, routePaths) {
-        const loadsPerPair = new Map();
-        for (const lane of lanes) {
-            const key = pairKey(lane.origin, lane.destination);
-            loadsPerPair.set(key, (loadsPerPair.get(key) ?? 0) + lane.loads);
-        }
-        const busiestPairLoads = Math.max(...loadsPerPair.values());
-        for (const route of routePaths) {
-            const key = pairKey(route.cities[0], route.cities[1]);
-            const weight = LANE_MIN_WEIGHT_PX + LANE_MAX_EXTRA_WEIGHT_PX * Math.sqrt(loadsPerPair.get(key) / busiestPairLoads);
-            const line = L.polyline(route.points, { ...LANE_STYLE, weight }).addTo(this.map);
-            line.bindTooltip(describePair(route, lanes), { sticky: true, className: "map-tooltip" });
-        }
-    }
-
     drawCities(cities) {
-        const busiestCityLoads = Math.max(...cities.map((city) => city.outbound + city.inbound));
         for (const city of cities) {
-            const totalLoads = city.outbound + city.inbound;
-            const radius = CITY_MIN_RADIUS_PX + CITY_MAX_EXTRA_RADIUS_PX * Math.sqrt(totalLoads / busiestCityLoads);
             const marker = L.circleMarker([city.lat, city.lon], {
-                radius,
+                radius: CITY_RADIUS_PX,
                 color: "#0a0a0a",
-                weight: 1,
-                fillColor: cityShade(city),
+                weight: 1.5,
+                fillColor: cityColor(city),
                 fillOpacity: 1,
             }).addTo(this.map);
             const isLabelOnLeft = LABEL_ON_LEFT.has(city.name);
             marker.bindTooltip(city.name, {
                 permanent: true,
                 direction: isLabelOnLeft ? "left" : "right",
-                offset: [isLabelOnLeft ? -radius : radius, 0],
+                offset: [isLabelOnLeft ? -CITY_RADIUS_PX - 14 : CITY_RADIUS_PX + 14, 0],
                 className: "city-label",
             });
             marker.bindPopup(
@@ -79,41 +71,76 @@ export class UsMapView {
         }
     }
 
-    /** Place a marker for every load on the road, at its share of the way along its lane's road path. */
-    update(loadsOnRoad) {
-        this.transitLayer.clearLayers();
-        for (const load of loadsOnRoad) {
-            const position = pointAlongPath(this.lanePaths[load.lane], load.progress);
-            const isReefer = load.equipment === "R";
-            L.circleMarker(position, {
-                radius: 4,
-                color: "#0a0a0a",
-                weight: 1.5,
-                fillColor: isReefer ? "#0a0a0a" : "#ffffff",
-                fillOpacity: 1,
-                interactive: false,
-            }).addTo(this.transitLayer);
+    /** Move every truck marker to its position; trucks at the same city are spread on rings around it.
+     * Out-of-service trucks are parked at their city in grey. */
+    showTrucks(positions, outOfService, cityPoints) {
+        const slotsTaken = new Map();
+        const allTrucks = [...positions];
+        for (const truck of outOfService) {
+            const [lat, lon] = cityPoints[truck.city];
+            allTrucks.push({ truckId: truck.id, phase: "out_of_service", lat, lon, bearing: 0 });
         }
+        for (const position of allTrucks) {
+            const isDriving = position.phase === "empty" || position.phase === "loaded";
+            const key = `${position.lat.toFixed(3)},${position.lon.toFixed(3)}`;
+            const slot = isDriving ? null : (slotsTaken.get(key) ?? 0);
+            if (!isDriving) {
+                slotsTaken.set(key, slot + 1);
+            }
+            const marker = this.markerFor(position.truckId);
+            marker.setLatLng([position.lat, position.lon]);
+            drawTruckIcon(marker.getElement(), position, isDriving, slot);
+        }
+    }
+
+    markerFor(truckId) {
+        if (!this.truckMarkers.has(truckId)) {
+            const icon = L.divIcon({ className: "truck-icon", html: "<div></div>", iconSize: [0, 0] });
+            const marker = L.marker([0, 0], { icon, interactive: false, keyboard: false }).addTo(this.map);
+            this.truckMarkers.set(truckId, marker);
+        }
+        return this.truckMarkers.get(truckId);
+    }
+
+    clearTrucks() {
+        for (const marker of this.truckMarkers.values()) {
+            marker.remove();
+        }
+        this.truckMarkers.clear();
     }
 }
 
-function pairKey(firstCity, secondCity) {
-    return [firstCity, secondCity].sort().join(" | ");
+/** Every truck is an arrow. A driving truck points where it goes; a truck at a city points north on that city's
+ * ring. */
+function drawTruckIcon(element, position, isDriving, slot) {
+    const style = TRUCK_STYLES[position.phase];
+    const holder = element.firstElementChild;
+    const size = isDriving ? DRIVING_ARROW_PX : PARKED_ARROW_PX;
+    let offsetX = 0;
+    let offsetY = 0;
+    if (!isDriving) {
+        const ring = Math.floor(slot / TRUCKS_PER_RING);
+        const angle = ((slot % TRUCKS_PER_RING) / TRUCKS_PER_RING) * 2 * Math.PI;
+        const radius = RING_FIRST_RADIUS_PX + ring * RING_STEP_PX;
+        offsetX = Math.cos(angle) * radius;
+        offsetY = Math.sin(angle) * radius;
+    }
+    const translate = `translate(calc(-50% + ${offsetX.toFixed(1)}px), calc(-50% + ${offsetY.toFixed(1)}px))`;
+    holder.style.transform = `${translate} rotate(${position.bearing.toFixed(0)}deg)`;
+    holder.innerHTML =
+        `<svg width="${size}" height="${size}" viewBox="0 0 18 18" aria-hidden="true">` +
+        `<path d="M9 1.5 L15.5 16.5 L9 12.5 L2.5 16.5 Z" fill="${style.fill}" stroke="${style.stroke}" ` +
+        `stroke-width="1.6" stroke-linejoin="round"/></svg>`;
 }
 
-/** "Columbus, OH ↔ Los Angeles, CA · 2,290 road miles" plus each direction's loads and rate. */
-function describePair(route, lanes) {
-    const lines = [`<strong>${route.cities[0]} ↔ ${route.cities[1]}</strong> · ${Math.round(route.road_miles).toLocaleString("en-US")} road mi`];
+/** One lane per pair of cities, whichever direction: both directions share the same road. */
+function uniqueCityPairs(lanes) {
+    const pairs = new Map();
     for (const lane of lanes) {
-        const isThisPair = pairKey(lane.origin, lane.destination) === pairKey(route.cities[0], route.cities[1]);
-        if (isThisPair) {
-            lines.push(
-                `${lane.origin.split(",")[0]} → ${lane.destination.split(",")[0]}: ${lane.loads.toLocaleString("en-US")} loads, ` +
-                `$${lane.rate_per_mile.toFixed(2)}/mi, ${lane.transit_days} d`,
-            );
-        }
+        const key = [lane.origin, lane.destination].sort().join(" | ");
+        pairs.set(key, lane);
     }
-    return lines.join("<br>");
+    return [...pairs.values()];
 }
 
 function addLeafletStylesheet() {

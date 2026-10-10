@@ -13,13 +13,19 @@ a synthetic three-year dataset of a US over-the-road truckload carrier (MIT). Th
 made to them are in `data/kaggle_logistics/README.md`; what the data contains and where it is unrealistic is in
 `docs/data_profile.md`.
 
-## Run the dispatch map
+## Run the dispatch simulator
 
 ```sh
-npm run serve        # then open http://localhost:8022
+npm run serve        # starts tools/serve.py; open http://localhost:8022, pick a week, press "Simulate week"
 npm test             # page logic
-../.venv-project2/bin/pytest -q   # data tools
+../.venv-project2/bin/pytest -q   # simulator and data tools
+PYTHONPATH=. ../.venv-project2/bin/python tools/run_simulation.py 2022-03-07 2022-03-13   # totals in the terminal
 ```
+
+The simulator (`freight_sim/`) follows Powell's framework: the state a dispatcher sees (`state.py`), the decision
+it returns (accept with a truck, decline or hold, each with a reason), new tenders as exogenous information, the
+discrete-event transition (`simulator.py`) and profit as the objective. Design and defaults:
+`docs/superpowers/specs/2026-10-10-dispatch-simulator-design.md`.
 
 ## Rebuild the data
 
@@ -34,7 +40,7 @@ python tools/build_lane_routes.py                                              #
 - Loads, lanes, fleet: "Logistics Operations Database" by yogape on Kaggle, synthetic, MIT.
   https://www.kaggle.com/datasets/yogape/logistics-operations-database
 - City coordinates: US Census Bureau 2023 Gazetteer of places, public domain.
-- Lane road paths (`data/osm_routes/`, **ODbL, not MIT**) and map tiles: © OpenStreetMap contributors, routed with
+- Road paths and distances (`data/osm_routes/`, **ODbL, not MIT**) and map tiles: © OpenStreetMap contributors, routed with
   the OSRM demo server. See `data/osm_routes/NOTICE.md`.
 - Map library: Leaflet 1.9.4 (BSD-2-Clause), loaded from the jsDelivr CDN.
 - AI tools: Claude Code was used to research datasets, write code and draft documentation.

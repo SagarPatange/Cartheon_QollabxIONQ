@@ -7,8 +7,10 @@
  */
 
 import { MEMORY_LESSON } from "./level1_lessons.js";
-import { MEMORY_SLOT_COUNT, countPairs, findLifeLeft, isRoundCleared } from "./level1_protocol.js";
-import { buildBsmLink, showDetectorClick } from "../bsm_link.js";
+import {
+    MEMORY_SLOT_COUNT, MINUS_DETECTOR, PLUS_DETECTOR, countPairs, findLifeLeft, isRoundCleared,
+} from "./level1_protocol.js";
+import { buildBsmLink, showDetectorClicks } from "../bsm_link.js";
 import { createElement } from "../page_helpers.js";
 import { LUIGI_SPRITE, MARIO_SPRITE } from "../pixel_sprites.js";
 import { buildStation } from "../qkd/render_qkd_world.js";
@@ -21,8 +23,9 @@ export const MARIO_NOTE = "mario";
 export const LUIGI_NOTE = "luigi";
 export const BSM_NOTE = "bsm";
 // A note's last line while it is still locked (the player is reading), and once it can be put away.
-export const LOCKED_CONTINUE_TEXT = "Read the note…";
-export const READY_CONTINUE_TEXT = "Press Space to continue ▶";
+// Three plain dots, not "…": the pixel font has no ellipsis, and the fallback font makes the line taller.
+export const LOCKED_CONTINUE_TEXT = "Read the note...";
+export const READY_CONTINUE_TEXT = "Space to continue ▶";
 
 
 /**
@@ -125,7 +128,7 @@ export function renderLevel1Scene(scene, game) {
     scene.linkElement.classList.toggle("is-heralding", state.lastAttemptSucceeded === true);
     scene.linkElement.classList.toggle("has-logical-pair", countPairs(state) > 0);
     scene.linkElement.classList.toggle("is-tapped", state.lastAttemptSucceeded === false);
-    showDetectorClick(scene.linkElement, state.clickedDetector);
+    showDetectorClicks(scene.linkElement, listClickedDetectors(state));
     for (const side of Object.keys(scene.memoryOrbs)) {
         renderMemoryStack(scene.memoryOrbs[side], side, game);
     }
@@ -134,6 +137,20 @@ export function renderLevel1Scene(scene, game) {
         towerElement.classList.toggle("is-introducing-memory", isMeetingMemories);
     }
     scene.clearBannerElement.classList.toggle("is-visible", isRoundCleared(state));
+}
+
+
+/**
+ * The detectors that clicked on the last try: none, one, or both.
+ */
+function listClickedDetectors(state) {
+    if (state.hadTwoClicks) {
+        return [PLUS_DETECTOR, MINUS_DETECTOR];
+    }
+    if (state.clickedDetector === null) {
+        return [];
+    }
+    return [state.clickedDetector];
 }
 
 

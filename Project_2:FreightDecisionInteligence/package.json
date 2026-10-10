@@ -4,6 +4,6 @@
   "type": "module",
   "scripts": {
     "test": "node --test tests/web/*.test.js",
-    "serve": "python3 -m http.server 8022 --bind 127.0.0.1"
+    "serve": "../.venv-project2/bin/python tools/serve.py"
   }
 }

@@ -1,72 +1,73 @@
 /**
- * The side panel: date and time, the day's numbers, the busiest lanes today, and the three-year freight imbalance.
+ * The side panel: simulated date and time, the numbers being optimised so far this week, the fleet right now, and
+ * profit day by day.
  */
 
-import { formatDay } from "./dispatch_day.js";
+import { formatDay, formatMoney, simulationClock } from "./format.js";
 
-const BUSIEST_LANE_LIMIT = 5;
-const IMBALANCE_LIMIT = 3;
+const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+const CHART_WIDTH = 280;
+const CHART_HEIGHT = 64;
+const BAR_GAP = 6;
 
 export class PanelView {
-    constructor(documentRoot, cities, lanes) {
-        this.lanes = lanes;
-        this.dateText = documentRoot.getElementById("date");
-        this.timeText = documentRoot.getElementById("time");
-        this.loadsText = documentRoot.getElementById("stat-loads");
-        this.revenueText = documentRoot.getElementById("stat-revenue");
-        this.onRoadText = documentRoot.getElementById("stat-on-road");
-        this.equipmentText = documentRoot.getElementById("stat-equipment");
-        this.bookingText = documentRoot.getElementById("stat-booking");
-        this.busiestList = documentRoot.getElementById("busiest-lanes");
-        showImbalance(documentRoot.getElementById("senders"), documentRoot.getElementById("receivers"), cities);
+    constructor(documentRoot) {
+        this.find = (id) => documentRoot.getElementById(id);
+        this.dailyChart = this.find("daily-chart");
     }
 
-    update(year, dayOfYear, minuteOfDay, summary, busiestLanes, loadsOnRoadCount) {
-        this.dateText.textContent = formatDay(year, dayOfYear);
-        this.timeText.textContent = formatMinute(minuteOfDay);
-        this.loadsText.textContent = String(summary.loads);
-        this.revenueText.textContent = `$${summary.revenue.toLocaleString("en-US")}`;
-        this.onRoadText.textContent = String(loadsOnRoadCount);
-        this.equipmentText.textContent = `${summary.reefer} / ${summary.dryVan}`;
-        this.bookingText.textContent = `${summary.spot} spot · ${summary.contract} contract · ${summary.dedicated} dedicated`;
-        this.showBusiestLanes(busiestLanes.slice(0, BUSIEST_LANE_LIMIT));
+    update(replay, minute, metrics, fleetCounts) {
+        const clock = simulationClock(minute);
+        this.find("date").textContent = formatDay(replay.start_date, Math.min(clock.dayIndex, replay.days - 1));
+        this.find("time").textContent = clock.time;
+        this.find("metric-profit").textContent = formatMoney(metrics.profit);
+        this.find("metric-revenue").textContent = formatMoney(metrics.revenue);
+        this.find("metric-cost").textContent = formatMoney(metrics.cost);
+        this.find("metric-penalties").textContent = formatMoney(metrics.latePenalties);
+        this.find("metric-accepted").textContent = `${metrics.accepted} (${formatPercent(metrics.acceptanceRate)})`;
+        this.find("metric-declined").textContent = String(metrics.declined);
+        this.find("metric-empty").textContent = formatPercent(metrics.emptyMileShare);
+        this.find("metric-on-time").textContent = formatPercent(metrics.onTimeRate);
+        this.find("fleet-loaded").textContent = String(fleetCounts.loaded);
+        this.find("fleet-empty").textContent = String(fleetCounts.empty);
+        this.find("fleet-parked").textContent = String(fleetCounts.parked);
+        this.find("fleet-out").textContent = String(fleetCounts.outOfService);
+        this.colourDays(clock.dayIndex);
     }
 
-    showBusiestLanes(busiestLanes) {
-        const rows = busiestLanes.map((entry) => {
-            const lane = this.lanes[entry.lane];
-            return makeRow(`${lane.origin.split(",")[0]} → ${lane.destination.split(",")[0]}`, `${entry.loads}`);
+    /** Seven bars of profit per day, drawn once per run; days not yet reached stay light. */
+    showDays(replay) {
+        this.dailyChart.replaceChildren();
+        this.bars = [];
+        const largestProfit = Math.max(1, ...replay.daily.map((day) => Math.abs(day.profit)));
+        const barWidth = CHART_WIDTH / replay.daily.length - BAR_GAP;
+        replay.daily.forEach((day, index) => {
+            const barHeight = Math.max(1, (Math.abs(day.profit) / largestProfit) * (CHART_HEIGHT - 14));
+            const bar = document.createElementNS(SVG_NAMESPACE, "rect");
+            bar.setAttribute("x", String(index * (barWidth + BAR_GAP)));
+            bar.setAttribute("y", String(CHART_HEIGHT - 14 - barHeight));
+            bar.setAttribute("width", String(barWidth));
+            bar.setAttribute("height", String(barHeight));
+            const title = document.createElementNS(SVG_NAMESPACE, "title");
+            title.textContent = `${formatDay(replay.start_date, index)}: profit ${formatMoney(day.profit)}`;
+            bar.append(title);
+            const label = document.createElementNS(SVG_NAMESPACE, "text");
+            label.setAttribute("x", String(index * (barWidth + BAR_GAP) + barWidth / 2));
+            label.setAttribute("y", String(CHART_HEIGHT - 2));
+            label.setAttribute("text-anchor", "middle");
+            label.textContent = formatDay(replay.start_date, index).slice(0, 3);
+            this.dailyChart.append(bar, label);
+            this.bars.push(bar);
         });
-        this.busiestList.replaceChildren(...rows);
+    }
+
+    colourDays(currentDayIndex) {
+        this.bars?.forEach((bar, index) => {
+            bar.setAttribute("class", index <= currentDayIndex ? "day-bar day-bar-done" : "day-bar");
+        });
     }
 }
 
-/** The cities that send the most more than they receive, and the reverse, over 2022–2024. */
-function showImbalance(sendersList, receiversList, cities) {
-    const byNetLoads = [...cities].sort((first, second) => netLoads(second) - netLoads(first));
-    const senders = byNetLoads.slice(0, IMBALANCE_LIMIT);
-    const receivers = byNetLoads.slice(-IMBALANCE_LIMIT).reverse();
-    sendersList.replaceChildren(...senders.map((city) => makeRow(city.name, `+${netLoads(city).toLocaleString("en-US")}`)));
-    receiversList.replaceChildren(...receivers.map((city) => makeRow(city.name, netLoads(city).toLocaleString("en-US"))));
-}
-
-function netLoads(city) {
-    return city.outbound - city.inbound;
-}
-
-function makeRow(label, value) {
-    const row = document.createElement("li");
-    const labelText = document.createElement("span");
-    labelText.textContent = label;
-    const valueText = document.createElement("span");
-    valueText.className = "row-value";
-    valueText.textContent = value;
-    row.append(labelText, valueText);
-    return row;
-}
-
-function formatMinute(minuteOfDay) {
-    const hours = Math.floor(minuteOfDay / 60);
-    const minutes = Math.floor(minuteOfDay % 60);
-    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+function formatPercent(fraction) {
+    return `${(fraction * 100).toFixed(1)}%`;
 }

@@ -10,26 +10,42 @@
 <body>
     <header class="topbar">
         <h1>Truckload Dispatch</h1>
+        <div class="run-controls">
+            <label class="field-inline">
+                <span class="field-label">Week of</span>
+                <input id="week-input" type="date" min="2022-01-03" max="2024-12-23" value="2022-03-07">
+            </label>
+            <label class="field-inline">
+                <span class="field-label">Policy</span>
+                <select id="policy-select">
+                    <option value="greedy">Greedy: nearest free truck</option>
+                </select>
+            </label>
+            <label class="field-inline">
+                <span class="field-label">Seed</span>
+                <input id="seed-input" class="seed-input" type="number" min="1" max="9999" value="1">
+            </label>
+            <button id="simulate-button" class="primary-button" type="button">Simulate week</button>
+        </div>
     </header>
+    <p id="run-status" class="run-status" aria-live="polite"></p>
 
     <main class="layout">
-        <section class="map-area" aria-label="US lane map">
-            <div id="map" class="map-frame" role="region" aria-label="Map of US lanes, cities and loads on the road"></div>
+        <section class="map-area" aria-label="US dispatch map">
+            <div id="map" class="map-frame" role="region" aria-label="Map of US lanes, cities and trucks"></div>
             <ul class="legend" aria-label="Legend">
-                <li><span class="legend-line"></span>Lane on real roads, width = 3-year volume</li>
-                <li><span class="legend-marker legend-marker-reefer"></span>Reefer load on the road</li>
-                <li><span class="legend-marker legend-marker-dry"></span>Dry van load on the road</li>
-                <li><span class="legend-city legend-city-sender"></span>City sends more than it receives</li>
-                <li><span class="legend-city legend-city-receiver"></span>Receives more</li>
+                <li><span class="swatch swatch-loaded"></span>Loaded</li>
+                <li><span class="swatch swatch-empty"></span>Driving empty</li>
+                <li><span class="swatch swatch-parked"></span>Parked</li>
+                <li><span class="swatch swatch-out"></span>Out of service</li>
+                <li><span class="legend-city legend-city-sends"></span>City sends more freight</li>
+                <li><span class="legend-city legend-city-receives"></span>Receives more</li>
+                <li><span class="legend-line"></span>Lane (real roads)</li>
             </ul>
             <div class="controls">
-                <label class="field-inline">
-                    <span class="field-label">Date</span>
-                    <input id="date-input" type="date" min="2022-01-01" max="2024-12-31" value="2022-03-01">
-                </label>
-                <button id="play-button" class="play-button" type="button">Pause</button>
-                <input id="time-slider" class="time-slider" type="range" min="0" max="1439" step="1" value="0"
-                       aria-label="Time of day">
+                <button id="play-button" class="primary-button" type="button">Play</button>
+                <input id="time-slider" class="time-slider" type="range" min="0" max="10080" step="1" value="0"
+                       aria-label="Time in the simulated week">
                 <label class="field-inline">
                     <span class="field-label">Speed</span>
                     <select id="speed-select" aria-label="Playback speed">
@@ -42,34 +58,63 @@
             </div>
         </section>
 
-        <aside class="panel" aria-label="The day in numbers">
+        <aside class="panel" aria-label="This week so far">
             <div>
                 <p id="date" class="date">—</p>
                 <p id="time" class="time">00:00</p>
             </div>
-            <dl class="stats">
-                <div class="stat"><dt>Loads tendered today</dt><dd id="stat-loads">0</dd></div>
-                <div class="stat"><dt>Revenue today</dt><dd id="stat-revenue">$0</dd></div>
-                <div class="stat"><dt>On the road now</dt><dd id="stat-on-road">0</dd></div>
-                <div class="stat"><dt>Reefer / dry van</dt><dd id="stat-equipment">0 / 0</dd></div>
-            </dl>
-            <p id="stat-booking" class="booking"></p>
             <section class="panel-section">
-                <h2>Busiest lanes today</h2>
-                <ol id="busiest-lanes" class="rows"></ol>
+                <h2>This week so far</h2>
+                <table class="metrics-table">
+                    <tbody>
+                        <tr class="metrics-total"><th scope="row">Profit</th><td id="metric-profit">$0</td></tr>
+                        <tr><th scope="row">Revenue</th><td id="metric-revenue">$0</td></tr>
+                        <tr><th scope="row">Cost (fuel, driver, truck)</th><td id="metric-cost">$0</td></tr>
+                        <tr><th scope="row">Late penalties</th><td id="metric-penalties">$0</td></tr>
+                        <tr><th scope="row">Loads accepted</th><td id="metric-accepted">0</td></tr>
+                        <tr><th scope="row">Loads declined</th><td id="metric-declined">0</td></tr>
+                        <tr><th scope="row">Empty miles</th><td id="metric-empty">0%</td></tr>
+                        <tr><th scope="row">On-time pickups</th><td id="metric-on-time">0%</td></tr>
+                    </tbody>
+                </table>
             </section>
             <section class="panel-section">
-                <h2>Freight imbalance, 2022–2024 (loads out − in)</h2>
-                <ol id="senders" class="rows"></ol>
-                <ol id="receivers" class="rows rows-after"></ol>
+                <h2>Fleet now</h2>
+                <table class="metrics-table">
+                    <tbody>
+                        <tr><th scope="row"><span class="swatch swatch-loaded"></span>Loaded</th><td id="fleet-loaded">0</td></tr>
+                        <tr><th scope="row"><span class="swatch swatch-empty"></span>Driving empty</th><td id="fleet-empty">0</td></tr>
+                        <tr><th scope="row"><span class="swatch swatch-parked"></span>Parked, ready</th><td id="fleet-parked">0</td></tr>
+                        <tr><th scope="row"><span class="swatch swatch-out"></span>Out of service</th><td id="fleet-out">0</td></tr>
+                    </tbody>
+                </table>
+            </section>
+            <section class="panel-section">
+                <h2>Profit by day</h2>
+                <svg id="daily-chart" class="daily-chart" viewBox="0 0 280 64" role="img"
+                     aria-label="Profit for each day of the simulated week"></svg>
             </section>
         </aside>
     </main>
 
+    <section class="timeline" aria-labelledby="timeline-title">
+        <div class="timeline-header">
+            <h2 id="timeline-title">Event timeline</h2>
+            <span id="timeline-count" class="note"></span>
+            <div class="filters" role="group" aria-label="Show">
+                <button type="button" data-filter="decisions" aria-pressed="true">Decisions</button>
+                <button type="button" data-filter="moves" aria-pressed="false">Truck moves</button>
+                <button type="button" data-filter="tenders" aria-pressed="false">Tenders</button>
+                <button type="button" data-filter="all" aria-pressed="false">All</button>
+            </div>
+        </div>
+        <ol id="timeline-list" class="timeline-list"></ol>
+    </section>
+
     <footer class="footer">
         <p>Loads: <a href="https://www.kaggle.com/datasets/yogape/logistics-operations-database">Logistics Operations
-            Database</a> (synthetic, MIT). Map and routes © OpenStreetMap contributors (ODbL), routed with OSRM.
-            This effort is supported by Qollab &amp; IonQ.</p>
+            Database</a> (synthetic, MIT); tender times are simulated. Map and routes © OpenStreetMap contributors
+            (ODbL), routed with OSRM. This effort is supported by Qollab &amp; IonQ.</p>
     </footer>
 
     <script type="module" src="main.js"></script>

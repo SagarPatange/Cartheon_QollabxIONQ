@@ -20,7 +20,7 @@
     <script type="module" src="src/level1/level1_main.js"></script>
 </head>
 <body class="level1-page">
-    <header class="hud">
+    <header id="hud" class="hud">
         <div class="hud-item"><span class="hud-label">TRIES</span><span id="hud-tries">000</span></div>
         <div class="hud-item"><span class="hud-label">WORLD</span><span>1-1</span></div>
         <div class="hud-item"><span class="hud-label">Ψ+ PAIRS</span><span id="hud-pairs">0/3</span></div>
@@ -35,14 +35,16 @@
             <button id="settings-close" class="link-settings-close" type="button" aria-label="Close settings"
                     title="Close (Esc)">×</button>
         </div>
-        <div id="settings-tour" class="settings-tour" hidden>
-            <p id="settings-tour-text" class="settings-tour-text"></p>
-            <p id="settings-tour-continue" class="settings-tour-continue"></p>
-        </div>
         <div id="settings-rows" class="link-settings-rows"></div>
         <p id="settings-summary" class="link-settings-summary"></p>
         <p class="link-settings-hint">The game is paused. Esc closes.</p>
     </aside>
+
+    <div id="tour-backdrop" class="tour-backdrop" hidden></div>
+    <div id="settings-tour" class="settings-tour" role="status" hidden>
+        <p id="settings-tour-text" class="settings-tour-text"></p>
+        <p id="settings-tour-continue" class="settings-tour-continue"></p>
+    </div>
 
     <main id="world" class="world">
         <div class="cloud cloud-one"></div>
@@ -52,7 +54,6 @@
         <div class="sky-panel">
             <p id="status-banner" class="sky-status">Fill all 3 memory slots with Bell pairs!</p>
             <p id="story-prompt" class="story-prompt" aria-live="polite" hidden></p>
-            <p id="key-hints" class="key-hints" aria-live="polite"></p>
             <p id="pause-badge" class="pause-badge" hidden>PAUSED</p>
         </div>
         <div id="track-scroller" class="track-scroller">

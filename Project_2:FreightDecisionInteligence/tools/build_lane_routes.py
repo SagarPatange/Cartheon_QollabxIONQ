@@ -1,9 +1,11 @@
-"""Fetch the real road path of every lane from OSRM and save it, simplified, for the dispatch map.
+"""Fetch the real road path between every pair of lane cities from OSRM and save it, simplified, for the map.
+
+Every pair is fetched, not only the 53 pairs with lanes, because trucks can drive empty between any two cities.
 
 Run from the project folder, after tools/build_dispatch_map_data.py:
     python tools/build_lane_routes.py
 
-Reads data/dispatch_map/lanes.json and cities.json. Writes data/osm_routes/lane_routes.json.
+Reads data/dispatch_map/cities.json. Writes data/osm_routes/lane_routes.json.
 
 Paths come from the public OSRM demo server (https://router.project-osrm.org), which routes on OpenStreetMap data.
 Its usage policy allows light use at no more than one request per second, so the script waits between requests.
@@ -26,6 +28,16 @@ METERS_PER_MILE = 1609.344
 SECONDS_PER_HOUR = 3600
 # About 1 km at US latitudes: invisible at the zoom levels a national map uses, and keeps the file small.
 SIMPLIFY_TOLERANCE_DEGREES = 0.01
+
+
+def find_all_city_pairs(cities: list[str]) -> list[tuple[str, str]]:
+    """Every pair of distinct cities once, alphabetically."""
+    ordered_cities = sorted(cities)
+    pairs = []
+    for first_index, first_city in enumerate(ordered_cities):
+        for second_city in ordered_cities[first_index + 1:]:
+            pairs.append((first_city, second_city))
+    return pairs
 
 
 def find_city_pairs(lanes: list[dict]) -> list[tuple[str, str]]:
@@ -93,11 +105,10 @@ def fetch_osrm_route(start: dict, end: dict) -> dict:
 
 
 def main() -> None:
-    lanes = json.loads((MAP_FOLDER / "lanes.json").read_text())
     cities = json.loads((MAP_FOLDER / "cities.json").read_text())
     city_by_label = {f"{city['name']}, {city['state']}": city for city in cities}
     routes = []
-    for first_label, second_label in find_city_pairs(lanes):
+    for first_label, second_label in find_all_city_pairs(list(city_by_label)):
         route = fetch_osrm_route(city_by_label[first_label], city_by_label[second_label])
         routes.append({
             "cities": [first_label, second_label],

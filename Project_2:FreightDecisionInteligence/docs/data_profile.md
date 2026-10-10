@@ -37,6 +37,17 @@ drivers based at 24 home terminals.
   receives 8,948 more loads than it sends over three years; Indianapolis 5,810, Denver 4,358. Columbus, Phoenix and
   Chicago send about 4,400–4,650 more than they receive.
 
+## Network coverage
+
+- The 20 cities allow 380 one-way lanes; the data has **58** (53 of the 190 city pairs, in either direction).
+  Los Angeles ↔ Portland, for example, does not exist.
+- **Dead-end cities:** Los Angeles (6 lanes in, none out) and Indianapolis (4 in, none out) never send freight;
+  Phoenix (3 out, none in) never receives any. A truck that delivers in Los Angeles or Indianapolis can only leave
+  empty.
+- **Decision (2026-10-10): keep the network as the data has it.** No city or lane is removed and no synthetic
+  freight is added. Trucks may still drive empty between any two cities, so dead ends become a repositioning cost
+  for the dispatch policy, not a place a truck gets stuck.
+
 ## What looks generated (do not model from these)
 
 - **No seasonality or weekly rhythm:** every calendar month has 6,582–7,339 loads, and Saturday and Sunday are as
