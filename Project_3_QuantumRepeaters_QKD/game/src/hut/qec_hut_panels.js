@@ -65,7 +65,7 @@ export const QEC_PANELS = [
         lines: [
             "Start with 7 qubits in |0⟩. H on q1, q2 and q4, then 9 CNOTs.",
             "Each H qubit spreads along its check, so the block lands in |0̄⟩.",
-            "This is exactly the circuit Level 3's simulator runs.",
+            "In Level 3 you build this circuit yourself, CNOT by CNOT.",
         ],
     },
     {
@@ -90,9 +90,9 @@ export const QEC_PANELS = [
         heading: "To the game!",
         picture: "toGame",
         lines: [
-            "In Level 3 you and Luigi each hold a Steane block of 7 qubits.",
-            "Herald 7 Bell pairs and encode both blocks.",
-            "A teleported CNOT uses up the 7 pairs and leaves one logical Bell pair. One bad qubit? Steane fixes it.",
+            "Level 3: build a Steane block yourself, then find and fix its errors.",
+            "Level 4: a teleported CNOT links Mario's qubit to Luigi's through a Bell pair.",
+            "Level 5: all together: 7 Bell pairs and two blocks make one logical Bell pair.",
         ],
     },
 ];

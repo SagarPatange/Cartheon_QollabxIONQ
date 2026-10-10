@@ -173,8 +173,8 @@ function buildBridge(bridge) {
 
 
 /**
- * The far end of Level 4: telecom towers (on small islets out at sea), the QKD fiber strung between them, a sign,
- * Peach and her castle. All decoration: the Level 4 stop's own label says where it goes.
+ * The far end of the last level: telecom towers (on small islets out at sea), the QKD fiber strung between them, a sign,
+ * Peach and her castle. All decoration: the last level's stop says where it goes.
  */
 function buildPeachEnd(canvasElement) {
     const centreY = (QKD_LINK.tileY + 0.5) * TILE_SIZE_PX;
@@ -242,7 +242,7 @@ function findPulseArrivalSeconds(distanceAlongPx) {
 
 
 /**
- * The QKD fiber from the tower on Level 4's island to the one on Peach's, at the height of the towers' crossarms: a
+ * The QKD fiber from the tower on the last level's island to the one on Peach's, at the height of the towers' crossarms: a
  * thick cable with a bright core. Photon pulses run along it (CSS) to Peach, one after another, to show the key
  * being shared.
  *

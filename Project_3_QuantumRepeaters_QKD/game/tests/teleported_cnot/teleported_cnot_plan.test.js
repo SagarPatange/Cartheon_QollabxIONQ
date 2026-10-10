@@ -1,5 +1,6 @@
 /**
- * Tests for src/teleported_cnot/teleported_cnot_plan.js: Level 4's rounds, the Fig. 4 circuit, and how fixes are judged.
+ * Tests for src/teleported_cnot/teleported_cnot_plan.js: Level 4's rounds, the Fig. 4 circuit, and how fixes are
+ * judged.
  */
 
 import { test } from "node:test";
@@ -96,7 +97,7 @@ test("round 2 needs ZZ and XX at +1; each broken parity names the fix behind it"
 });
 
 
-test("the block steps read the backend's bits: the X and Z fixes go where m and n are 1, the syndrome names the hit", () => {
+test("the block steps read the backend's bits: fixes go where m and n are 1, the syndrome names the hit", () => {
     assert.equal(listSetPositions([0, 1, 1, 0, 1, 0, 0]), "q2, q3, q5");
     assert.equal(listSetPositions([0, 0, 0]), "none");
     assert.match(describeBlockStep("luigi", BAD_BLOCK), /q2, q3, q5/);
@@ -110,7 +111,7 @@ test("the block steps read the backend's bits: the X and Z fixes go where m and 
 
 test("the key hints offer the two fixes while choosing, and Next round or Finish at the end of a round", () => {
     const chooseHints = listKeyHints({ stepId: "choose", isLastRound: false }).map((hint) => hint.key);
-    assert.deepEqual(chooseHints, ["X", "Z", "Space", "R"]);
+    assert.deepEqual(chooseHints, ["X", "Z", "Enter", "R"]);
     assert.equal(listKeyHints({ stepId: "done", isLastRound: true })[0].action, "Finish");
     assert.equal(listKeyHints({ stepId: "mario", isLastRound: false })[0].action, "Mario: 7 CNOTs");
 });

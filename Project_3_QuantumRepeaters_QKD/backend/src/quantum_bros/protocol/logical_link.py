@@ -1,4 +1,4 @@
-"""Level 2: one logical Steane Bell pair Φ̄⁺ between two neighbouring nodes, Alice and Bob (docs/qre_cec_protocol.md,
+"""Level 5: one logical Steane Bell pair Φ̄⁺ between two neighbouring nodes, Alice and Bob (docs/qre_cec_protocol.md,
 phases 1-3). There is no repeater in between, so no encoded swapping and no Pauli frame.
 
 1. Barrett–Kok heralding makes 7 physical Φ⁺ pairs on the communication qubits.

@@ -103,7 +103,7 @@ def run_send(request: SendRequest, seed: int) -> SendResponse:
 
 @app.post("/api/logical-pair")
 def make_logical_pair(request: LogicalPairRequest) -> LogicalPairResponse:
-    """Level 2: run one Alice–Bob logical Bell pair and return every click and bit for the page to animate."""
+    """Level 5: run one Alice–Bob logical Bell pair and return every click and bit for the page to animate."""
     seed = request.seed
     if seed is None:
         seed = random.randrange(MAX_SEED + 1)

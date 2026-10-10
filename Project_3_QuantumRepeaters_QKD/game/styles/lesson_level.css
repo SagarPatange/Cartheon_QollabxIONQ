@@ -110,6 +110,16 @@
     margin: 0;
 }
 
+/* A mistake (Level 3's wrong CNOT): the message and its box turn red. The text starts with "Wrong", so it is not
+   colour alone. */
+.lesson-message-text.is-error {
+    color: var(--error-red);
+}
+
+.lesson-message:has(.lesson-message-text.is-error) {
+    border-color: var(--error-red);
+}
+
 /* The page's title is in the HUD and the goal line; the heading stays for screen readers, out of sight. */
 .lesson-page-title {
     position: absolute;

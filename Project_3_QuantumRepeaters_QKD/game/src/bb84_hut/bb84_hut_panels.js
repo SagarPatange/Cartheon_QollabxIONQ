@@ -155,7 +155,7 @@ export const BB84_PANELS = [
         lines: [
             "So Alice and Bob compare a random sample of kept bits in public, then throw those away.",
             `Near 0% errors: the key is safe. Near ${INTERCEPT_ERROR_PERCENT}%: someone listened!`,
-            "You'll need this in Level 4, to send Peach her secret message.",
+            "You'll need this in Level 6, to send Peach her secret message.",
         ],
     },
     {

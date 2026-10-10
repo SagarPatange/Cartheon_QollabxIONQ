@@ -41,18 +41,48 @@ test("a CNOT can target any qubit but its control, and the cursor wraps round", 
 
 
 test("a round is complete when its circle holds and the earlier circles still do", () => {
-    assert.equal(judgeBuildRound({ x_checks: [1, 0, 0] }, 0, 3).isComplete, true);
-    assert.equal(judgeBuildRound({ x_checks: [0, 0, 0] }, 0, 1).isComplete, false);
-    const broken = judgeBuildRound({ x_checks: [0, 1, 0] }, 1, 3);
+    assert.equal(judgeBuildRound({ x_checks: [1, 0, 0] }, 0, [5, 6, 7]).isComplete, true);
+    assert.equal(judgeBuildRound({ x_checks: [0, 0, 0] }, 0, [5]).isComplete, false);
+    const broken = judgeBuildRound({ x_checks: [0, 1, 0] }, 1, [3, 6, 7]);
     assert.equal(broken.isComplete, false);
     assert.deepEqual(broken.brokenCheckIndices, [0]);
     assert.match(broken.message, /broke circle 4567/);
 });
 
 
-test("three CNOTs that leave the circle random point at a wrong target; fewer just ask for more", () => {
-    assert.match(judgeBuildRound({ x_checks: [0, 0, 0] }, 0, 3).message, /outside it/);
-    assert.match(judgeBuildRound({ x_checks: [0, 0, 0] }, 0, 1).message, /every other qubit/);
+test("a CNOT onto a qubit outside the round's circle is wrong at once, and says which qubits are right", () => {
+    const judgement = judgeBuildRound({ x_checks: [1, 0, 0] }, 1, [1]);
+    assert.equal(judgement.isWrong, true);
+    assert.equal(judgement.isComplete, false);
+    assert.equal(judgement.wrongTargetIndex, 0);
+    assert.match(judgement.message, /q1 is not in circle 2367/);
+    assert.match(judgement.message, /q3, q6 and q7/);
+    assert.match(judgement.message, /Backspace/);
+});
+
+
+// q1 is |+⟩ at this point, so CNOT q2 → q1 changes nothing the checks can see; the rule still catches it.
+test("a wrong CNOT keeps the round open even when the checks read fine", () => {
+    const judgement = judgeBuildRound({ x_checks: [1, 1, 0] }, 1, [3, 1, 6, 7]);
+    assert.equal(judgement.isComplete, false);
+    assert.equal(judgement.isWrong, true);
+    assert.equal(judgement.wrongTargetIndex, 1);
+});
+
+
+test("a second CNOT onto the same qubit is wrong too: it cancels the first", () => {
+    const judgement = judgeBuildRound({ x_checks: [0, 0, 0] }, 0, [5, 5]);
+    assert.equal(judgement.isWrong, true);
+    assert.equal(judgement.wrongTargetIndex, 1);
+    assert.match(judgement.message, /q5 already has a CNOT from q4/);
+});
+
+
+test("right CNOTs that don't finish the circle yet just ask for more", () => {
+    const judgement = judgeBuildRound({ x_checks: [0, 0, 0] }, 0, [5]);
+    assert.equal(judgement.isWrong, false);
+    assert.equal(judgement.wrongTargetIndex, null);
+    assert.match(judgement.message, /every other qubit/);
 });
 
 
@@ -68,6 +98,15 @@ test("the circuit shows the H column, the CNOTs, the dashed ghost, then the pape
     const checkControls = circuit.columns.slice(3, 6).map((column) => column[0].control);
     assert.deepEqual(checkControls, VERIFICATION_POSITIONS.map((position) => `q${position}`));
     assert.deepEqual(circuit.columns.at(-1), [{ gate: "measure", wire: ANCILLA_WIRE_ID, basis: "Z" }]);
+});
+
+
+test("the wrong CNOT is drawn in the wrong look; the others are drawn plainly", () => {
+    const circuit = buildEncoderCircuit({
+        hasHadamards: true, cnots: [[4, 5], [4, 3]], ghost: null, hasVerification: false, wrongCnotIndex: 1,
+    });
+    assert.equal(circuit.columns[1][0].look, undefined);
+    assert.equal(circuit.columns[2][0].look, "wrong");
 });
 
 
@@ -109,10 +148,12 @@ test("fix names match the backend's table, and clean checks are counted", () => 
 });
 
 
-test("the key hints name the CNOT under the cursor and the fix about to be applied", () => {
+test("the key hints name the CNOT under the cursor and the fix about to be applied, both on Enter", () => {
     const buildHints = listKeyHints({ phase: BUILD_PHASE, roundIndex: 0, roundCnotCount: 0, cursorTarget: 5 });
-    assert.ok(buildHints.some((hint) => hint.action === "CNOT q4 → q5"));
+    assert.ok(buildHints.some((hint) => hint.key === "Enter" && hint.action === "CNOT q4 → q5"));
     assert.ok(!buildHints.some((hint) => hint.action === "Undo"));
+    assert.ok(!buildHints.some((hint) => hint.key === "Space"));
     const pickHints = listKeyHints({ phase: PICK_PHASE, fixPauli: "Z", fixPosition: 3 });
-    assert.ok(pickHints.some((hint) => hint.action === "Z on q3"));
+    assert.ok(pickHints.some((hint) => hint.key === "Enter" && hint.action === "Z on q3"));
+    assert.ok(!pickHints.some((hint) => hint.key === "Space"));
 });

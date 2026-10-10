@@ -92,16 +92,65 @@ export function nameCheck(checkPositions) {
 
 
 /**
- * What the build round's checks say after the backend's latest answer.
+ * The round's first wrong CNOT, by the round's rule: from its qubit onto each other qubit of its circle, once each.
+ * A rule, not a reading: CNOT q2 → q1 is wrong though q1 is |+⟩ and the CNOT changes nothing the checks can see.
+ *
+ * @param {number} roundIndex - 0, 1 or 2.
+ * @param {number[]} roundTargets - the targets of this round's CNOTs, in the order placed.
+ * @returns {{index: number, message: string} | null} index into roundTargets, or null when every CNOT is right.
+ */
+export function findWrongCnot(roundIndex, roundTargets) {
+    const round = listBuildRounds()[roundIndex];
+    const checkName = nameCheck(round.checkPositions);
+    const rightTargets = round.checkPositions.filter((position) => position !== round.control);
+    for (let i = 0; i < roundTargets.length; i++) {
+        const target = roundTargets[i];
+        if (!rightTargets.includes(target)) {
+            const rightText = listQubitNames(rightTargets);
+            const message = `Wrong circle: q${target} is not in circle ${checkName}. q${round.control} spreads only to`
+                + ` ${rightText}. Backspace undoes it.`;
+            return { index: i, message };
+        }
+        if (roundTargets.indexOf(target) < i) {
+            const message = `Wrong: q${target} already has a CNOT from q${round.control}, and a second one cancels it.`
+                + " Backspace undoes it.";
+            return { index: i, message };
+        }
+    }
+    return null;
+}
+
+
+/**
+ * Qubit names in words: "q3, q6 and q7".
+ */
+function listQubitNames(positions) {
+    const names = positions.map((position) => `q${position}`);
+    return `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
+}
+
+
+/**
+ * What the build round's checks say after the backend's latest answer. A wrong CNOT comes first: the round stays
+ * open until it is undone, whatever the checks read.
  *
  * @param {{x_checks: number[]}} report - the /api/steane-block response.
  * @param {number} roundIndex - 0, 1 or 2.
- * @param {number} roundCnotCount - CNOTs placed in this round so far.
- * @returns {{isComplete: boolean, brokenCheckIndices: number[], message: string}}
+ * @param {number[]} roundTargets - the targets of this round's CNOTs so far, in the order placed.
+ * @returns {{isComplete: boolean, isWrong: boolean, wrongTargetIndex: number | null, brokenCheckIndices: number[],
+ *     message: string}}
  */
-export function judgeBuildRound(report, roundIndex, roundCnotCount) {
+export function judgeBuildRound(report, roundIndex, roundTargets) {
     const rounds = listBuildRounds();
     const round = rounds[roundIndex];
+    const wrongCnot = findWrongCnot(roundIndex, roundTargets);
+    if (wrongCnot !== null) {
+        return {
+            isComplete: false, isWrong: true, wrongTargetIndex: wrongCnot.index, brokenCheckIndices: [],
+            message: wrongCnot.message,
+        };
+    }
+    const rightJudgement = { isWrong: false, wrongTargetIndex: null };
     const brokenCheckIndices = [];
     for (let i = 0; i < roundIndex; i++) {
         if (report.x_checks[i] !== 1) {
@@ -113,18 +162,15 @@ export function judgeBuildRound(report, roundIndex, roundCnotCount) {
     const checkName = nameCheck(round.checkPositions);
     if (brokenCheckIndices.length > 0) {
         const brokenNames = brokenCheckIndices.map((i) => nameCheck(rounds[i].checkPositions)).join(" and ");
-        return { isComplete, brokenCheckIndices, message: `That broke circle ${brokenNames}. Backspace undoes it.` };
+        const message = `That broke circle ${brokenNames}. Backspace undoes it.`;
+        return { ...rightJudgement, isComplete, brokenCheckIndices, message };
     }
     if (isComplete) {
-        return { isComplete, brokenCheckIndices, message: `Circle ${checkName} holds: X${checkName} now reads +1!` };
-    }
-    const neededCount = round.checkPositions.length - 1;
-    if (roundCnotCount >= neededCount) {
-        const message = `Circle ${checkName} is still random (?): a CNOT went to a qubit outside it. Backspace undoes.`;
-        return { isComplete, brokenCheckIndices, message };
+        const message = `Circle ${checkName} holds: X${checkName} now reads +1!`;
+        return { ...rightJudgement, isComplete, brokenCheckIndices, message };
     }
     const message = `Circle ${checkName} still reads ? (random). q${round.control} must reach every other qubit in it.`;
-    return { isComplete, brokenCheckIndices, message };
+    return { ...rightJudgement, isComplete, brokenCheckIndices, message };
 }
 
 
@@ -160,11 +206,11 @@ export function describeVerification(verificationBit) {
 
 
 /**
- * The circuit to draw: q1-q7 from |0⟩, the H column, the player's CNOTs, the cursor's ghost CNOT, and the ancilla
- * check once it has run.
+ * The circuit to draw: q1-q7 from |0⟩, the H column, the player's CNOTs (a wrong one in red), the cursor's ghost
+ * CNOT, and the ancilla check once it has run.
  *
  * @param {{hasHadamards: boolean, cnots: number[][], ghost: {control: number, target: number} | null,
- *     hasVerification: boolean}} buildState
+ *     hasVerification: boolean, wrongCnotIndex?: number | null}} buildState - wrongCnotIndex indexes cnots.
  * @returns {{wires: object[], columns: object[][]}}
  */
 export function buildEncoderCircuit(buildState) {
@@ -176,8 +222,10 @@ export function buildEncoderCircuit(buildState) {
     if (buildState.hasHadamards) {
         columns.push(HADAMARD_POSITIONS.map((position) => ({ gate: "h", wire: findWireId(position) })));
     }
-    for (const [control, target] of buildState.cnots) {
-        columns.push([{ gate: "cnot", control: findWireId(control), target: findWireId(target) }]);
+    for (let i = 0; i < buildState.cnots.length; i++) {
+        const [control, target] = buildState.cnots[i];
+        const cnot = { gate: "cnot", control: findWireId(control), target: findWireId(target) };
+        columns.push([i === buildState.wrongCnotIndex ? { ...cnot, look: "wrong" } : cnot]);
     }
     if (buildState.ghost !== null) {
         const ghost = buildState.ghost;
@@ -331,7 +379,7 @@ export function listKeyHints(view) {
     if (view.phase === BUILD_PHASE) {
         const control = rounds[view.roundIndex].control;
         const placeAction = `CNOT q${control} → q${view.cursorTarget}`;
-        const hints = [{ key: "↑↓", action: "Pick target" }, { key: "Space", action: placeAction }];
+        const hints = [{ key: "↑↓", action: "Pick target" }, { key: "Enter", action: placeAction }];
         if (view.roundCnotCount > 0) {
             hints.push({ key: "Bksp", action: "Undo" });
         }
@@ -349,7 +397,7 @@ export function listKeyHints(view) {
     if (view.phase === PICK_PHASE) {
         return [
             { key: "↑↓", action: "Pick qubit" }, { key: "←→", action: "Pick fix" },
-            { key: "Space", action: `${view.fixPauli} on q${view.fixPosition}` }, restartHint,
+            { key: "Enter", action: `${view.fixPauli} on q${view.fixPosition}` }, restartHint,
         ];
     }
     return [{ key: "Space", action: spaceActions[view.phase]() }, restartHint];

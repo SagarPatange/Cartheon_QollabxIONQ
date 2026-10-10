@@ -16,11 +16,14 @@ error-correcting code, carry it across a chain of repeaters, and turn it into a 
 1. [Play in one minute](#play-in-one-minute)
 2. [The big picture](#the-big-picture)
 3. [Level 1: Heralded entanglement](#level-1-heralded-entanglement)
-4. [Toad's hut: The Steane code](#toads-hut-the-steane-code)
-5. [Level 2: A logical Bell pair](#level-2-a-logical-bell-pair)
-6. [Level 3: A secret key across a repeater chain](#level-3-a-secret-key-across-a-repeater-chain)
-7. [References](#references)
-8. [Disclosures](#disclosures)
+4. [Level 2: Teleportation](#level-2-teleportation)
+5. [Toad's hut: The Steane code](#toads-hut-the-steane-code)
+6. [Level 3: Build a Steane block](#level-3-build-a-steane-block)
+7. [Level 4: The teleported CNOT](#level-4-the-teleported-cnot)
+8. [Level 5: A logical Bell pair](#level-5-a-logical-bell-pair)
+9. [Level 6: A secret key across a repeater chain](#level-6-a-secret-key-across-a-repeater-chain)
+10. [References](#references)
+11. [Disclosures](#disclosures)
 
 ---
 
@@ -32,8 +35,9 @@ npm run backend
 ```
 
 Open **http://localhost:8001**. Walk the map with the arrow keys (or W A S D) and press Enter on a level. Every
-level types its goal in the sky and shows, under it, the keys that work right now. Levels 2 and 3 run their quantum
-circuits on a Stim stabilizer simulator [11] in the backend; the page plays back what the simulator did.
+level types its goal in the sky and shows, under it, the keys that work right now: **Space** moves a level on, and
+where you pick something (a gate, a fix) **Enter** confirms it. Levels 2 to 6 run their quantum circuits on a Stim
+stabilizer simulator [11] in the backend; the page plays back what the simulator did.
 
 ---
 
@@ -56,11 +60,13 @@ The protocol has five phases, and the game teaches them in order:
 
 | Phase | What happens | Level |
 |---|---|---|
-| 1 | Heralded entanglement: physical Bell pairs between neighbours (Barrett–Kok) [3] | 1, 2 |
-| 2 | Fault-tolerant encoding into Steane blocks (Paetznick–Reichardt encoder, Goto check) [4–6] | Hut, 2 |
-| 3 | Transversal teleported CNOT: turns 7 physical pairs into one logical Bell pair [7] | 2 |
-| 4 | Encoded swapping with classical error correction at each repeater [2] | 3 |
-| 5 | One Pauli-frame correction at the end of the chain [2] | 3 |
+| 1 | Heralded entanglement: physical Bell pairs between neighbours (Barrett–Kok) [3] | 1, 5 |
+| 2 | Fault-tolerant encoding into Steane blocks (Paetznick–Reichardt encoder, Goto check) [4–6] | Hut, 3, 5 |
+| 3 | Transversal teleported CNOT: turns 7 physical pairs into one logical Bell pair [7] | 4, 5 |
+| 4 | Encoded swapping with classical error correction at each repeater [2] | 6 |
+| 5 | One Pauli-frame correction at the end of the chain [2] | 6 |
+
+Level 2 (teleportation) is not a phase of its own: it teaches the trick that phase 3 is built on.
 
 ![Fig. 2 of [1]: the five phases of QRE-CEC](docs/images/paper-fig2-qre-cec-phases.png)
 
@@ -135,7 +141,7 @@ why QRE-CEC uses Barrett–Kok for its physical pairs [1].
 
 **In the game.** Level 1 shows one click per try, and its settings panel computes the chance that both photons
 arrive, $(\eta_d\,10^{-\alpha L/20})^2$: about **32 %** for $\eta_d = 90\,\%$, $\alpha = 0.2$ dB/km and
-$L = 20$ km. Level 2 runs the full two-round protocol. The first click pauses the game to explain the beam splitter.
+$L = 20$ km. Level 5 runs the full two-round protocol. The first click pauses the game to explain the beam splitter.
 
 ### 5. Decoherence
 
@@ -144,7 +150,14 @@ A stored qubit slowly leaks its state into its surroundings. The game gives ever
 coherence gradually, on a time scale $T_2$. A link is useful only if pairs can be made faster than they decay, which
 is why distance, detector efficiency and memory lifetime all appear in the settings.
 
-### 6. Teleportation
+---
+
+## Level 2: Teleportation
+
+**You play:** Mario and Luigi share 3 Bell pairs from Level 1. **Space** makes Mario's Bell measurement, his two
+bits ride a pipe to Luigi, and you set Luigi's fix with **X** and **Z** and confirm it with **Enter**. A tutorial
+teleports $\lvert 1\rangle$ and then $\lvert +\rangle$, with a short lesson at each step (**B** goes back over
+them); then Mario teleports the word "HI" to Luigi, bit by bit.
 
 A Bell pair lets Mario send a qubit without sending the qubit itself. Writing Mario's message qubit
 $\lvert\psi\rangle$ next to a shared pair,
@@ -159,7 +172,7 @@ the two classical bits alone say nothing about $\lvert\psi\rangle$.
 
 ## Toad's hut: The Steane code
 
-Toad's hut is where the game explains why qubits need protecting. The code behind Levels 2 and 3 is the
+Toad's hut is where the game explains why qubits need protecting. The code behind Levels 3 to 6 is the
 **Steane $[[7,1,3]]$ code** [4]: 7 physical qubits hold 1 logical qubit, and any single-qubit error can be
 corrected.
 
@@ -185,24 +198,34 @@ touches qubit $i$), so one faulty gate can damage at most one qubit per block.
 
 ---
 
-## Level 2: A logical Bell pair
+## Level 3: Build a Steane block
 
-![Level 2](docs/images/level2.png)
+![Level 3](docs/images/steane-block.png)
 
-**You play:** each tower holds 7 communication qubits and a 7-qubit Steane block. **Space** plays the protocol one
-phase at a time: herald 7 pairs, encode the blocks, run the teleported CNOT, then check the pair. **R** starts a new
-run. Every step is played back from a stabilizer simulation run by the backend.
+**You play:** Mario's 7 qubits are the wires of a circuit, and the Steane diagram beside it has one circle per
+check. **Space** puts $H$ on qubits 1, 2 and 4. Then, one $H$ qubit at a time (4, then 2, then 1), pick a target
+with **↑↓** and place a CNOT with **Enter**; **Backspace** undoes one. A CNOT onto a qubit outside the circle (or a
+second one onto the same qubit) turns red and holds the round until it is undone. After every CNOT the backend runs
+the circuit in Stim and says which checks hold, and a circle lights once its check reads $+1$. With all three lit the
+block is $\lvert\bar 0\rangle$, and Goto's ancilla check (below) accepts it. Then a cloud turtle zaps the block three
+times, with $X$, then $Z$, then $Y$, each on a random qubit: measure the six checks, read each syndrome as a binary
+number, and fix the qubit it names (**↑↓** picks the qubit, **←→** the Pauli, **Enter** applies it). A wrong fix is
+undone and explained.
 
-### Phase 1: Seven physical pairs
+The game builds the textbook encoder. Each $H$ qubit is the one qubit of its check that no other check contains, and
+CNOTs from it to the other three qubits of its circle copy its $X$:
 
-The Barrett–Kok protocol from Level 1 runs until each of the 7 communication-qubit pairs holds $\lvert\Phi^+\rangle$.
-The D+ and D− lamps show which detector clicked in each round, and the qubits flip between rounds.
+$$X_4 \to X_4X_5X_6X_7,\qquad X_2 \to X_2X_3X_6X_7,\qquad X_1 \to X_1X_3X_5X_7 ,$$
 
-### Phase 2: Encoding with the Paetznick–Reichardt circuit
+exactly the rows of $H$. That is 9 CNOTs. The $Z$-type checks and $\bar Z = +1$ come for free from the
+$\lvert 0\rangle$ inputs. The paper does the same job with 8:
 
-Alice's block must become logical $\lvert\bar +\rangle$ and Bob's logical $\lvert\bar 0\rangle$. The paper encodes
-$\lvert\bar 0\rangle$ with the **Paetznick–Reichardt circuit** [5], which needs only **8 CNOTs** instead of the
-usual 9 or 12, and checks the result with **Goto's one-ancilla verification** [6] (Fig. 3).
+### The paper's encoder: Paetznick–Reichardt
+
+In the full protocol (Level 5) Alice's block must become logical $\lvert\bar +\rangle$ and Bob's logical
+$\lvert\bar 0\rangle$. The paper encodes $\lvert\bar 0\rangle$ with the **Paetznick–Reichardt circuit** [5], which
+needs only **8 CNOTs** instead of the usual 9 or 12, and checks the result with **Goto's one-ancilla verification**
+[6] (Fig. 3).
 
 ![Fig. 3 of [1]: the Paetznick–Reichardt 8-CNOT encoder with Goto's verification](docs/images/paper-fig3-pr-encoder.png)
 
@@ -236,13 +259,27 @@ is then $\bar H\lvert\bar 0\rangle$, a Hadamard on every qubit.
 > We checked this circuit in Stim: its output passes all six Steane checks, has $\bar Z = +1$, and gives
 > $Z_1Z_6Z_7 = +1$. The game's backend uses the textbook 9-CNOT encoder with the same $Z_1Z_6Z_7$ check.
 
-### Phase 3: The transversal teleported CNOT
+---
+
+## Level 4: The teleported CNOT
+
+![Level 4](docs/images/teleported-cnot.png)
+
+**You play:** four rounds, each step on **Space**. Rounds 1 and 2 use one Bell pair and the circuit of Fig. 4: Mario
+starts from $\lvert 1\rangle$ (round 1, so Luigi's $\lvert 0\rangle$ must become $\lvert 1\rangle$) or
+$\lvert +\rangle$ (round 2, so the two must end up as the Bell pair $\lvert\Phi^+\rangle$). After both measurements
+you choose the fixes with **X** and **Z** and apply them with **Enter**; the backend says whether they worked. Round 3
+does the same on two Steane blocks over 7 pairs and makes a logical Bell pair. In round 4 a cloud turtle spoils one
+of the 7 pairs: the logical $ZZ$ check fails, Luigi's $Z$ checks name the one damaged qubit, and one $X$ repairs it.
+
+### How it works
 
 A CNOT between two towers is impossible directly, but one Bell pair is enough to teleport it [7] (Fig. 4).
 
 ![Fig. 4 of [1]: gate teleportation of a CNOT](docs/images/paper-fig4-teleported-cnot.png)
 
-*Fig. 4 of [1]. A Bell pair on $c_A, c_B$ carries a CNOT from Alice's data qubit $d_A$ to Bob's $d_B$.*
+*Fig. 4 of [1]. A Bell pair on $c_A, c_B$ carries a CNOT from Alice's data qubit $d_A$ to Bob's $d_B$. In the game
+Alice is Mario and Bob is Luigi.*
 
 For each of the 7 qubit positions:
 
@@ -259,14 +296,41 @@ $$\lvert\bar\Phi^+\rangle = \frac{1}{\sqrt 2}\big(\lvert\bar 0\bar 0\rangle + \l
 Because every gate is transversal, one physical error stays one physical error, which the code corrects. The
 logical error rate falls from $O(\epsilon)$ to $O(\epsilon^2)$ [1, 2].
 
+**Why the fixes are right.** Write Mario's data as $\sum_\alpha c_\alpha\lvert\alpha\rangle$. After his CNOT
+and his $Z$ measurement, Luigi's half $c_B$ holds $\alpha\oplus m$. Luigi's CNOT adds that to his data, so
+$d_B = \beta\oplus\alpha\oplus m$, and $X^{m}$ removes the $m$. Measuring $c_B$ in the $X$ basis with outcome $n$
+leaves the phase $(-1)^{n\alpha}$ (up to a global phase), which $Z^{n}$ on $d_A$ removes. What is left is
+$\sum_\alpha c_\alpha\lvert\alpha\rangle\lvert\beta\oplus\alpha\rangle$: a CNOT.
+
+**One bad pair (round 4).** The turtle turns one pair into $\lvert\Psi^+\rangle$, an $X$ on Luigi's half. Luigi's
+CNOT copies it onto his data qubit at that position, and his $X$-basis measurement does not see it, so it becomes one
+$X$ error on one qubit of his block. That flips the raw logical $ZZ$ parity, but his $Z$ checks name the qubit, and
+the Steane code corrects it.
+
+---
+
+## Level 5: A logical Bell pair
+
+![Level 5](docs/images/level2.png)
+
+**You play:** each tower holds 7 communication qubits and a 7-qubit Steane block. **Space** plays the protocol one
+phase at a time: herald 7 pairs, encode the blocks, run the teleported CNOT, then check the pair. **R** starts a new
+run. Every step is played back from a stabilizer simulation run by the backend. It puts Levels 1, 3 and 4
+together: phase 1 below, then phase 2 (Level 3) and phase 3 (Level 4) on all 7 pairs at once.
+
+### Phase 1: Seven physical pairs
+
+The Barrett–Kok protocol from Level 1 runs until each of the 7 communication-qubit pairs holds $\lvert\Phi^+\rangle$.
+The D+ and D− lamps show which detector clicked in each round, and the qubits flip between rounds.
+
 **The check.** Both blocks are measured in the same basis ($Z$ or $X$) and decoded. For $\lvert\bar\Phi^+\rangle$
 the two logical bits are random but always equal, and the game shows them side by side.
 
 ---
 
-## Level 3: A secret key across a repeater chain
+## Level 6: A secret key across a repeater chain
 
-![Level 3](docs/images/level3.png)
+![Level 6](docs/images/level3.png)
 
 **You play:** Mario stands by Alice and Luigi by David, the two ends of the chain Alice – Bob – Charlie – David.
 Type a message and send it classically (Q / I), encrypted with a quantum key (W / O), or as teleported qubits
@@ -360,14 +424,19 @@ This effort is supported by Qollab & IonQ.
 - **Mario-QNext**, a first prototype of this game made on Oct 8, 2026 and copied into this repo on Oct 9 at about
   21:10 ET. It already had the Stim backend (Barrett–Kok heralding, the Steane code, the logical link, the QRE-CEC
   chain, BBM92 key distillation and the FastAPI server) with its tests, the title screen and world map, Level 1, the
-  logical Bell pair level (now Level 3), the secret message level (now Level 4), and a one-page Toad's hut.
+  logical Bell pair level (now Level 5), the secret message level (now Level 6), and a one-page Toad's hut.
 
 **Built during the hackathon (Oct 9–11, 2026):**
 
 - Level 2: Teleportation (`game/teleport.html`, `game/src/teleport/`, `backend/src/quantum_bros/protocol/teleport.py`).
+- Level 3: Build a Steane block (`game/steane_block.html`, `game/src/steane_block/`,
+  `backend/src/quantum_bros/protocol/steane_block.py`).
+- Level 4: The teleported CNOT (`game/teleported_cnot.html`, `game/src/teleported_cnot/`,
+  `backend/src/quantum_bros/protocol/teleported_cnot_lesson.py`).
 - Toad's BB84 hut, and Toad's QEC hut rebuilt as 8 illustrated panels: the 3-qubit code, [[n,k,d]], the Steane code
   and its encoder, fault tolerance and flag qubits.
-- The world map's branch with both huts, Level 1 polish, and faster heralding in Level 3.
+- The world map's branch with both huts, its second island with Levels 3 to 6, Level 1 polish, and faster heralding
+  in Level 5.
 - The Qiskit notebooks `QRECEC_3QubitRepetition.ipynb` and `QRECEC_5QubitRepetition.ipynb`: QRE-CEC with 3- and
   5-qubit repetition codes, runnable on Qollab's simulators.
 

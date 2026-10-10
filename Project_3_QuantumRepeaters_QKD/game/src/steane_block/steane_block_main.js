@@ -1,6 +1,7 @@
 /**
  * Level 3 page entry point: build a Steane |0̄⟩ block, check it with the paper's ancilla, then find and fix three
- * errors (X, Z, Y) from their syndromes. Space moves the level on, ↑↓ and ←→ pick, Backspace undoes a CNOT, R starts
+ * errors (X, Z, Y) from their syndromes. Space moves the level on, ↑↓ and ←→ pick, Enter places the picked CNOT or
+ * applies the picked fix, Backspace undoes a CNOT, R starts
  * over; mouse clicks do nothing. The goal types itself out first and the level starts once it has.
  *
  * Every check and syndrome comes from the Stim backend: POST /api/steane-block after each CNOT, POST
@@ -15,7 +16,7 @@ import {
 } from "./steane_block_plan.js";
 import {
     buildSteaneScene, playZap, renderBuildCircles, renderCursorDot, renderEncoderCard, renderErrorCircles,
-    renderSyndromeCard, showBanner, showMessage,
+    renderSyndromeCard, renderWrongDot, showBanner, showMessage,
 } from "./render_steane_block.js";
 import {
     fitBoardToStage, hideSkyProblem, postToSimulator, showSkyProblem,
@@ -72,8 +73,8 @@ function startSteaneBlockLevel() {
 function createGame() {
     return {
         isStarted: false, isBusy: false, phase: HADAMARD_PHASE, roundIndex: 0, cnots: [], roundStartIndex: 0,
-        cursorTarget: 1, report: null, hasVerification: false, errorRounds: null, errorIndex: 0, hasMeasured: false,
-        fixPauli: FIX_PAULIS[0], fixPosition: QUBIT_POSITIONS[0], isBlockHit: false,
+        wrongCnotIndex: null, cursorTarget: 1, report: null, hasVerification: false, errorRounds: null, errorIndex: 0,
+        hasMeasured: false, fixPauli: FIX_PAULIS[0], fixPosition: QUBIT_POSITIONS[0], isBlockHit: false,
     };
 }
 
@@ -93,11 +94,13 @@ function resetLevel(game, scene) {
 
 
 /**
- * Space moves on; arrows pick; Backspace undoes a CNOT; R starts over. Ignored while the simulator is answering.
+ * Space moves on; arrows pick; Enter confirms the pick (as in Level 2, so a stray Space never places a gate or a fix);
+ * Backspace undoes a CNOT; R starts over. Ignored while the simulator is answering.
  */
 function handleKey(game, scene, keyEvent) {
     const keyActions = {
         " ": () => handleSpace(game, scene),
+        Enter: () => handleEnter(game, scene),
         ArrowUp: () => moveCursor(game, scene, -1),
         ArrowDown: () => moveCursor(game, scene, 1),
         ArrowLeft: () => changeFixPauli(game, scene, -1),
@@ -119,22 +122,32 @@ function handleKey(game, scene, keyEvent) {
 
 
 /**
- * What Space does in each phase.
+ * What Space does in each phase. While the player picks (a CNOT target or a fix) Space does nothing: Enter confirms.
  */
 function handleSpace(game, scene) {
     const spaceActions = {
         [HADAMARD_PHASE]: () => applyHadamards(game, scene),
-        [BUILD_PHASE]: () => placeCnot(game, scene),
         [ROUND_DONE_PHASE]: () => startRound(game, scene, game.roundIndex + 1),
         [VERIFY_PHASE]: () => runVerification(game, scene),
         [VERIFIED_PHASE]: () => startErrorRounds(game, scene),
         [ZAP_PHASE]: () => zapBlock(game, scene),
         [MEASURE_PHASE]: () => measureChecks(game, scene),
-        [PICK_PHASE]: () => applyFix(game, scene),
         [FIXED_PHASE]: () => finishErrorRound(game, scene),
         [CLEAR_PHASE]: () => window.location.assign(NEXT_STOP_URL),
     };
-    spaceActions[game.phase]();
+    spaceActions[game.phase]?.();
+}
+
+
+/**
+ * Enter confirms what the player picked: the CNOT under the cursor, or the fix.
+ */
+function handleEnter(game, scene) {
+    const enterActions = {
+        [BUILD_PHASE]: () => placeCnot(game, scene),
+        [PICK_PHASE]: () => applyFix(game, scene),
+    };
+    enterActions[game.phase]?.();
 }
 
 
@@ -159,6 +172,7 @@ function startRound(game, scene, roundIndex) {
     game.phase = BUILD_PHASE;
     game.roundIndex = roundIndex;
     game.roundStartIndex = game.cnots.length;
+    game.wrongCnotIndex = null;
     game.cursorTarget = listTargetChoices(round.control)[0];
     const checkName = nameCheck(round.checkPositions);
     showMessage(scene, `q${round.control} spreads along circle ${checkName}: put a CNOT from q${round.control} onto `
@@ -233,12 +247,13 @@ async function undoCnot(game, scene) {
 
 
 /**
- * After a CNOT or an undo: is the round's circle lit (and the earlier ones still)? The last round also needs the
- * Z checks and Z̄, so the block really is |0̄⟩.
+ * After a CNOT or an undo: is a CNOT wrong (shown in red until undone)? Is the round's circle lit (and the earlier
+ * ones still)? The last round also needs the Z checks and Z̄, so the block really is |0̄⟩.
  */
 function judgeRound(game, scene) {
-    const roundCnotCount = game.cnots.length - game.roundStartIndex;
-    const judgement = judgeBuildRound(game.report, game.roundIndex, roundCnotCount);
+    const roundTargets = game.cnots.slice(game.roundStartIndex).map(([, target]) => target);
+    const judgement = judgeBuildRound(game.report, game.roundIndex, roundTargets);
+    game.wrongCnotIndex = judgement.isWrong ? game.roundStartIndex + judgement.wrongTargetIndex : null;
     const isLastRound = game.roundIndex === listBuildRounds().length - 1;
     if (judgement.isComplete && isLastRound && game.report.is_encoded) {
         game.phase = VERIFY_PHASE;
@@ -249,7 +264,7 @@ function judgeRound(game, scene) {
         game.phase = ROUND_DONE_PHASE;
         showMessage(scene, judgement.message);
     } else {
-        showMessage(scene, judgement.message);
+        showMessage(scene, judgement.message, judgement.isWrong || judgement.brokenCheckIndices.length > 0);
     }
     render(game, scene);
 }
@@ -404,11 +419,14 @@ function renderBuildPart(game, scene) {
         cnots: game.cnots,
         ghost: isBuilding ? { control, target: game.cursorTarget } : null,
         hasVerification: game.hasVerification,
+        wrongCnotIndex: game.wrongCnotIndex,
     };
     renderEncoderCard(scene, buildEncoderCircuit(buildState), buildState);
     const xChecks = game.report === null ? null : game.report.x_checks;
     renderBuildCircles(scene, xChecks, isBuilding ? game.roundIndex : null);
     renderCursorDot(scene, null);
+    const wrongTarget = game.wrongCnotIndex === null ? null : game.cnots[game.wrongCnotIndex][1];
+    renderWrongDot(scene, wrongTarget);
 }
 
 
@@ -427,6 +445,7 @@ function renderErrorPart(game, scene) {
     // Once fixed, the table keeps what was measured but the circles are quiet again.
     renderErrorCircles(scene, isPicking ? measuredSyndromes : null);
     renderCursorDot(scene, isPicking ? game.fixPosition : null);
+    renderWrongDot(scene, null);
 }
 
 

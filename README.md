@@ -32,7 +32,7 @@ with the Steane code, and turn it into a secret key, while Qowser's turtles tap 
 ![World map](docs/readme/quantum-bros-map.png)
 
 <p>
-  <img src="docs/readme/quantum-bros-level3.png" alt="Level 3: seven heralded Bell pairs lit in Mario's and Luigi's towers" width="49%">
+  <img src="docs/readme/quantum-bros-level3.png" alt="Level 5: seven heralded Bell pairs lit in Mario's and Luigi's towers" width="49%">
   <img src="docs/readme/quantum-bros-qec-hut.png" alt="Toad's QEC hut: the Steane encoding circuit" width="49%">
 </p>
 

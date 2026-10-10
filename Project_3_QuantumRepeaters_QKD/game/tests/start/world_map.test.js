@@ -36,15 +36,21 @@ const BB84_HUT = 3;
 const QEC_HUT = 4;
 const LEVEL_THREE = 5;
 const LEVEL_FOUR = 6;
+const LEVEL_FIVE = 7;
+const LEVEL_SIX = 8;
 
 
-test("the main path runs START → 1 → 2 → QEC hut → 3 → 4 by the arrow that points there", () => {
+test("the main path runs START → 1 → 2 → QEC hut → 3 → 4 → 5 → 6 by the arrow that points there", () => {
     assert.equal(findStopInDirection(START, RIGHT), LEVEL_ONE);
     assert.equal(findStopInDirection(LEVEL_ONE, UP), TELEPORT);
     assert.equal(findStopInDirection(TELEPORT, RIGHT), QEC_HUT);
     assert.equal(findStopInDirection(QEC_HUT, RIGHT), LEVEL_THREE);
-    assert.equal(findStopInDirection(LEVEL_THREE, DOWN), LEVEL_FOUR);
-    assert.equal(findStopInDirection(LEVEL_FOUR, UP), LEVEL_THREE);
+    assert.equal(findStopInDirection(LEVEL_THREE, RIGHT), LEVEL_FOUR);
+    assert.equal(findStopInDirection(LEVEL_FOUR, RIGHT), LEVEL_FIVE);
+    assert.equal(findStopInDirection(LEVEL_FIVE, DOWN), LEVEL_SIX);
+    assert.equal(findStopInDirection(LEVEL_SIX, UP), LEVEL_FIVE);
+    assert.equal(findStopInDirection(LEVEL_FIVE, LEFT), LEVEL_FOUR);
+    assert.equal(findStopInDirection(LEVEL_FOUR, LEFT), LEVEL_THREE);
     assert.equal(findStopInDirection(LEVEL_THREE, LEFT), QEC_HUT);
     assert.equal(findStopInDirection(QEC_HUT, LEFT), TELEPORT);
     assert.equal(findStopInDirection(TELEPORT, DOWN), LEVEL_ONE);
@@ -54,7 +60,9 @@ test("the main path runs START → 1 → 2 → QEC hut → 3 → 4 by the arrow 
 
 test("the main path skips the BB84 hut: it is a spur off Level 2", () => {
     const mainPathIds = listMainPathIndices().map((stopIndex) => MAP_STOPS[stopIndex].id);
-    assert.deepEqual(mainPathIds, ["start", "level1", "teleport", "hut", "level2", "level3"]);
+    assert.deepEqual(mainPathIds, [
+        "start", "level1", "teleport", "hut", "steane-block", "teleported-cnot", "level2", "level3",
+    ]);
     assert.equal(MAP_STOPS[BB84_HUT].branchFrom, "teleport");
 });
 
@@ -72,14 +80,15 @@ test("a direction the path does not go leaves Mario where he is", () => {
     assert.equal(findStopInDirection(START, LEFT), START);
     assert.equal(findStopInDirection(LEVEL_ONE, RIGHT), LEVEL_ONE);
     assert.equal(findStopInDirection(TELEPORT, UP), TELEPORT);
-    assert.equal(findStopInDirection(LEVEL_FOUR, RIGHT), LEVEL_FOUR);
+    assert.equal(findStopInDirection(LEVEL_SIX, RIGHT), LEVEL_SIX);
+    assert.equal(findStopInDirection(LEVEL_THREE, DOWN), LEVEL_THREE);
 });
 
 
 test("the links are the main path in order plus the spur to the BB84 hut", () => {
     assert.deepEqual(listStopLinks(), [
         [START, LEVEL_ONE], [LEVEL_ONE, TELEPORT], [TELEPORT, QEC_HUT], [QEC_HUT, LEVEL_THREE],
-        [LEVEL_THREE, LEVEL_FOUR], [TELEPORT, BB84_HUT],
+        [LEVEL_THREE, LEVEL_FOUR], [LEVEL_FOUR, LEVEL_FIVE], [LEVEL_FIVE, LEVEL_SIX], [TELEPORT, BB84_HUT],
     ]);
 });
 
@@ -102,16 +111,19 @@ test("no stop has two neighbours in the same direction, so every arrow is unambi
 });
 
 
-test("the stops come in order: START, 1, 2 teleportation, the BB84 hut, the QEC hut, 3, 4", () => {
+test("the stops come in order: START, 1, 2 teleportation, the BB84 hut, the QEC hut, 3 to 6", () => {
     const stopIds = MAP_STOPS.map((stop) => stop.id);
-    assert.deepEqual(stopIds, ["start", "level1", "teleport", "bb84-hut", "hut", "level2", "level3"]);
+    assert.deepEqual(stopIds, [
+        "start", "level1", "teleport", "bb84-hut", "hut", "steane-block", "teleported-cnot", "level2", "level3",
+    ]);
     const kinds = MAP_STOPS.map((stop) => stop.kind);
-    assert.deepEqual(kinds, ["start", "level", "level", "hut", "hut", "level", "level"]);
+    assert.deepEqual(kinds, ["start", "level", "level", "hut", "hut", "level", "level", "level", "level"]);
     const labels = MAP_STOPS.map((stop) => stop.label);
-    assert.deepEqual(labels, ["START", "1", "2", "", "", "3", "4"]);
+    assert.deepEqual(labels, ["START", "1", "2", "", "", "3", "4", "5", "6"]);
     const hrefs = MAP_STOPS.map((stop) => stop.href);
     assert.deepEqual(hrefs, [
-        "start.html", "level1.html", "teleport.html", "bb84_hut.html", "hut.html", "level2.html", "qkd.html",
+        "start.html", "level1.html", "teleport.html", "bb84_hut.html", "hut.html", "steane_block.html",
+        "teleported_cnot.html", "level2.html", "qkd.html",
     ]);
 });
 
@@ -209,7 +221,7 @@ test("Mario faces the way he walks and keeps his facing on vertical steps", () =
 
 test("a longer walk takes longer", () => {
     const shortWalk = planWalk(MAP_STOPS[QEC_HUT], MAP_STOPS[TELEPORT], "right");
-    const longWalk = planWalk(MAP_STOPS[QEC_HUT], MAP_STOPS[LEVEL_THREE], "right");
+    const longWalk = planWalk(MAP_STOPS[LEVEL_FIVE], MAP_STOPS[LEVEL_SIX], "right");
     assert.ok(longWalk.durationMs > shortWalk.durationMs);
 });
 
@@ -234,7 +246,7 @@ test("the Enter button says what it opens", () => {
 });
 
 
-test("the QKD fiber runs tower to tower from Level 4's island to Peach's island", () => {
+test("the QKD fiber runs tower to tower from the last level's island to Peach's island", () => {
     assert.equal(TELECOM_TOWER_TILE_XS[0], QKD_LINK.fromTileX);
     assert.equal(TELECOM_TOWER_TILE_XS.at(-1), QKD_LINK.toTileX);
     assert.ok(isOnLand(QKD_LINK.fromTileX, QKD_LINK.tileY));
@@ -279,6 +291,8 @@ test("each page's Map button brings Mario back to the stop it belongs to", () =>
     assert.equal(findStopIndexFromHash("#map-hut"), stopIds.indexOf("hut"));
     assert.equal(findStopIndexFromHash("#map-teleport"), stopIds.indexOf("teleport"));
     assert.equal(findStopIndexFromHash("#map-bb84-hut"), stopIds.indexOf("bb84-hut"));
+    assert.equal(findStopIndexFromHash("#map-steane-block"), stopIds.indexOf("steane-block"));
+    assert.equal(findStopIndexFromHash("#map-teleported-cnot"), stopIds.indexOf("teleported-cnot"));
     for (let i = 0; i < MAP_STOPS.length; i++) {
         assert.equal(findStopIndexFromHash(buildMapHash(i)), i);
     }
@@ -297,19 +311,25 @@ test("a plain or unknown map address starts on START; other addresses show the t
 
 
 test("a route to a neighbouring stop is just that stop; a route to where Mario stands is empty", () => {
-    assert.deepEqual(findRouteBetweenStops(LEVEL_THREE, LEVEL_FOUR), [LEVEL_FOUR]);
+    assert.deepEqual(findRouteBetweenStops(LEVEL_FIVE, LEVEL_SIX), [LEVEL_SIX]);
     assert.deepEqual(findRouteBetweenStops(TELEPORT, TELEPORT), []);
 });
 
 
 test("a long route follows the path through every stop in between, forwards and backwards", () => {
-    assert.deepEqual(findRouteBetweenStops(TELEPORT, LEVEL_FOUR), [QEC_HUT, LEVEL_THREE, LEVEL_FOUR]);
-    assert.deepEqual(findRouteBetweenStops(LEVEL_FOUR, START), [LEVEL_THREE, QEC_HUT, TELEPORT, LEVEL_ONE, START]);
+    assert.deepEqual(findRouteBetweenStops(TELEPORT, LEVEL_FIVE), [QEC_HUT, LEVEL_THREE, LEVEL_FOUR, LEVEL_FIVE]);
+    assert.deepEqual(
+        findRouteBetweenStops(LEVEL_SIX, START),
+        [LEVEL_FIVE, LEVEL_FOUR, LEVEL_THREE, QEC_HUT, TELEPORT, LEVEL_ONE, START],
+    );
 });
 
 
 test("a route into or out of the spur goes through Level 2", () => {
     assert.deepEqual(findRouteBetweenStops(BB84_HUT, LEVEL_FOUR), [TELEPORT, QEC_HUT, LEVEL_THREE, LEVEL_FOUR]);
+    assert.deepEqual(findRouteBetweenStops(LEVEL_SIX, BB84_HUT), [
+        LEVEL_FIVE, LEVEL_FOUR, LEVEL_THREE, QEC_HUT, TELEPORT, BB84_HUT,
+    ]);
     assert.deepEqual(findRouteBetweenStops(LEVEL_THREE, BB84_HUT), [QEC_HUT, TELEPORT, BB84_HUT]);
     assert.deepEqual(findRouteBetweenStops(START, BB84_HUT), [LEVEL_ONE, TELEPORT, BB84_HUT]);
 });

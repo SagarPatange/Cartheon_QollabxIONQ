@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test game/tests/*.test.js game/tests/qkd/*.test.js game/tests/start/*.test.js game/tests/level1/*.test.js game/tests/level2/*.test.js game/tests/bb84_hut/*.test.js game/tests/hut/*.test.js game/tests/teleport/*.test.js",
+    "test": "node --test game/tests/*.test.js game/tests/qkd/*.test.js game/tests/start/*.test.js game/tests/level1/*.test.js game/tests/level2/*.test.js game/tests/bb84_hut/*.test.js game/tests/hut/*.test.js game/tests/teleport/*.test.js game/tests/steane_block/*.test.js game/tests/teleported_cnot/*.test.js",
     "serve": "python3 -m http.server 8000 -d game",
     "backend": "cd backend && .venv/bin/python -m uvicorn quantum_bros.server:app --port 8001",
     "test:backend": "cd backend && .venv/bin/python -m pytest -q && .venv/bin/ruff check src tests"

@@ -39,13 +39,15 @@ export function buildSteaneScene(elements) {
 
 
 /**
- * Toad's message under the board.
+ * Toad's message under the board; an error (a wrong CNOT) shows in red.
  *
  * @param {object} scene
  * @param {string} message
+ * @param {boolean} [isError]
  */
-export function showMessage(scene, message) {
+export function showMessage(scene, message, isError = false) {
     scene.messageElement.textContent = message;
+    scene.messageElement.classList.toggle("is-error", isError);
 }
 
 
@@ -141,6 +143,19 @@ export function renderErrorCircles(scene, syndromes) {
 export function renderCursorDot(scene, position) {
     for (const [dotPosition, dotElement] of Object.entries(scene.diagram.dotElements)) {
         dotElement.classList.toggle("is-cursor", Number(dotPosition) === position);
+    }
+}
+
+
+/**
+ * Mark in red the qubit a wrong CNOT went to, or none.
+ *
+ * @param {object} scene
+ * @param {number | null} position
+ */
+export function renderWrongDot(scene, position) {
+    for (const [dotPosition, dotElement] of Object.entries(scene.diagram.dotElements)) {
+        dotElement.classList.toggle("is-wrong", Number(dotPosition) === position);
     }
 }
 

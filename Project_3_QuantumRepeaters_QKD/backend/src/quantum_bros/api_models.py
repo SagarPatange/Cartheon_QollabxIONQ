@@ -60,7 +60,7 @@ class SendResponse(BaseModel):
 
 
 class LogicalPairRequest(BaseModel):
-    """Level 2: one logical Bell pair between Alice and Bob. No seed means the server picks one."""
+    """Level 5: one logical Bell pair between Alice and Bob. No seed means the server picks one."""
 
     seed: int | None = Field(default=None, ge=0, le=MAX_SEED)
     physical_error: float = Field(default=0.001, ge=0, le=MAX_PHYSICAL_ERROR)

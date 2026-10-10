@@ -16,7 +16,7 @@ export const BLOCK_ROUND = "block";
 export const BAD_BLOCK_ROUND = "bad-block";
 export const ROUND_KINDS = [CLASSICAL_ROUND, BELL_ROUND, BLOCK_ROUND, BAD_BLOCK_ROUND];
 
-// One-pair steps. "choose" is where the player picks the fixes; "done" waits for Space to move on.
+// One-pair steps. "choose" is where the player picks the fixes (Enter applies them); "done" waits for Space to move on.
 const PAIR_STEPS = ["pair", "cnotA", "measureA", "sendM", "cnotB", "measureB", "sendN", "choose", "done"];
 const BLOCK_STEPS = ["encode", "pairs", "mario", "sendM", "luigi", "sendN", "marioFix", "check", "done"];
 const BAD_BLOCK_STEPS = [
@@ -90,7 +90,8 @@ export function nameFixChoice(hasLuigiX, hasMarioZ) {
  *
  * @param {{roundKind: string, stepIndex: number, m: number | null, n: number | null, hasLuigiX: boolean,
  *     hasMarioZ: boolean}} pairView - stepIndex is the next step to play; m and n are null until measured.
- * @returns {{circuit: {wires: object[], columns: object[][]}, doneColumnCount: number, endNotes: Object<string, string>}}
+ * @returns {{circuit: {wires: object[], columns: object[][]}, doneColumnCount: number,
+ *     endNotes: Object<string, string>}}
  */
 export function buildPairCircuit(pairView) {
     const marioStart = pairView.roundKind === CLASSICAL_ROUND ? "|1⟩" : "|+⟩";
@@ -168,7 +169,7 @@ export function describePairStep(stepId, pairRound) {
         cnotB: () => "Luigi CNOTs his half cB onto his data dB.",
         measureB: () => `Luigi measures cB in X: n = ${pairRound.n}.`,
         sendN: () => `n = ${pairRound.n} flies back to Mario. Your turn: choose the fixes with the X and Z keys,`
-            + " then press Space.",
+            + " then press Enter.",
     };
     return messages[stepId]();
 }
@@ -221,7 +222,8 @@ function judgeBellReading(reading, pairRound) {
     const readText = `ZZ = ${zzText}, XX = ${xxText}.`;
     const isRight = reading.zz_bit === 0 && reading.xx_bit === 0;
     if (isRight) {
-        return { isRight, message: `${readText} That is the Bell pair Φ⁺: a CNOT from |+⟩ onto |0⟩, across the fiber!` };
+        const bellText = "That is the Bell pair Φ⁺: a CNOT from |+⟩ onto |0⟩, across the fiber!";
+        return { isRight, message: `${readText} ${bellText}` };
     }
     const advice = [];
     if (reading.zz_bit === 1) {
@@ -290,8 +292,10 @@ export function describeBlockStep(stepId, blockRound) {
         syndrome: () => `Luigi measures his 3 Z checks: ${blockRound.luigi_z_syndrome.join("")} is ${syndromePosition}`
             + ` in binary. His qubit ${syndromePosition} took the hit, and only that one.`,
         luigiFix: () => `Luigi flips his qubit ${syndromePosition} back with X.`,
-        recheck: () => `Toad checks again: ${describeLogicalParities(blockRound.fixed_zz_bit, blockRound.fixed_xx_bit)}.`
-            + " Steane fixed it: that is why the paper encodes before linking.",
+        recheck: () => {
+            const parities = describeLogicalParities(blockRound.fixed_zz_bit, blockRound.fixed_xx_bit);
+            return `Toad checks again: ${parities}. Steane fixed it: that is why the paper encodes before linking.`;
+        },
     };
     return messages[stepId]();
 }
@@ -321,7 +325,7 @@ export function listKeyHints(view) {
     if (view.stepId === "choose") {
         return [
             { key: "X", action: "X on Luigi's dB" }, { key: "Z", action: "Z on Mario's dA" },
-            { key: "Space", action: "Apply fixes" }, restartHint,
+            { key: "Enter", action: "Apply fixes" }, restartHint,
         ];
     }
     if (view.stepId === "done") {

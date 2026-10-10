@@ -101,6 +101,21 @@
     fill: var(--cloud-white);
 }
 
+/* A wrong CNOT (Level 3: a target outside the round's circle): red until Backspace undoes it. */
+.qec-cnot.is-wrong line {
+    stroke: var(--error-red);
+}
+
+.qec-cnot.is-wrong circle,
+.qec-cnot.is-wrong circle.qec-cnot-target {
+    fill: var(--error-red);
+    stroke: var(--error-red);
+}
+
+.qec-cnot.is-wrong .qec-cnot-plus {
+    stroke: var(--cloud-white);
+}
+
 /* A gate that has not happened yet. */
 .qec-circuit .is-future {
     opacity: 0.22;
@@ -169,6 +184,16 @@
 .qec-qubit-dot.is-cursor circle {
     fill: var(--coin-gold);
     stroke-width: 6;
+}
+
+/* The qubit a wrong CNOT went to: red, outside the round's outlined circle. */
+.qec-qubit-dot.is-wrong circle {
+    fill: var(--error-red);
+    stroke-width: 4;
+}
+
+.qec-qubit-dot.is-wrong text {
+    fill: var(--cloud-white);
 }
 
 /* The circle the build round is spreading along: a thick blue outline (the message names it too). */

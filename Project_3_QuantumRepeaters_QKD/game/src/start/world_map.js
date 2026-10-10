@@ -7,14 +7,14 @@
  */
 
 export const TILE_SIZE_PX = 64;
-export const MAP_WIDTH_TILES = 39;
+export const MAP_WIDTH_TILES = 43;
 export const MAP_HEIGHT_TILES = 9;
 // Below this the map is too small to play; the view scrolls instead.
 export const MIN_MAP_ZOOM = 0.5;
 
 // In walking order. kind picks the look: "start" square, numbered "level" panel, or the mushroom "hut". id names the
 // stop in the map's address (start.html#map-<id>), so each page's "◀ Map" button brings Mario back to its stop. Ids
-// stay put when stops are renumbered (Level 3 keeps the id "level2", Level 4 "level3"), so old Map links still work.
+// stay put when stops are renumbered (Level 5 keeps the id "level2", Level 6 "level3"), so old Map links still work.
 // sign, when given, is a short name written above the stop, so the two look-alike huts can be told apart.
 // branchFrom, when given, puts the stop on a short spur off the stop with that id instead of on the main path: the
 // main path runs through every other stop in order, and the spur leads from that stop to this one and back.
@@ -75,21 +75,41 @@ export const MAP_STOPS = [
     {
         kind: "level",
         label: "3",
-        title: "Level 3: A logical Bell pair with Luigi",
-        description: "Herald 7 Bell pairs, encode two Steane blocks, and link them into one logical pair.",
-        href: "level2.html",
-        id: "level2",
+        title: "Level 3: Build a Steane block",
+        description: "Encode 7 qubits into a Steane block, CNOT by CNOT, then find and fix errors by their syndromes.",
+        href: "steane_block.html",
+        id: "steane-block",
         tileX: 12,
         tileY: 3,
     },
     {
         kind: "level",
         label: "4",
-        title: "Level 4: A secret message for Peach",
+        title: "Level 4: Teleported CNOT",
+        description: "A CNOT between Mario's and Luigi's qubits, far apart, using a Bell pair and two measured bits.",
+        href: "teleported_cnot.html",
+        id: "teleported-cnot",
+        tileX: 14,
+        tileY: 3,
+    },
+    {
+        kind: "level",
+        label: "5",
+        title: "Level 5: A logical Bell pair with Luigi",
+        description: "Herald 7 Bell pairs, encode two Steane blocks, and link them into one logical pair.",
+        href: "level2.html",
+        id: "level2",
+        tileX: 16,
+        tileY: 3,
+    },
+    {
+        kind: "level",
+        label: "6",
+        title: "Level 6: A secret message for Peach",
         description: "Share a quantum key and send Princess Peach a message across a very long repeater chain.",
         href: "qkd.html",
         id: "level3",
-        tileX: 12,
+        tileX: 16,
         tileY: 6,
     },
 ];
@@ -110,8 +130,8 @@ export const WALK_MS_PER_TILE = 160;
 // Green land, as {tileX, tileY, widthTiles, heightTiles}. Mario's island has room at its west end for quantum gear.
 export const ISLANDS = [
     { tileX: 1, tileY: 2, widthTiles: 8, heightTiles: 6 },
-    { tileX: 11, tileY: 2, widthTiles: 4, heightTiles: 6 },
-    { tileX: 34, tileY: 3, widthTiles: 4, heightTiles: 5 },
+    { tileX: 11, tileY: 2, widthTiles: 8, heightTiles: 6 },
+    { tileX: 38, tileY: 3, widthTiles: 4, heightTiles: 5 },
 ];
 
 // Wooden bridges over the water, on one row, from fromTileX to toTileX.
@@ -119,19 +139,19 @@ export const BRIDGES = [
     { fromTileX: 9, toTileX: 11, tileY: 3 },
 ];
 
-// Level 4 is long: past its stop there is no road over the sea, only a QKD fiber strung across telecom towers (the
-// repeaters) to Peach's island. The end towers stand on land; the ones between stand on small islets in the sea.
-export const QKD_LINK = { fromTileX: 14, toTileX: 34, tileY: 6 };
-export const TELECOM_TOWER_TILE_XS = [14, 18, 22, 26, 30, 34];
+// The last level is long: past its stop there is no road over the sea, only a QKD fiber strung across telecom towers
+// (the repeaters) to Peach's island. The end towers stand on land; the ones between stand on small islets in the sea.
+export const QKD_LINK = { fromTileX: 18, toTileX: 38, tileY: 6 };
+export const TELECOM_TOWER_TILE_XS = [18, 22, 26, 30, 34, 38];
 const PEACH_LAND_ROADS = [
-    { fromTileX: 12, toTileX: QKD_LINK.fromTileX, tileY: 6 },
-    { fromTileX: QKD_LINK.toTileX, toTileX: 36, tileY: 6 },
+    { fromTileX: MAP_STOPS.at(-1).tileX, toTileX: QKD_LINK.fromTileX, tileY: 6 },
+    { fromTileX: QKD_LINK.toTileX, toTileX: 40, tileY: 6 },
 ];
-export const PEACH_CASTLE_TILE = { tileX: 36, tileY: 5 };
+export const PEACH_CASTLE_TILE = { tileX: 40, tileY: 5 };
 
 export const BUSH_TILES = [
     { tileX: 2, tileY: 4 }, { tileX: 1, tileY: 5 }, { tileX: 6, tileY: 5 }, { tileX: 1, tileY: 7 },
-    { tileX: 3, tileY: 7 }, { tileX: 11, tileY: 4 }, { tileX: 35, tileY: 7 },
+    { tileX: 3, tileY: 7 }, { tileX: 11, tileY: 4 }, { tileX: 39, tileY: 7 },
 ];
 export const PIPE_TILES = [{ tileX: 8, tileY: 7 }, { tileX: 14, tileY: 7 }];
 
@@ -142,9 +162,9 @@ export const PIPE_TILES = [{ tileX: 8, tileY: 7 }, { tileX: 14, tileY: 7 }];
 export const QUANTUM_DECOR = [
     { kind: "ion-trap", tileX: 1.6, tileY: 2.4 },
     { kind: "infinite-well", tileX: 3.4, tileY: 5 },
-    { kind: "schrodinger-cat", tileX: 13.4, tileY: 2.3 },
-    { kind: "nv-center", tileX: 13.3, tileY: 3.6 },
-    { kind: "electric-nessie", tileX: 23.5, tileY: 3 },
+    { kind: "schrodinger-cat", tileX: 14.6, tileY: 4.4 },
+    { kind: "nv-center", tileX: 12.6, tileY: 5.5 },
+    { kind: "electric-nessie", tileX: 27.5, tileY: 3 },
 ];
 
 // Qubit birds flying across the whole map over sea and sky, each at its own height and speed. A negative delay starts

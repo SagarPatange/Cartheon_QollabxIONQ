@@ -2,15 +2,15 @@
  * Level 4 page entry point: the teleported CNOT of the paper's Fig. 4, in four rounds: one pair from |1⟩ (it acts
  * as a CNOT), one pair from |+⟩ (it makes a Bell pair), two Steane blocks over 7 pairs (a logical Bell pair), and the
  * same with one pair spoiled by a turtle (Luigi's checks find and fix it). Space plays each step; in the one-pair
- * rounds X and Z choose the fixes; R starts over with a fresh run; mouse clicks do nothing.
+ * rounds X and Z choose the fixes and Enter applies them; R starts over with a fresh run; mouse clicks do nothing.
  *
  * Every bit and reading comes from the Stim backend (POST /api/teleported-cnot), fetched once per run with every
  * possible fix already tried. Reads teleported_cnot.html.
  */
 
 import {
-    BAD_BLOCK_ROUND, ROUND_KINDS, buildPairCircuit, describeBlockStep, describePairStep, describeRoundIntro, isPairRound,
-    judgePairFix, listKeyHints, listRoundSteps,
+    BAD_BLOCK_ROUND, ROUND_KINDS, buildPairCircuit, describeBlockStep, describePairStep, describeRoundIntro,
+    isPairRound, judgePairFix, listKeyHints, listRoundSteps,
 } from "./teleported_cnot_plan.js";
 import {
     buildCnotScene, playTurtle, renderBlocks, renderCheckCard, renderFixCard, renderPairCircuit, showBanner,
@@ -106,11 +106,13 @@ function startRound(game, scene, roundIndex) {
 
 
 /**
- * Space plays the next step; X and Z toggle the fixes while choosing; R starts over.
+ * Space plays the next step; X and Z toggle the fixes while choosing and Enter applies them (as in Level 2, so a
+ * stray Space never applies a fix); R starts over.
  */
 function handleKey(game, scene, keyEvent) {
     const keyActions = {
         " ": () => handleSpace(game, scene),
+        Enter: () => handleEnter(game, scene),
         x: () => toggleFix(game, scene, "hasLuigiX"),
         X: () => toggleFix(game, scene, "hasLuigiX"),
         z: () => toggleFix(game, scene, "hasMarioZ"),
@@ -131,7 +133,7 @@ function handleKey(game, scene, keyEvent) {
 
 
 /**
- * The step under Space: play it, apply the fixes, move to the next round, or leave for the map.
+ * The step under Space: play it, move to the next round, or leave for the map. While choosing fixes it does nothing.
  */
 async function handleSpace(game, scene) {
     if (game.isCleared) {
@@ -141,11 +143,26 @@ async function handleSpace(game, scene) {
     const roundKind = ROUND_KINDS[game.roundIndex];
     const stepId = listRoundSteps(roundKind)[game.stepIndex];
     if (stepId === "choose") {
-        applyFixes(game, scene, roundKind);
-    } else if (stepId === "done") {
+        return;
+    }
+    if (stepId === "done") {
         finishRound(game, scene);
     } else {
         await playStep(game, scene, roundKind, stepId);
+    }
+}
+
+
+/**
+ * Enter applies the chosen fixes; it does nothing at any other step.
+ */
+function handleEnter(game, scene) {
+    if (game.isCleared) {
+        return;
+    }
+    const roundKind = ROUND_KINDS[game.roundIndex];
+    if (listRoundSteps(roundKind)[game.stepIndex] === "choose") {
+        applyFixes(game, scene, roundKind);
     }
 }
 
