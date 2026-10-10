@@ -1,6 +1,7 @@
 /**
- * Truckload dispatch: simulate a week with a dispatch policy, then replay it on the map with live metrics and an
- * event timeline that explains every decision.
+ * Truckload dispatch: simulate a week (one of the first 4 weeks of a month) with a dispatch policy and, for the
+ * MILP optimizer, an objective; then replay it on the map with live metrics and an event timeline that explains
+ * every decision.
  */
 
 import { loadCities, loadLanes, loadRoutePaths, runSimulation } from "./src/data_source.js";
@@ -9,20 +10,28 @@ import { advanceTime } from "./src/playback.js";
 import { metricsUntil } from "./src/run_metrics.js";
 import { TimelineView } from "./src/timeline_view.js";
 import { truckPositions } from "./src/truck_motion.js";
+import { fitRowToContainer } from "./src/fit_one_row.js";
 import { UsMapView } from "./src/us_map_view.js";
+import { WEEKS_PER_MONTH, listMonths, weekLabel, weekStartFor } from "./src/week_picker.js";
 
 const MINUTES_PER_DAY = 24 * 60;
-const DEFAULT_WEEK_START = "2022-03-07";
+const FIRST_MONTH = "2022-01";
+const LAST_MONTH = "2024-12";
+const DEFAULT_MONTH = "2022-03";
 
 const elements = {
-    weekInput: document.getElementById("week-input"),
+    monthSelect: document.getElementById("month-select"),
+    weekSelect: document.getElementById("week-select"),
     policySelect: document.getElementById("policy-select"),
+    objectiveSelect: document.getElementById("objective-select"),
     seedInput: document.getElementById("seed-input"),
     simulateButton: document.getElementById("simulate-button"),
     playButton: document.getElementById("play-button"),
     timeSlider: document.getElementById("time-slider"),
     speedSelect: document.getElementById("speed-select"),
     status: document.getElementById("run-status"),
+    topbar: document.querySelector(".topbar"),
+    runControls: document.querySelector(".run-controls"),
 };
 
 const playback = { replay: null, minute: 0, isPlaying: false, lastFrameMs: null };
@@ -41,13 +50,50 @@ async function start() {
         cityPoints,
     };
     views.timelineView.onFilterChange = () => render(views);
+    fillMonthChoices();
+    keepRunControlsOnOneRow();
     connectControls(views);
-    elements.weekInput.value = DEFAULT_WEEK_START;
     await simulateWeek(views);
     requestAnimationFrame((frameMs) => tick(frameMs, views));
 }
 
+/** The month list once, then the 4 weeks of the default month. */
+function fillMonthChoices() {
+    for (const month of listMonths(FIRST_MONTH, LAST_MONTH)) {
+        elements.monthSelect.add(new Option(month.label, month.value));
+    }
+    elements.monthSelect.value = DEFAULT_MONTH;
+    fillWeekChoices();
+}
+
+/** Weeks 1 to 4 of the chosen month, labelled with their dates; keeps the chosen week number. */
+function fillWeekChoices() {
+    const chosenWeek = elements.weekSelect.value || "1";
+    elements.weekSelect.replaceChildren();
+    for (let weekNumber = 1; weekNumber <= WEEKS_PER_MONTH; weekNumber++) {
+        elements.weekSelect.add(new Option(weekLabel(elements.monthSelect.value, weekNumber), String(weekNumber)));
+    }
+    elements.weekSelect.value = chosenWeek;
+}
+
+/** Fit the run controls on one line now, and again whenever the window, the fonts or a dropdown's width change. */
+function keepRunControlsOnOneRow() {
+    const fitControls = () => fitRowToContainer(elements.runControls, elements.topbar);
+    fitControls();
+    window.addEventListener("resize", fitControls);
+    document.fonts.ready.then(fitControls);
+    elements.runControls.addEventListener("change", fitControls);
+}
+
+/** Greedy is a fixed rule, so the objective only applies to the MILP optimizer. */
+function showObjectiveForPolicy() {
+    elements.objectiveSelect.disabled = elements.policySelect.value !== "milp";
+}
+
 function connectControls(views) {
+    elements.monthSelect.addEventListener("change", fillWeekChoices);
+    elements.policySelect.addEventListener("change", showObjectiveForPolicy);
+    showObjectiveForPolicy();
     elements.simulateButton.addEventListener("click", () => simulateWeek(views));
     elements.playButton.addEventListener("click", () => setPlaying(!playback.isPlaying));
     elements.timeSlider.addEventListener("input", () => {
@@ -63,23 +109,21 @@ function connectControls(views) {
     });
 }
 
-/** Run the simulator for the chosen week, policy and seed, then replay it from the first minute. */
+/** Run the simulator for the chosen week, policy, objective and seed, then replay it from the first minute. */
 async function simulateWeek(views) {
-    const weekStart = mondayOf(elements.weekInput.value);
-    elements.weekInput.value = weekStart;
+    const weekStart = weekStartFor(elements.monthSelect.value, Number(elements.weekSelect.value));
     setPlaying(false);
     elements.simulateButton.disabled = true;
     elements.status.textContent = "Simulating…";
     try {
-        const replay = await runSimulation(weekStart, elements.policySelect.value, Number(elements.seedInput.value));
+        const replay = await runSimulation(
+            weekStart, elements.policySelect.value, elements.objectiveSelect.value, Number(elements.seedInput.value),
+        );
         playback.replay = replay;
         playback.minute = 0;
         elements.timeSlider.max = String(replay.days * MINUTES_PER_DAY);
         views.mapView.clearTrucks();
-        views.panelView.showDays(replay);
-        elements.status.textContent =
-            `${replay.trucks.length} trucks · ${replay.summary.loads_tendered.toLocaleString("en-US")} loads tendered · ` +
-            `policy ${replay.policy}, seed ${replay.seed}`;
+        elements.status.textContent = "";
         render(views);
         setPlaying(!window.matchMedia("(prefers-reduced-motion: reduce)").matches);
     } catch (error) {
@@ -87,14 +131,6 @@ async function simulateWeek(views) {
     } finally {
         elements.simulateButton.disabled = false;
     }
-}
-
-/** The Monday on or before a date, as YYYY-MM-DD: runs always cover Monday to Sunday. */
-function mondayOf(isoDate) {
-    const day = new Date(`${isoDate}T00:00:00Z`);
-    const daysSinceMonday = (day.getUTCDay() + 6) % 7;
-    day.setUTCDate(day.getUTCDate() - daysSinceMonday);
-    return day.toISOString().slice(0, 10);
 }
 
 function setPlaying(isPlaying) {

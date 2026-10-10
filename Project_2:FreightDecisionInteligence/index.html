@@ -12,13 +12,28 @@
         <h1>Truckload Dispatch</h1>
         <div class="run-controls">
             <label class="field-inline">
-                <span class="field-label">Week of</span>
-                <input id="week-input" type="date" min="2022-01-03" max="2024-12-23" value="2022-03-07">
+                <span class="field-label">Month</span>
+                <select id="month-select"></select>
+            </label>
+            <label class="field-inline">
+                <span class="field-label">Week</span>
+                <select id="week-select"></select>
             </label>
             <label class="field-inline">
                 <span class="field-label">Policy</span>
                 <select id="policy-select">
                     <option value="greedy">Greedy: nearest free truck</option>
+                    <option value="milp" selected>MILP: optimal assignment (SciPy)</option>
+                </select>
+            </label>
+            <label class="field-inline">
+                <span class="field-label">Objective</span>
+                <select id="objective-select" title="What the MILP optimizer maximises; greedy ignores it">
+                    <option value="profit">Max profit</option>
+                    <option value="service">Customer satisfaction</option>
+                    <option value="cost">Low cost</option>
+                    <option value="revenue">Max revenue</option>
+                    <option value="balanced">Balanced</option>
                 </select>
             </label>
             <label class="field-inline">
@@ -32,7 +47,6 @@
 
     <main class="layout">
         <section class="map-area" aria-label="US dispatch map">
-            <div id="map" class="map-frame" role="region" aria-label="Map of US lanes, cities and trucks"></div>
             <ul class="legend" aria-label="Legend">
                 <li><span class="swatch swatch-loaded"></span>Loaded</li>
                 <li><span class="swatch swatch-empty"></span>Driving empty</li>
@@ -42,6 +56,7 @@
                 <li><span class="legend-city legend-city-receives"></span>Receives more</li>
                 <li><span class="legend-line"></span>Lane (real roads)</li>
             </ul>
+            <div id="map" class="map-frame" role="region" aria-label="Map of US lanes, cities and trucks"></div>
             <div class="controls">
                 <button id="play-button" class="primary-button" type="button">Play</button>
                 <input id="time-slider" class="time-slider" type="range" min="0" max="10080" step="1" value="0"
@@ -59,9 +74,9 @@
         </section>
 
         <aside class="panel" aria-label="This week so far">
-            <div>
-                <p id="date" class="date">—</p>
+            <div class="clock">
                 <p id="time" class="time">00:00</p>
+                <p id="date" class="date">—</p>
             </div>
             <section class="panel-section">
                 <h2>This week so far</h2>
@@ -80,19 +95,12 @@
             </section>
             <section class="panel-section">
                 <h2>Fleet now</h2>
-                <table class="metrics-table">
-                    <tbody>
-                        <tr><th scope="row"><span class="swatch swatch-loaded"></span>Loaded</th><td id="fleet-loaded">0</td></tr>
-                        <tr><th scope="row"><span class="swatch swatch-empty"></span>Driving empty</th><td id="fleet-empty">0</td></tr>
-                        <tr><th scope="row"><span class="swatch swatch-parked"></span>Parked, ready</th><td id="fleet-parked">0</td></tr>
-                        <tr><th scope="row"><span class="swatch swatch-out"></span>Out of service</th><td id="fleet-out">0</td></tr>
-                    </tbody>
-                </table>
-            </section>
-            <section class="panel-section">
-                <h2>Profit by day</h2>
-                <svg id="daily-chart" class="daily-chart" viewBox="0 0 280 64" role="img"
-                     aria-label="Profit for each day of the simulated week"></svg>
+                <dl class="fleet">
+                    <div><dd id="fleet-loaded">0</dd><dt><span class="swatch swatch-loaded"></span>Loaded</dt></div>
+                    <div><dd id="fleet-empty">0</dd><dt><span class="swatch swatch-empty"></span>Empty</dt></div>
+                    <div><dd id="fleet-parked">0</dd><dt><span class="swatch swatch-parked"></span>Parked</dt></div>
+                    <div><dd id="fleet-out">0</dd><dt><span class="swatch swatch-out"></span>Out</dt></div>
+                </dl>
             </section>
         </aside>
     </main>

@@ -3,7 +3,9 @@
 Run from the project folder:
     python tools/serve.py            # then open http://localhost:8022
 
-GET /api/simulate?start=2022-03-07&policy=greedy&seed=1 returns the replay JSON (freight_sim/replay.py).
+GET /api/simulate?start=2022-03-07&policy=milp&objective=service&seed=1 returns the replay JSON
+(freight_sim/replay.py). GET /api/compare?start=2022-03-07&seed=1 returns one row of totals per policy and objective
+for that week.
 On Qollab there is no server; the page calls the same Python function through the runtime instead.
 """
 
@@ -15,24 +17,28 @@ from urllib.parse import urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from freight_sim.replay import parse_simulation_request, simulate_week  # noqa: E402
+from freight_sim.replay import compare_objectives, parse_simulation_request, simulate_week  # noqa: E402
 
 PORT = 8022
 SIMULATE_PATH = "/api/simulate"
+COMPARE_PATH = "/api/compare"
 
 
 class DispatchRequestHandler(SimpleHTTPRequestHandler):
     def do_GET(self) -> None:
         url = urlsplit(self.path)
-        if url.path != SIMULATE_PATH:
+        if url.path not in (SIMULATE_PATH, COMPARE_PATH):
             super().do_GET()
             return
         try:
-            start_date, policy_name, seed = parse_simulation_request(url.query)
+            start_date, policy_name, objective_key, seed = parse_simulation_request(url.query)
         except ValueError as error:
             self.send_json(400, {"error": str(error)})
             return
-        self.send_json(200, simulate_week(start_date, policy_name, seed))
+        if url.path == COMPARE_PATH:
+            self.send_json(200, {"start_date": start_date, "seed": seed, "runs": compare_objectives(start_date, seed)})
+            return
+        self.send_json(200, simulate_week(start_date, policy_name, seed, objective_key))
 
     def send_json(self, status: int, data: dict) -> None:
         body = json.dumps(data, separators=(",", ":")).encode()

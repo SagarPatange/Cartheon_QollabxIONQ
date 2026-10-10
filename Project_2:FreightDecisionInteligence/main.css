@@ -1,20 +1,22 @@
-/* Truckload Dispatch: white, greys and black. Purple only for trucks (solid loaded, outlined empty, light parked;
-   grey out of service). Cities run from white (receives more freight) to black (sends more). Frames are square;
-   controls are rounded pills. */
+/* Truckload Dispatch, dark mode: near-black background, greys and white text. Purple only for trucks (solid
+   loaded, outlined empty, dim parked; grey out of service). Cities run from white (receives more freight) to black
+   (sends more). Frames are square; controls are rounded pills. */
 
 :root {
-    --color-background: #ffffff;
-    --color-surface: #fafafa;
-    --color-line: #e5e5e5;
-    --color-faint: #d4d4d4;
-    --color-mid: #a3a3a3;
-    --color-muted: #737373;
-    --color-secondary: #404040;
-    --color-text: #0a0a0a;
+    color-scheme: dark;
 
-    --color-truck: #6d28d9;
-    --color-truck-parked: #c4b5fd;
-    --color-truck-out: #d4d4d4;
+    --color-background: #0a0a0a;
+    --color-surface: #141414;
+    --color-line: #262626;
+    --color-faint: #3a3a3a;
+    --color-mid: #5c5c5c;
+    --color-muted: #a3a3a3;
+    --color-secondary: #d4d4d4;
+    --color-text: #f5f5f5;
+
+    --color-truck: #a78bfa;
+    --color-truck-parked: #5b4a8f;
+    --color-truck-out: #525252;
 
     --font-sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 
@@ -49,34 +51,53 @@ p {
 
 /* Top bar: title and the run controls */
 
+/* Pinned to the top while the page scrolls, above the map's own controls. */
 .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 2000;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: var(--space-3) var(--space-5);
-    padding: var(--space-3) var(--space-5);
+    gap: var(--space-4) 40px;
+    padding: 28px 40px;
     border-bottom: 1px solid var(--color-line);
+    background: var(--color-background);
 }
 
 h1 {
-    font-size: 16px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
 }
 
+/* Always one line: never wraps. When the window is too narrow, src/fit_one_row.js zooms the whole row down. */
 .run-controls {
     display: flex;
-    flex-wrap: wrap;
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
     align-items: center;
     gap: var(--space-3) var(--space-4);
+    white-space: nowrap;
 }
 
 .run-status {
-    padding: var(--space-2) var(--space-5);
-    border-bottom: 1px solid var(--color-line);
-    color: var(--color-muted);
+    position: fixed;
+    left: 50%;
+    bottom: var(--space-5);
+    z-index: 1000;
+    transform: translateX(-50%);
+    padding: var(--space-2) var(--space-4);
+    border: 1px solid var(--color-line);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-secondary);
     font-size: 12px;
+}
+
+.run-status:empty {
+    display: none;
 }
 
 .field-inline {
@@ -121,19 +142,28 @@ select {
     background-repeat: no-repeat;
 }
 
-.run-controls {
-    padding: var(--space-1);
-    border: 1px solid var(--color-line);
-    border-radius: 999px;
-    background: var(--color-surface);
+
+/* The run controls in the top bar are a size up from the rest of the page. */
+.run-controls input,
+.run-controls select,
+.run-controls button {
+    min-height: 46px;
+    padding-left: 20px;
+    padding-right: 20px;
+    font-size: 16px;
 }
 
-.run-controls .field-inline {
-    padding-left: var(--space-3);
+.run-controls select {
+    padding-right: 40px;
+    background-position: calc(100% - 22px) 50%, calc(100% - 17px) 50%;
+}
+
+.run-controls .field-label {
+    font-size: 14px;
 }
 
 .seed-input {
-    width: 72px;
+    width: 84px;
 }
 
 select,
@@ -180,13 +210,32 @@ input[type="date"] {
 .map-frame {
     flex: 1;
     min-height: 520px;
+    overflow: hidden;
     border: 1px solid var(--color-line);
+    border-radius: 16px;
     background: var(--color-surface);
 }
 
-/* OpenStreetMap tiles in grey: the map stays black and white. */
+/* OpenStreetMap tiles inverted and dimmed: a quiet dark-grey map where its own place names fade back. */
 .map-frame .leaflet-tile-pane {
-    filter: grayscale(1) contrast(0.85) brightness(1.06);
+    filter: grayscale(1) invert(1) contrast(0.55) brightness(0.6);
+}
+
+.leaflet-container {
+    background: var(--color-surface);
+}
+
+.leaflet-control-zoom a,
+.leaflet-control-attribution,
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+    background: var(--color-surface) !important;
+    color: var(--color-text) !important;
+    border-color: var(--color-line) !important;
+}
+
+.leaflet-container .leaflet-control-attribution a {
+    color: var(--color-secondary);
 }
 
 .leaflet-container {
@@ -202,13 +251,15 @@ input[type="date"] {
 }
 
 .leaflet-tooltip.city-label {
-    padding: 0 var(--space-1);
+    padding: 0;
     border: none;
-    background: rgba(255, 255, 255, 0.85);
+    background: transparent;
     box-shadow: none;
     color: var(--color-text);
     font-size: 11px;
     font-weight: 600;
+    text-shadow: 0 0 3px #000, 0 0 6px #000;
+    white-space: nowrap;
 }
 
 .leaflet-tooltip.city-label::before {
@@ -227,6 +278,7 @@ input[type="date"] {
 .legend {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     gap: var(--space-2) var(--space-5);
     margin: 0;
     padding: 0;
@@ -239,6 +291,10 @@ input[type="date"] {
     display: flex;
     align-items: center;
     gap: var(--space-2);
+}
+
+.legend .swatch {
+    margin-right: 0;
 }
 
 .swatch {
@@ -254,7 +310,7 @@ input[type="date"] {
     background: var(--color-truck);
 }
 
-/* An outlined arrow: the purple shape with a smaller white one on top. */
+/* An outlined arrow: the purple shape with a smaller background-colored one on top. */
 .swatch-empty {
     background: var(--color-truck);
     position: relative;
@@ -279,21 +335,21 @@ input[type="date"] {
 .legend-city {
     width: 12px;
     height: 12px;
-    border: 1.5px solid var(--color-text);
+    border: 1.5px solid var(--color-mid);
     border-radius: 50%;
 }
 
 .legend-city-sends {
-    background: var(--color-text);
+    background: #0a0a0a;
 }
 
 .legend-city-receives {
-    background: var(--color-background);
+    background: #ffffff;
 }
 
 .legend-line {
     width: 20px;
-    border-top: 1px solid #9a9a9a;
+    border-top: 1px solid #6b6b6b;
 }
 
 /* Playback */
@@ -316,19 +372,26 @@ input[type="date"] {
 .panel {
     display: flex;
     flex-direction: column;
-    gap: var(--space-5);
+    gap: var(--space-4);
     padding: var(--space-4) var(--space-5);
     border-left: 1px solid var(--color-line);
 }
 
+.clock {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
 .date {
-    font-size: 20px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
+    color: var(--color-muted);
+    font-size: 13px;
+    font-weight: 500;
 }
 
 .time {
-    font-size: 40px;
+    font-size: 30px;
     font-weight: 600;
     letter-spacing: -0.02em;
     font-variant-numeric: tabular-nums;
@@ -336,10 +399,12 @@ input[type="date"] {
 }
 
 .panel-section h2 {
-    margin-bottom: var(--space-2);
-    color: var(--color-secondary);
-    font-size: 12px;
+    margin-bottom: var(--space-1);
+    color: var(--color-muted);
+    font-size: 11px;
     font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 
 .metrics-table {
@@ -350,8 +415,8 @@ input[type="date"] {
 
 .metrics-table th,
 .metrics-table td {
-    padding: 7px 0;
-    border-bottom: 1px solid var(--color-line);
+    padding: 3px 0;
+    font-size: 13px;
 }
 
 .metrics-table th {
@@ -367,11 +432,36 @@ input[type="date"] {
 
 .metrics-total th,
 .metrics-total td {
-    padding: 4px 0 10px;
-    border-bottom: 2px solid var(--color-text);
+    padding: 2px 0 6px;
     color: var(--color-text);
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 600;
+}
+
+/* Fleet right now: four numbers side by side. */
+.fleet {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-2);
+    margin: 0;
+}
+
+.fleet dd {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.fleet dt {
+    display: flex;
+    align-items: center;
+    color: var(--color-muted);
+    font-size: 12px;
+}
+
+.fleet .swatch {
+    margin-right: 5px;
 }
 
 .note {
@@ -381,30 +471,19 @@ input[type="date"] {
 }
 
 
-.daily-chart {
-    display: block;
-    width: 100%;
-    height: 64px;
-}
-
-.daily-chart text {
-    fill: var(--color-muted);
-    font-size: 10px;
-}
-
-.day-bar {
-    fill: var(--color-line);
-}
-
-.day-bar-done {
-    fill: var(--color-text);
-}
-
 /* Timeline */
 
+.layout {
+    border-bottom: 1px solid var(--color-line);
+}
+
+/* The timeline sits apart from the map and panel: a gap, then its own rounded card. */
 .timeline {
+    margin: 40px var(--space-5) var(--space-5);
     padding: var(--space-4) var(--space-5) var(--space-5);
-    border-top: 1px solid var(--color-line);
+    border: 1px solid var(--color-line);
+    border-radius: 16px;
+    background: var(--color-surface);
 }
 
 .timeline-header {
@@ -427,14 +506,12 @@ input[type="date"] {
 
 .filters {
     gap: var(--space-1);
-    padding: 3px;
-    border: 1px solid var(--color-line);
-    border-radius: 999px;
 }
 
 .filters button {
     min-height: 28px;
     border-color: transparent;
+    background: transparent;
     font-size: 12px;
 }
 
@@ -546,4 +623,13 @@ input[type="date"] {
     .event-text {
         grid-column: 1 / -1;
     }
+}
+
+/* No visible scroll bars anywhere; the page and the timeline still scroll with wheel, trackpad and keys. */
+* {
+    scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+    display: none;
 }

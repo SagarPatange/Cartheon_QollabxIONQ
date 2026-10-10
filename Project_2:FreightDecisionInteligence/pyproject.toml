@@ -3,6 +3,7 @@ name = "freight-decision-intelligence"
 version = "0.1.0"
 description = "Truckload dispatch simulator comparing classical and quantum dispatch policies"
 requires-python = ">=3.11"
+dependencies = ["scipy==1.14.1"]  # milp policy; SciPy is bundled with Qollab's Pyodide
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "ruff>=0.6"]

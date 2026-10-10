@@ -1,6 +1,7 @@
 """Run one week and pack the result as plain JSON for the dispatch page.
 
-The page asks for a week with a query string such as `start=2022-03-07&policy=greedy&seed=1`. Locally,
+The page asks for a week with a query string such as `start=2022-03-07&policy=milp&objective=service&seed=1`.
+The objective only matters for the MILP policy (freight_sim/policies/objectives.py). Locally,
 tools/serve.py answers it; on Qollab, the page will call simulate_week through the Python bridge instead.
 """
 
@@ -9,7 +10,8 @@ from datetime import date, timedelta
 from urllib.parse import parse_qs
 
 from freight_sim.clock import MINUTES_PER_DAY
-from freight_sim.policies.catalog import POLICIES
+from freight_sim.policies.catalog import POLICY_NAMES, build_policy, describe_rule
+from freight_sim.policies.objectives import DEFAULT_OBJECTIVE, OBJECTIVES
 from freight_sim.scenario import load_scenario
 from freight_sim.simulator import Result, Settings, simulate
 
@@ -20,8 +22,9 @@ DEFAULT_POLICY = "greedy"
 DEFAULT_SEED = 1
 
 
-def parse_simulation_request(query_string: str) -> tuple[str, str, int]:
-    """(start date, policy name, seed) from a query string; fails fast on anything the data cannot cover."""
+def parse_simulation_request(query_string: str) -> tuple[str, str, str, int]:
+    """(start date, policy name, objective key, seed) from a query string; fails fast on anything the data cannot
+    cover."""
     query = parse_qs(query_string)
     if "start" not in query:
         raise ValueError("a simulation request needs start=YYYY-MM-DD")
@@ -34,22 +37,59 @@ def parse_simulation_request(query_string: str) -> tuple[str, str, int]:
     if start_day < FIRST_DATA_DAY or last_day > LAST_DATA_DAY:
         raise ValueError(f"the week {start_day}–{last_day} is outside the data ({FIRST_DATA_DAY}–{LAST_DATA_DAY})")
     policy_name = query.get("policy", [DEFAULT_POLICY])[0]
-    if policy_name not in POLICIES:
-        raise ValueError(f"unknown policy {policy_name!r}; known: {sorted(POLICIES)}")
+    if policy_name not in POLICY_NAMES:
+        raise ValueError(f"unknown policy {policy_name!r}; known: {POLICY_NAMES}")
+    objective_key = query.get("objective", [DEFAULT_OBJECTIVE])[0]
+    if objective_key not in OBJECTIVES:
+        raise ValueError(f"unknown objective {objective_key!r}; known: {sorted(OBJECTIVES)}")
     seed = int(query.get("seed", [str(DEFAULT_SEED)])[0])
-    return start_text, policy_name, seed
+    return start_text, policy_name, objective_key, seed
 
 
-def simulate_week(start_date: str, policy_name: str, seed: int) -> dict:
-    """Simulate DAYS_PER_RUN days from start_date with the named policy and return the replay."""
+def load_week(start_date: str, seed: int):
+    """The scenario and settings for DAYS_PER_RUN days from start_date."""
     last_day = date.fromisoformat(start_date) + timedelta(days=DAYS_PER_RUN - 1)
     scenario = load_scenario(start_date, last_day.isoformat(), seed)
     settings = Settings(end_minute=DAYS_PER_RUN * MINUTES_PER_DAY)
-    result = simulate(scenario, POLICIES[policy_name], settings)
-    return build_replay(scenario, result, settings, start_date, policy_name, seed)
+    return scenario, settings
 
 
-def build_replay(scenario, result: Result, settings: Settings, start_date: str, policy_name: str, seed: int) -> dict:
+def simulate_week(start_date: str, policy_name: str, seed: int, objective_key: str = DEFAULT_OBJECTIVE) -> dict:
+    """Simulate DAYS_PER_RUN days from start_date with the named policy and objective and return the replay."""
+    scenario, settings = load_week(start_date, seed)
+    result = simulate(scenario, build_policy(policy_name, objective_key), settings)
+    return build_replay(scenario, result, settings, start_date, policy_name, seed, objective_key)
+
+
+# Every run the comparison table shows: greedy once (it has no objective), then the optimizer with each objective.
+COMPARED_RUNS = [("greedy", DEFAULT_OBJECTIVE)] + [("milp", objective_key) for objective_key in OBJECTIVES]
+
+
+def compare_objectives(start_date: str, seed: int) -> list[dict]:
+    """The same week and seed under greedy and under the optimizer with each objective: one row of totals each.
+
+    The scenario is loaded once and shared, so every run sees exactly the same loads, tenders and trucks."""
+    scenario, settings = load_week(start_date, seed)
+    rows = []
+    for policy_name, objective_key in COMPARED_RUNS:
+        summary = simulate(scenario, build_policy(policy_name, objective_key), settings).summary
+        rows.append({
+            "policy": policy_name,
+            "objective": objective_key,
+            "label": describe_rule(policy_name, objective_key)["label"],
+            "loads_tendered": summary["loads_tendered"],
+            "loads_accepted": summary["loads_accepted"],
+            "loads_not_served": summary["loads_declined"] + summary["loads_expired"],
+            "revenue": summary["revenue"],
+            "cost": summary["cost"],
+            "profit": summary["profit"],
+            "empty_mile_share": summary["empty_mile_share"],
+        })
+    return rows
+
+
+def build_replay(scenario, result: Result, settings: Settings, start_date: str, policy_name: str, seed: int,
+                 objective_key: str = DEFAULT_OBJECTIVE) -> dict:
     """Trucks, trips, events, daily and total metrics, with times in minutes since start_date's midnight."""
     equipment_by_load = {load.load_id: load.equipment for load in scenario.loads}
     trips = []
@@ -79,6 +119,8 @@ def build_replay(scenario, result: Result, settings: Settings, start_date: str, 
         "start_date": start_date,
         "days": int(settings.end_minute // MINUTES_PER_DAY),
         "policy": policy_name,
+        "objective": objective_key,
+        "rule": describe_rule(policy_name, objective_key),
         "seed": seed,
         "settings": asdict(settings),
         "trucks": trucks,

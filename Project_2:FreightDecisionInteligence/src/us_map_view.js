@@ -1,7 +1,7 @@
 /**
- * The US dispatch map. Everything is black, white and grey except the trucks: OpenStreetMap streets in grey,
+ * The US dispatch map, in dark mode. Everything is black, white and grey except the trucks: OpenStreetMap streets in dark grey,
  * every lane as a thin grey line on its real road, cities from white (receives more freight than it sends) to
- * black (sends more). Trucks are purple arrows: solid when loaded, outlined when driving empty, light purple when
+ * black (sends more). Trucks are purple arrows: solid when loaded, outlined when driving empty, dim purple when
  * parked, grey when out of service.
  */
 
@@ -14,16 +14,16 @@ const LEAFLET_CSS_URL = "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet
 const TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 const ATTRIBUTION = '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · routes: OSRM';
 
-const LANE_STYLE = { color: "#9a9a9a", opacity: 0.7, weight: 1, interactive: false };
-const PURPLE = "#6d28d9";
+const LANE_STYLE = { color: "#6b6b6b", opacity: 0.8, weight: 1, interactive: false };
+const PURPLE = "#a78bfa";
 // Fill and outline for each truck state.
 const TRUCK_STYLES = {
     loaded: { fill: PURPLE, stroke: PURPLE },
     loading: { fill: PURPLE, stroke: PURPLE },
     unloading: { fill: PURPLE, stroke: PURPLE },
-    empty: { fill: "#ffffff", stroke: PURPLE },
-    parked: { fill: "#c4b5fd", stroke: "#7c3aed" },
-    out_of_service: { fill: "#d4d4d4", stroke: "#737373" },
+    empty: { fill: "#0a0a0a", stroke: PURPLE },
+    parked: { fill: "#5b4a8f", stroke: "#8b74d6" },
+    out_of_service: { fill: "#525252", stroke: "#8a8a8a" },
 };
 const DRIVING_ARROW_PX = 13;
 const PARKED_ARROW_PX = 10;
@@ -32,7 +32,7 @@ const RING_FIRST_RADIUS_PX = 13;
 const RING_STEP_PX = 7;
 const TRUCKS_PER_RING = 12;
 const CITY_RADIUS_PX = 7;
-const LABEL_ON_LEFT = new Set(["Indianapolis"]);
+const LABEL_BELOW = new Set(["Indianapolis"]);
 
 export class UsMapView {
     constructor(container, cities, lanes, routePaths) {
@@ -52,16 +52,16 @@ export class UsMapView {
         for (const city of cities) {
             const marker = L.circleMarker([city.lat, city.lon], {
                 radius: CITY_RADIUS_PX,
-                color: "#0a0a0a",
+                color: "#8a8a8a",
                 weight: 1.5,
                 fillColor: cityColor(city),
                 fillOpacity: 1,
             }).addTo(this.map);
-            const isLabelOnLeft = LABEL_ON_LEFT.has(city.name);
+            const isLabelBelow = LABEL_BELOW.has(city.name);
             marker.bindTooltip(city.name, {
                 permanent: true,
-                direction: isLabelOnLeft ? "left" : "right",
-                offset: [isLabelOnLeft ? -CITY_RADIUS_PX - 14 : CITY_RADIUS_PX + 14, 0],
+                direction: isLabelBelow ? "bottom" : "right",
+                offset: isLabelBelow ? [0, CITY_RADIUS_PX + 4] : [CITY_RADIUS_PX + 14, 0],
                 className: "city-label",
             });
             marker.bindPopup(

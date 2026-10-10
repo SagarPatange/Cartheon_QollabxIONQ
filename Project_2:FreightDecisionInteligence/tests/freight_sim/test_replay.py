@@ -5,7 +5,7 @@ import json
 import pytest
 
 from freight_sim.network import RoadNetwork
-from freight_sim.replay import build_replay, parse_simulation_request
+from freight_sim.replay import build_replay, compare_objectives, parse_simulation_request
 from freight_sim.scenario import Load, Scenario, TruckStart
 from freight_sim.simulator import Settings, simulate
 from freight_sim.state import Decision
@@ -37,6 +37,7 @@ def test_the_replay_has_everything_the_page_draws_and_is_plain_json():
     assert replay["start_date"] == "2022-03-07"
     assert replay["days"] == 7
     assert replay["policy"] == "greedy"
+    assert replay["objective"] == "profit"
     assert replay["trucks"] == [{"id": "T1", "start_city": "Dallas, TX", "equipment": "D"}]
     assert replay["out_of_service"] == [{"id": "T9", "city": "Memphis, TN", "status": "Maintenance"}]
     assert {"summary", "daily", "events", "trips", "settings"} <= set(replay)
@@ -53,18 +54,40 @@ def test_a_trip_in_the_replay_has_every_moment_the_map_needs_to_place_the_truck(
     }
 
 
-def test_a_simulation_request_reads_week_policy_and_seed():
-    assert parse_simulation_request("start=2022-03-07&policy=greedy&seed=3") == ("2022-03-07", "greedy", 3)
+def test_a_simulation_request_reads_week_policy_objective_and_seed():
+    query = "start=2022-03-07&policy=milp&objective=service&seed=3"
+    assert parse_simulation_request(query) == ("2022-03-07", "milp", "service", 3)
 
 
-def test_a_simulation_request_defaults_to_the_greedy_policy_and_seed_one():
-    assert parse_simulation_request("start=2022-03-07") == ("2022-03-07", "greedy", 1)
+def test_a_simulation_request_defaults_to_greedy_max_profit_and_seed_one():
+    assert parse_simulation_request("start=2022-03-07") == ("2022-03-07", "greedy", "profit", 1)
 
 
-BAD_QUERIES = ["", "start=March", "start=2021-12-30", "start=2024-12-30", "start=2022-03-07&policy=x"]
+BAD_QUERIES = ["", "start=March", "start=2021-12-30", "start=2024-12-30", "start=2022-03-07&policy=x",
+               "start=2022-03-07&objective=happiness"]
 
 
 @pytest.mark.parametrize("query", BAD_QUERIES)
 def test_a_bad_simulation_request_fails_fast(query):
     with pytest.raises(ValueError):
         parse_simulation_request(query)
+
+
+def test_the_replay_says_which_rule_made_the_decisions():
+    rule = make_replay()["rule"]
+    assert rule["label"] == "Greedy"
+    assert "nearest free truck" in rule["description"]
+
+
+def test_comparing_objectives_runs_greedy_and_every_objective_on_the_same_week():
+    rows = compare_objectives("2022-03-07", seed=1)
+    assert [(row["policy"], row["objective"]) for row in rows] == [
+        ("greedy", "profit"), ("milp", "profit"), ("milp", "service"), ("milp", "cost"), ("milp", "revenue"),
+        ("milp", "balanced"),
+    ]
+    assert len({row["loads_tendered"] for row in rows}) == 1
+    by_objective = {row["objective"]: row for row in rows if row["policy"] == "milp"}
+    assert by_objective["service"]["loads_accepted"] == max(row["loads_accepted"] for row in rows)
+    assert by_objective["cost"]["empty_mile_share"] == min(row["empty_mile_share"] for row in rows)
+    assert by_objective["revenue"]["revenue"] == max(row["revenue"] for row in rows if row["policy"] == "milp")
+    json.dumps(rows)

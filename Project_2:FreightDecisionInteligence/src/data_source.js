@@ -28,8 +28,13 @@ export function loadRoutePaths() {
     return fetchJson("data/osm_routes/lane_routes.json");
 }
 
-/** Simulate seven days from startDate with a policy and seed; returns the replay (see freight_sim/replay.py). */
-export function runSimulation(startDate, policyName, seed) {
-    const query = new URLSearchParams({ start: startDate, policy: policyName, seed: String(seed) });
+/**
+ * Simulate seven days from startDate with a policy, an objective (used by the MILP policy) and a seed; returns the
+ * replay (see freight_sim/replay.py).
+ */
+export function runSimulation(startDate, policyName, objectiveKey, seed) {
+    const query = new URLSearchParams({
+        start: startDate, policy: policyName, objective: objectiveKey, seed: String(seed),
+    });
     return fetchJson(`/api/simulate?${query}`);
 }

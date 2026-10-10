@@ -16,7 +16,7 @@ made to them are in `data/kaggle_logistics/README.md`; what the data contains an
 ## Run the dispatch simulator
 
 ```sh
-npm run serve        # starts tools/serve.py; open http://localhost:8022, pick a week, press "Simulate week"
+npm run serve        # starts tools/serve.py; open http://localhost:8022, pick a month and week, press "Simulate week"
 npm test             # page logic
 ../.venv-project2/bin/pytest -q   # simulator and data tools
 PYTHONPATH=. ../.venv-project2/bin/python tools/run_simulation.py 2022-03-07 2022-03-13   # totals in the terminal
@@ -24,7 +24,26 @@ PYTHONPATH=. ../.venv-project2/bin/python tools/run_simulation.py 2022-03-07 202
 
 The simulator (`freight_sim/`) follows Powell's framework: the state a dispatcher sees (`state.py`), the decision
 it returns (accept with a truck, decline or hold, each with a reason), new tenders as exogenous information, the
-discrete-event transition (`simulator.py`) and profit as the objective. Design and defaults:
+discrete-event transition (`simulator.py`) and profit as the objective.
+
+A run covers one of the first 4 weeks of a month (Jan 2022 – Dec 2024); week *n* starts on the month's *n*-th
+Monday.
+
+Policies (`freight_sim/policies/`): **greedy** gives each load, in pickup order, the nearest free truck with the
+right trailer; **milp** solves the whole epoch as one load–truck assignment with SciPy's `milp` (HiGHS), maximising
+the chosen **objective** (`objectives.py`; greedy ignores it):
+
+| Objective | Maximises |
+|---|---|
+| Max profit | revenue − cost; money-losing pairs are skipped |
+| Customer satisfaction | loads covered over the week, even at a loss; prefers trucks that are free again soon |
+| Low cost | profit with empty miles counted 3×, so only nearby trucks go |
+| Max revenue | top-line revenue, profitable or not |
+| Balanced | profit + a bonus per load − empty miles − lateness |
+
+On the week of 2022-03-07 (seed 1): greedy covers 243 loads for $171k profit; max profit 177 loads, $211k; customer
+satisfaction 266 loads, $140k; low cost 157 loads, $214k with 3.3 % empty miles; max revenue $717k revenue but
+$110k profit; balanced 174 loads, $210k. SciPy is bundled on Qollab; OR-Tools is not. Design and defaults:
 `docs/superpowers/specs/2026-10-10-dispatch-simulator-design.md`.
 
 ## Rebuild the data

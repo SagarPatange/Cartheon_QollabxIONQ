@@ -21,10 +21,10 @@ def greedy_nearest_truck(state: DecisionState) -> Decision:
     for load in loads_by_pickup:
         equipment_name = EQUIPMENT_NAMES[load.equipment]
         latest_pickup_minute = load.pickup_minute + PICKUP_GRACE_MINUTES
-        if state.minute > latest_pickup_minute:
-            hours_ago = (state.minute - load.pickup_minute) / MINUTES_PER_HOUR
+        decline_reason = past_grace_reason(state, load)
+        if decline_reason is not None:
             decline.add(load.load_id)
-            reasons[load.load_id] = f"Declined: pickup was {hours_ago:.1f} h ago, past the 2 h grace"
+            reasons[load.load_id] = decline_reason
             continue
         best_truck = find_nearest_truck(state, load, latest_pickup_minute, used_truck_ids)
         if best_truck is None:
@@ -38,6 +38,14 @@ def greedy_nearest_truck(state: DecisionState) -> Decision:
             f"(in {truck.city.split(',')[0]}, {empty_miles:,.0f} empty mi)"
         )
     return Decision(accept=accept, decline=decline, reasons=reasons)
+
+
+def past_grace_reason(state: DecisionState, load) -> str | None:
+    """The reason to decline a load whose pickup is already more than the grace period ago, or None."""
+    if state.minute <= load.pickup_minute + PICKUP_GRACE_MINUTES:
+        return None
+    hours_ago = (state.minute - load.pickup_minute) / MINUTES_PER_HOUR
+    return f"Declined: pickup was {hours_ago:.1f} h ago, past the 2 h grace"
 
 
 def find_nearest_truck(state: DecisionState, load, latest_pickup_minute: float, used_truck_ids: set):
