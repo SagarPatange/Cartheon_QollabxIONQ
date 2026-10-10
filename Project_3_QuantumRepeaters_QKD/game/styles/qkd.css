@@ -1,0 +1,403 @@
+/*
+ * Messaging world additions on top of world.css and towers.css: plumber stations, cloud turtles, speech bubbles,
+ * the envelope, the Alice–David beam, the banner, the round cards and the control panels.
+ *
+ * src/qkd/render_qkd_state.js sets, on the track: data-phase (the current backend step, for one-off animations),
+ * data-direction ("to-luigi" or "to-mario"), data-kind, and a reached-<phase> class for every step played so far.
+ */
+
+:root {
+    --mario-red: #d82800;
+    --luigi-green: #00a800;
+    --station-width: 96px;
+    --qkd-link-height: 260px;
+    --fiber-height: 120px;
+    --beam-inset: calc(var(--station-width) + var(--tower-width) / 2);
+}
+
+.qkd-track {
+    min-width: 960px;
+    height: 400px;
+}
+
+/* ---------- Mario and Luigi on the ground ---------- */
+
+.station {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    width: var(--station-width);
+    flex-shrink: 0;
+    align-self: stretch;
+}
+
+.station-name {
+    margin-bottom: 4px;
+    font-size: 11px;
+    text-shadow: 1px 1px 0 var(--ink);
+}
+
+.station .plumber {
+    display: block;
+    transition: filter 300ms;
+}
+
+.qkd-track[data-phase="encrypt"][data-direction="to-luigi"] .station[data-plumber="mario"] .plumber,
+.qkd-track[data-phase="encrypt"][data-direction="to-mario"] .station[data-plumber="luigi"] .plumber,
+.qkd-track[data-phase="decrypt"][data-direction="to-luigi"] .station[data-plumber="luigi"] .plumber,
+.qkd-track[data-phase="decrypt"][data-direction="to-mario"] .station[data-plumber="mario"] .plumber {
+    filter: drop-shadow(0 0 6px var(--coin-gold));
+    animation: plumber-hop 0.5s ease-out 2;
+}
+
+@keyframes plumber-hop {
+    50% { translate: 0 -12px; }
+}
+
+/* ---------- Speech bubbles ---------- */
+
+.speech-bubble {
+    position: relative;
+    max-width: 150px;
+    margin-bottom: 10px;
+    padding: 6px 8px;
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--ink);
+    background: var(--cloud-white);
+    border: 2px solid var(--ink);
+    word-break: break-all;
+    visibility: hidden;
+    opacity: 0;
+    scale: 0.6;
+    transition: opacity 300ms, scale 300ms;
+}
+
+.speech-bubble.is-visible {
+    visibility: visible;
+    opacity: 1;
+    scale: 1;
+}
+
+/* The tail points down at whoever is talking. */
+.speech-bubble::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    translate: -50% 0;
+    border-top: 8px solid var(--ink);
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+}
+
+.turtle-bubble {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    translate: -50% 0;
+    width: max-content;
+    max-width: 120px;
+    color: var(--error-red);
+}
+
+/* ---------- Towers ---------- */
+
+.tower-window {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    font-size: 16px;
+    color: var(--coin-gold);
+    background: var(--panel-black);
+    border: 2px solid var(--ink);
+    border-radius: 22px 22px 0 0;
+    transition: box-shadow 300ms;
+}
+
+.qkd-track.reached-encoding .tower-window {
+    box-shadow: 0 0 10px var(--qubit-blue), inset 0 0 8px var(--qubit-blue);
+}
+
+.qkd-track[data-phase="encoding"] .tower-window {
+    animation: window-pulse 0.5s ease-in-out 3;
+}
+
+@keyframes window-pulse {
+    50% { box-shadow: 0 0 20px var(--qubit-blue), inset 0 0 16px var(--qubit-blue); }
+}
+
+.qkd-track.reached-encoded_swapping .qkd-tower[data-role="middle"] .tower-window::after {
+    content: "⇄";
+}
+
+.qkd-track[data-phase="encoded_swapping"] .qkd-tower[data-role="middle"] .tower-window {
+    animation: repeater-flash 0.3s steps(2) 5;
+}
+
+@keyframes repeater-flash {
+    50% { background: var(--cloud-white); }
+}
+
+.qkd-track.reached-qkd_measure .qkd-tower[data-role="end"] .tower-window::after {
+    content: "+×";
+}
+
+/* ---------- Links and BSM nodes ---------- */
+
+.qkd-link {
+    height: var(--qkd-link-height);
+}
+
+.qkd-link .coin-row {
+    bottom: 156px;
+}
+
+.bsm-label {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 140px;
+    text-align: center;
+    font-size: 11px;
+    text-shadow: 1px 1px 0 var(--ink);
+}
+
+.qkd-track[data-phase="heralding"] .question-block {
+    animation: bump 0.25s ease-out 4;
+}
+
+.qkd-track[data-phase="heralding"] .coin {
+    animation: coin-pop 0.4s ease-out both;
+}
+
+.qkd-track[data-phase="heralding"] .coin:nth-child(2) { animation-delay: 100ms; }
+.qkd-track[data-phase="heralding"] .coin:nth-child(3) { animation-delay: 200ms; }
+.qkd-track[data-phase="heralding"] .coin:nth-child(4) { animation-delay: 300ms; }
+.qkd-track[data-phase="heralding"] .coin:nth-child(5) { animation-delay: 400ms; }
+.qkd-track[data-phase="heralding"] .coin:nth-child(6) { animation-delay: 500ms; }
+.qkd-track[data-phase="heralding"] .coin:nth-child(7) { animation-delay: 600ms; }
+
+/* The logical arcs stand from the teleported CNOT until swapping joins them into one end-to-end pair. */
+.qkd-track.reached-teleported_cnot .logical-arc {
+    opacity: 1;
+    box-shadow: 0 -2px 8px var(--qubit-blue);
+}
+
+.qkd-track.reached-encoded_swapping .logical-arc {
+    opacity: 0;
+    box-shadow: none;
+}
+
+.qkd-track.has-turtles[data-phase="heralding"] .fiber,
+.qkd-track.reached-abort .fiber {
+    border-top-color: var(--error-red);
+    opacity: 1;
+    animation: fiber-flicker 0.6s steps(2) infinite;
+}
+
+@keyframes fiber-flicker {
+    50% { opacity: 0.3; }
+}
+
+/* ---------- Cloud turtles ---------- */
+
+.cloud-turtle {
+    position: absolute;
+    left: 50%;
+    bottom: 186px;
+    translate: -50% 0;
+    display: none;
+    animation: turtle-bob 2.4s ease-in-out infinite;
+}
+
+.qkd-track.has-turtles .cloud-turtle {
+    display: block;
+}
+
+.qkd-track.has-turtles[data-phase="heralding"] .cloud-turtle {
+    animation: turtle-dive 1.2s ease-in-out infinite alternate;
+}
+
+.turtle-sprite {
+    display: block;
+}
+
+/* The fishing line a turtle lowers to the fiber while it taps photons. */
+.turtle-line {
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    width: 2px;
+    height: 0;
+    background: var(--ink);
+    transition: height 400ms;
+}
+
+.qkd-track.has-turtles[data-phase="heralding"] .turtle-line {
+    height: 48px;
+}
+
+@keyframes turtle-bob {
+    50% { translate: -50% -8px; }
+}
+
+@keyframes turtle-dive {
+    from { translate: -50% 0; }
+    to { translate: -50% 18px; }
+}
+
+/* ---------- Envelope on the classical channel ---------- */
+
+.envelope {
+    position: absolute;
+    z-index: 3;
+    bottom: 150px;
+    left: calc(var(--station-width) / 2);
+    font-size: 22px;
+    line-height: 1;
+    color: var(--cloud-white);
+    text-shadow: 2px 2px 0 var(--ink);
+    opacity: 0;
+}
+
+.qkd-track[data-kind="encrypted"] .envelope {
+    color: var(--coin-gold);
+}
+
+.qkd-track[data-phase="classical_send"][data-direction="to-luigi"] .envelope {
+    animation: fly-to-luigi 1.4s ease-in-out forwards;
+}
+
+.qkd-track[data-phase="classical_send"][data-direction="to-mario"] .envelope {
+    animation: fly-to-mario 1.4s ease-in-out forwards;
+}
+
+@keyframes fly-to-luigi {
+    from { opacity: 1; left: calc(var(--station-width) / 2); }
+    to { opacity: 1; left: calc(100% - var(--station-width) / 2); }
+}
+
+@keyframes fly-to-mario {
+    from { opacity: 1; left: calc(100% - var(--station-width) / 2); }
+    to { opacity: 1; left: calc(var(--station-width) / 2); }
+}
+
+/* ---------- Alice–David beam and banner ---------- */
+
+.pair-beam {
+    position: absolute;
+    left: var(--beam-inset);
+    right: var(--beam-inset);
+    bottom: calc(var(--fiber-height) + 12px);
+    height: 6px;
+    background: linear-gradient(90deg, var(--mario-red), var(--coin-gold), var(--luigi-green));
+    box-shadow: 0 0 10px var(--coin-gold);
+    opacity: 0;
+    scale: 0 1;
+    transition: opacity 500ms, scale 700ms;
+}
+
+.qkd-track.reached-frame_correction .pair-beam {
+    opacity: 1;
+    scale: 1 1;
+}
+
+.qkd-track[data-phase="teleport"] .pair-beam {
+    animation: beam-pulse 0.4s ease-in-out infinite alternate;
+}
+
+@keyframes beam-pulse {
+    to { box-shadow: 0 0 24px var(--cloud-white); height: 10px; }
+}
+
+.qkd-banner {
+    position: absolute;
+    top: 8px;
+    left: var(--beam-inset);
+    right: var(--beam-inset);
+    padding: 8px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--ink);
+    background: var(--coin-gold);
+    border: 2px solid var(--ink);
+    opacity: 0;
+    scale: 0.6 1;
+    transition: opacity 500ms, scale 500ms;
+}
+
+.qkd-banner.is-visible {
+    opacity: 1;
+    scale: 1 1;
+}
+
+.qkd-banner.is-aborted {
+    color: var(--text-light);
+    background: var(--error-red);
+}
+
+/* ---------- Controls ---------- */
+
+.qkd-controls {
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.plumber-panel,
+.settings-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.settings-panel {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    max-width: 420px;
+}
+
+.plumber-panel {
+    padding: 10px;
+    border: 2px solid var(--ink);
+}
+
+.plumber-panel.is-mario { background: color-mix(in srgb, var(--mario-red) 35%, transparent); }
+.plumber-panel.is-luigi { background: color-mix(in srgb, var(--luigi-green) 35%, transparent); }
+
+.action-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.action-button {
+    font-size: 11px;
+    padding: 8px 10px;
+}
+
+.control-field .message-input {
+    width: 100%;
+    min-width: 200px;
+    padding: 6px;
+}
+
+.toggle-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.toggle-field input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--luigi-green);
+}

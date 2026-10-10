@@ -1,0 +1,181 @@
+/*
+ * Level 1 additions on top of world.css, towers.css, qkd.css and bsm_link.css: the page layout, a two-node track,
+ * and a red fiber after a failed attempt. Classes are set by src/level1/level1_main.js.
+ */
+
+/* The two towers fill the window: HUD on top, controls at the bottom, the world takes everything between. */
+.level1-page {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.level1-page .world {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 0;
+}
+
+/* Tall enough to leave sky above the towers for the decoherence note. */
+.level1-track {
+    height: 470px;
+    min-width: 870px;
+}
+
+/* A failed attempt flashes the fiber red once instead of flickering forever. */
+.qkd-link.is-tapped .fiber {
+    border-top-color: var(--error-red);
+    opacity: 1;
+}
+
+/* Level 1's orbs are a little bigger than Level 2's: each tower holds one stack of 5 memory slots. */
+.level1-track .qubit-orb {
+    width: 26px;
+    height: 26px;
+    font-size: 14px;
+}
+
+/* A stored pair's glow fades as it ages (--life runs from 1 down to 0, set by src/level1/render_level1.js). */
+.level1-track .qubit-orb.is-pair {
+    opacity: calc(0.3 + 0.7 * var(--life, 1));
+}
+
+/* Near the end of its life a pair pulses slowly, once a second, to warn it is about to decohere. */
+.level1-track .qubit-orb.is-fading {
+    animation: orb-warn 1s steps(2) infinite;
+}
+
+@keyframes orb-warn {
+    50% { background: var(--error-red); }
+}
+
+/* A qubit that just decohered: grey with a red ring, crossed out. */
+.qubit-orb.is-decohered {
+    background: var(--idle-gray);
+    box-shadow: 0 0 0 3px var(--error-red);
+}
+
+.qubit-orb.is-decohered::after {
+    content: "✖";
+    color: var(--error-red);
+}
+
+/* A lesson note, over a tower or the BSM, the first time something happens there; the game waits while it is up. */
+.lesson-note {
+    position: absolute;
+    z-index: 5;
+    bottom: calc(100% + 16px);
+    left: 50%;
+    translate: -50% 0;
+    width: 340px;
+    padding: 10px 12px;
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--ink);
+    background: var(--cloud-white);
+    border: var(--pixel) solid var(--error-red);
+}
+
+.lesson-text,
+.lesson-continue {
+    margin: 0;
+}
+
+/* The way on, at the end of the note where the reader already is. */
+.lesson-continue {
+    margin-top: 8px;
+    color: var(--brick-dark);
+}
+
+/* Each tower's note hangs from its inner edge, toward the middle of the screen; the BSM's sits centred over it. */
+.lesson-note.is-mario {
+    left: 0;
+    translate: 0 0;
+}
+
+.lesson-note.is-luigi {
+    left: auto;
+    right: 0;
+    translate: 0 0;
+}
+
+/* The tail points down at the middle of the tower (half the tower's width in from the note's edge). */
+.lesson-note::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    translate: -50% 0;
+    border-top: 10px solid var(--error-red);
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+}
+
+.lesson-note.is-mario::after {
+    left: calc(var(--tower-width) / 2);
+}
+
+.lesson-note.is-luigi::after {
+    left: calc(100% - var(--tower-width) / 2);
+}
+
+/* The BSM's note is wider, so it stays short enough to fit under the sky. */
+.lesson-note.is-bsm {
+    bottom: 290px;
+    width: 540px;
+}
+
+.lesson-note.is-bsm::after {
+    left: 50%;
+}
+
+/* Mario and Luigi get room to stand beside their towers, so a speech bubble fits on one line. */
+.level1-track {
+    --station-width: 150px;
+}
+
+.level1-track .station-bubble {
+    max-width: none;
+    white-space: nowrap;
+}
+
+/* The towers carry the names, so the plumbers' own name tags would only repeat them. */
+.level1-track .station-name {
+    display: none;
+}
+
+/* Mario and Luigi jump for joy when a new Bell pair links them: two quick hops, high like a real Mario jump. */
+.station .plumber.is-jumping {
+    animation: plumber-jump 0.45s ease-out 2;
+}
+
+@keyframes plumber-jump {
+    50% { translate: 0 -32px; }
+}
+
+/* Holding 3 pairs at once clears the round: a big gold banner over the BSM. */
+.round-clear-banner {
+    position: absolute;
+    z-index: 4;
+    top: 40px;
+    left: 50%;
+    translate: -50% 0;
+    padding: 14px 24px;
+    font-size: 26px;
+    color: var(--ink);
+    white-space: nowrap;
+    background: var(--coin-gold);
+    border: var(--pixel) solid var(--ink);
+    visibility: hidden;
+}
+
+.round-clear-banner.is-visible {
+    visibility: visible;
+    animation: banner-pop 0.4s ease-out 1;
+}
+
+@keyframes banner-pop {
+    from { scale: 0.4; }
+}

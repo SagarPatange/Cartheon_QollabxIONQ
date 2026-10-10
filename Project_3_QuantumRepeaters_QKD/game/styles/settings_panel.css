@@ -1,0 +1,82 @@
+/*
+ * The slide-in settings panel (src/settings_panel.js): it slides in from the right edge, under the HUD, while the
+ * game is paused.
+ */
+
+.settings-panel {
+    position: fixed;
+    z-index: 20;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    width: min(400px, 100vw);
+    padding: 24px 22px;
+    overflow-y: auto;
+    color: var(--ink);
+    background: #fcd8a8;
+    border-left: var(--pixel) solid var(--ink);
+    box-shadow: -8px 0 0 #00000033;
+    translate: 100% 0;
+    visibility: hidden;
+    transition: translate 300ms ease-out, visibility 0s linear 300ms;
+}
+
+.settings-panel.is-open {
+    translate: 0 0;
+    visibility: visible;
+    transition: translate 300ms ease-out;
+}
+
+.settings-title {
+    margin: 0;
+    font-size: 19px;
+}
+
+.settings-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.settings-row-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.settings-value {
+    white-space: nowrap;
+    color: var(--brick-dark);
+}
+
+.settings-slider {
+    width: 100%;
+    accent-color: var(--brick-orange);
+}
+
+/* What the settings add up to, e.g. the chance per try. */
+.settings-summary {
+    margin: 0;
+    padding: 12px;
+    font-size: 12px;
+    line-height: 1.8;
+    background: var(--cloud-white);
+    border: 3px solid var(--ink);
+}
+
+.settings-close {
+    align-self: flex-start;
+    font-size: 14px;
+}
+
+/* The HUD's way in, beside the Map button. */
+.hud-settings {
+    font-family: var(--font-pixel);
+    border: none;
+    cursor: pointer;
+}

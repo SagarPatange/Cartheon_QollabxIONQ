@@ -1,0 +1,50 @@
+/*
+ * Toad's QEC hut on top of world.css: the mushroom-house room and Toad's speech. The room's cream wall fills the
+ * whole page below the HUD.
+ */
+
+:root {
+    --hut-wall: #fcd8a8;
+    --hut-wood: #c84c0c;
+}
+
+.hut-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: var(--hut-wall);
+}
+
+/* The inside of the mushroom house: cream walls with a red-and-white cap pattern along the top. */
+.hut-room {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 24px;
+    padding: 48px 16px 24px;
+    background:
+        radial-gradient(circle at 20px 12px, var(--cloud-white) 8px, transparent 9px) 0 0 / 60px 32px repeat-x,
+        linear-gradient(var(--error-red) 0 32px, var(--hut-wall) 32px);
+}
+
+.toad {
+    flex-shrink: 0;
+}
+
+.toad-speech {
+    position: relative;
+    flex: 1;
+    min-width: 260px;
+    max-width: 820px;
+    margin-bottom: 40px;
+    padding: 12px 16px;
+    color: var(--ink);
+    background: var(--cloud-white);
+    border: var(--pixel) solid var(--ink);
+    line-height: 2;
+}
+
+.toad-speech p {
+    margin: 0 0 8px;
+}

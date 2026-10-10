@@ -1,0 +1,610 @@
+/*
+ * Start page: the title screen and the overworld map, on top of world.css (colours, clouds, hills, ground, HUD,
+ * buttons). Mario's node and position are set by src/start/start_main.js.
+ */
+
+.start-page {
+    min-height: 100vh;
+    background: var(--sky-blue);
+}
+
+/* ---------- Title screen ---------- */
+
+.title-screen {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.title-card {
+    position: relative;
+    z-index: 1;
+    max-width: 760px;
+    /* Sits in the upper part of the screen, well clear of the ground. */
+    margin: 8vh auto 48px;
+    padding: 32px 24px;
+    text-align: center;
+    background: var(--brick-orange);
+    border: var(--pixel) solid var(--ink);
+    box-shadow: inset calc(-2 * var(--pixel)) calc(-2 * var(--pixel)) 0 var(--brick-dark);
+}
+
+.title-logo {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin: 0 0 28px;
+    color: var(--coin-gold);
+    text-shadow: 4px 4px 0 var(--ink);
+}
+
+.title-line {
+    font-size: 26px;
+}
+
+.title-line.is-big {
+    font-size: 42px;
+    animation: title-glow 1.2s steps(2) infinite;
+}
+
+@keyframes title-glow {
+    50% { color: var(--cloud-white); }
+}
+
+.title-intro {
+    max-width: 620px;
+    margin: 0 auto 16px;
+    font-size: 12px;
+    line-height: 2;
+    text-shadow: 2px 2px 0 var(--ink);
+}
+
+/* The mission, bigger and gold, above the one-line how. */
+.title-intro.is-mission {
+    font-size: 16px;
+    line-height: 1.8;
+    color: var(--coin-gold);
+}
+
+.title-button {
+    margin-top: 16px;
+    font-size: 16px;
+    padding: 14px 22px;
+}
+
+.title-hint {
+    margin: 12px 0 0;
+    font-size: 11px;
+    opacity: 0.8;
+}
+
+/* ---------- Overworld map (Super Mario Bros. 3 style) ---------- */
+
+/* The map screen is exactly the window: status bar on top, the map frame takes all the rest. No page scroll. */
+.map-screen {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    padding: 12px;
+    background: var(--panel-black);
+}
+
+/* The cream frame around the map, like the NES map border. */
+.map-frame {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    padding: 10px;
+    background: #fcd8a8;
+    border: var(--pixel) solid var(--ink);
+}
+
+/*
+ * The map is zoomed to fill this view's height (start_main.js), so it runs past the screen to the right. The view
+ * scrolls sideways with no scroll bar showing: the gold Back / More arrows and Mario's walking move it.
+ */
+.map-viewport {
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border: var(--pixel) solid var(--ink);
+    scrollbar-width: none;
+}
+
+.map-viewport::-webkit-scrollbar {
+    display: none;
+}
+
+.world-map {
+    position: relative;
+    background-color: #2038ec;
+    background-image:
+        radial-gradient(ellipse 10px 3px at 30% 40%, #3cbcfc 60%, transparent 62%),
+        radial-gradient(ellipse 10px 3px at 75% 85%, #3cbcfc 60%, transparent 62%);
+    background-size: 32px 32px;
+}
+
+.map-island {
+    position: absolute;
+    background: var(--hill-green);
+    border: var(--pixel) solid #fcd8a8;
+    border-radius: 18px;
+    box-shadow: 0 0 0 var(--pixel) var(--ink);
+}
+
+.map-bush,
+.map-pipe,
+.map-sign,
+.map-decor,
+.map-bloch,
+.map-castle,
+.map-peach,
+.map-stop,
+.map-mario {
+    position: absolute;
+    translate: -50% -50%;
+}
+
+.map-bush {
+    width: 40px;
+    height: 40px;
+    background:
+        radial-gradient(circle at 30% 35%, #80d010 18%, transparent 20%),
+        radial-gradient(circle at 70% 60%, #80d010 18%, transparent 20%),
+        #00a800;
+    border: 3px solid var(--ink);
+    border-radius: 50% 50% 40% 40%;
+}
+
+.map-pipe {
+    width: 36px;
+    height: 44px;
+    background: linear-gradient(90deg, #00a800 0 30%, #80d010 30% 50%, #00a800 50%);
+    border: 3px solid var(--ink);
+    box-shadow: inset 0 12px 0 -3px #80d010;
+}
+
+.map-path {
+    position: absolute;
+    background: #fcd8a8;
+    border: 2px solid #c89058;
+}
+
+.map-bridge {
+    position: absolute;
+    height: 22px;
+    translate: 0 -50%;
+    background: repeating-linear-gradient(90deg, #c84c0c 0 10px, #7c2c00 10px 12px);
+    border-top: 3px solid #fcd8a8;
+    border-bottom: 3px solid #fcd8a8;
+    box-shadow: 0 0 0 2px var(--ink);
+}
+
+/* Quantum scenery is decoration: it never takes clicks meant for the stops. */
+.map-decor,
+.map-bloch,
+.map-entanglement {
+    pointer-events: none;
+}
+
+/*
+ * Qubit birds fly the width of the map (--fly-distance, set by render_map.js), bobbing as they go, wings flapping
+ * about 2.5 times a second. A bird flying left is mirrored and runs the trip backwards. Reduced motion hides them.
+ */
+.map-bird {
+    position: absolute;
+    left: 0;
+    z-index: 4;
+    display: grid;
+    pointer-events: none;
+    animation-name: bird-fly;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+.map-bird.is-flying-left {
+    animation-direction: reverse;
+}
+
+.map-bird > svg {
+    grid-area: 1 / 1;
+}
+
+.map-bird.is-flying-left > svg {
+    scale: -1 1;
+}
+
+.map-bird-wings-up {
+    animation: bird-bob 1.6s ease-in-out infinite alternate, bird-flap-up 400ms steps(1) infinite;
+}
+
+.map-bird-wings-down {
+    visibility: hidden;
+    animation: bird-bob 1.6s ease-in-out infinite alternate, bird-flap-down 400ms steps(1) infinite;
+}
+
+@keyframes bird-fly {
+    from { translate: -60px 0; }
+    to { translate: var(--fly-distance) 0; }
+}
+
+@keyframes bird-bob {
+    from { transform: translateY(0); }
+    to { transform: translateY(12px); }
+}
+
+@keyframes bird-flap-up {
+    0% { visibility: visible; }
+    50% { visibility: hidden; }
+}
+
+@keyframes bird-flap-down {
+    0% { visibility: hidden; }
+    50% { visibility: visible; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .map-bird {
+        display: none;
+    }
+}
+
+/* The electric Loch Ness monster bobs in the waves while its glow crackles (about once a second, well under 3 Hz). */
+.map-decor.is-electric-nessie {
+    animation:
+        nessie-bob 1.8s ease-in-out infinite alternate,
+        nessie-crackle 1.2s steps(2) infinite;
+}
+
+@keyframes nessie-bob {
+    from { translate: -50% -50%; }
+    to { translate: -50% calc(-50% + 6px); }
+}
+
+@keyframes nessie-crackle {
+    from { filter: drop-shadow(0 0 0 #f8d820); }
+    to { filter: drop-shadow(0 0 4px #f8d820); }
+}
+
+.map-bloch.is-spin-down {
+    rotate: 180deg;
+}
+
+.map-entanglement {
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: visible;
+    fill: none;
+    stroke-linecap: round;
+}
+
+.map-entanglement .is-outline {
+    stroke: var(--ink);
+    stroke-width: 8;
+}
+
+.map-entanglement .is-dash {
+    stroke: #fc74b4;
+    stroke-width: 4;
+    stroke-dasharray: 10 8;
+}
+
+/* Telecom towers stand with their feet at their top/left point (render_map.js sets it on the islet). */
+.map-tower {
+    position: absolute;
+    z-index: 1;
+    translate: -50% -100%;
+}
+
+/* A low rock of land in the sea for a tower to stand on, centred on the tower's feet. */
+.map-islet {
+    position: absolute;
+    width: 72px;
+    height: 24px;
+    translate: -50% -50%;
+    background: var(--hill-green);
+    border: 3px solid #fcd8a8;
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px var(--ink);
+}
+
+/* The QKD fiber: a dark cable with a blue core, strung over the sea from tower to tower. */
+.map-fiber {
+    position: absolute;
+    z-index: 2;
+    background: var(--qubit-dark-blue);
+    box-shadow: 0 0 0 2px var(--ink);
+}
+
+/* A photon pulse running along the fiber to Peach: the key being shared. A slow loop, off with reduced motion. */
+.map-photon {
+    position: absolute;
+    top: -4px;
+    left: 0;
+    width: 24px;
+    height: 12px;
+    background: var(--cloud-white);
+    box-shadow: 0 0 0 2px var(--qubit-blue);
+    animation: photon-run 6s linear infinite;
+}
+
+@keyframes photon-run {
+    from { left: 0; }
+    to { left: calc(100% - 24px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .map-photon {
+        display: none;
+    }
+}
+
+.map-sign {
+    padding: 8px 12px;
+    font-size: 14px;
+    white-space: nowrap;
+    color: var(--ink);
+    background: #fcd8a8;
+    border: 3px solid var(--ink);
+}
+
+.map-stop {
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    font-family: var(--font-pixel);
+    color: var(--ink);
+    cursor: pointer;
+}
+
+.map-stop.is-start,
+.stop-badge.is-start {
+    width: 72px;
+    height: 32px;
+    font-size: 12px;
+    background: #fcd8a8;
+    border: 3px solid var(--ink);
+}
+
+/* Numbered level panels: white tiles with a black flag shape and the number. */
+.map-stop.is-level,
+.stop-badge.is-level {
+    width: 44px;
+    height: 44px;
+    font-size: 19px;
+    color: var(--cloud-white);
+    background: linear-gradient(135deg, var(--ink) 0 45%, #3cbcfc 45%);
+    border: 3px solid var(--cloud-white);
+    box-shadow: 0 0 0 3px var(--ink);
+    text-shadow: 2px 2px 0 var(--ink);
+}
+
+.map-stop.is-hut {
+    background: none;
+    border: none;
+}
+
+.map-stop.is-current {
+    animation: stop-blink 0.6s steps(2) infinite;
+}
+
+@keyframes stop-blink {
+    50% { filter: brightness(1.5); }
+}
+
+/*
+ * Mario stands on his stop. start_main.js sets --walk-ms and adds .is-walking for one walk: he glides to the next
+ * stop while his legs swap between two frames and he bobs a pixel per step. .is-facing-left mirrors him.
+ */
+.map-mario {
+    --walk-ms: 0ms;
+    z-index: 2;
+    display: grid;
+    translate: -50% -115%;
+    transition: left var(--walk-ms) linear, top var(--walk-ms) linear;
+    pointer-events: none;
+}
+
+.map-mario > svg {
+    grid-area: 1 / 1;
+}
+
+.map-mario.is-facing-left > svg {
+    transform: scaleX(-1);
+}
+
+.map-mario-stride {
+    visibility: hidden;
+}
+
+/* About 6 steps a second, so each frame shows at about 3 Hz: under the flashing limit. */
+.map-mario.is-walking .map-mario-standing {
+    animation: mario-step-standing 320ms steps(1) infinite;
+}
+
+.map-mario.is-walking .map-mario-stride {
+    animation: mario-step-stride 320ms steps(1) infinite;
+}
+
+/* First half of each step: legs apart on the ground. Second half: legs together, one pixel up. */
+@keyframes mario-step-standing {
+    0% { visibility: visible; }
+    50% { visibility: hidden; }
+}
+
+@keyframes mario-step-stride {
+    0% { visibility: hidden; translate: 0 0; }
+    50% { visibility: visible; translate: 0 -3px; }
+}
+
+.map-peach {
+    translate: -50% -75%;
+}
+
+/* ---------- Status bar ---------- */
+
+/*
+ * One NES-style HUD strip: the world and keys on the left, the stop Mario stands on in the middle, and the big
+ * Enter button on the right. All three sections share one height.
+ */
+.status-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.status-section {
+    display: flex;
+    padding: 12px 16px;
+    background: var(--panel-black);
+    border: var(--pixel) solid #fcd8a8;
+}
+
+.status-section.is-world {
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+}
+
+.status-section.is-stop {
+    flex: 1;
+    min-width: 280px;
+    align-items: center;
+    gap: 16px;
+}
+
+.world-name,
+.key-hint {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+}
+
+.world-name {
+    font-size: 14px;
+    color: var(--coin-gold);
+}
+
+.world-name svg {
+    display: block;
+}
+
+.key-hint {
+    font-size: 12px;
+}
+
+.keycap-row {
+    display: flex;
+    gap: 4px;
+}
+
+.keycap.is-arrow {
+    padding: 0;
+}
+
+.keycap-arrow {
+    display: block;
+    translate: 0 -1px;
+}
+
+.keycap.is-left .keycap-arrow { rotate: 180deg; }
+.keycap.is-up .keycap-arrow { rotate: -90deg; }
+.keycap.is-down .keycap-arrow { rotate: 90deg; }
+
+/* At least a level panel wide, and wider when the tile is (the START sign). */
+.stop-badge-slot {
+    display: grid;
+    place-items: center;
+    flex: none;
+    min-width: 52px;
+}
+
+.stop-badge.is-level {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    font-size: 19px;
+}
+
+.stop-badge.is-start {
+    display: grid;
+    place-items: center;
+    padding: 0 8px;
+    height: 32px;
+    font-size: 12px;
+    white-space: nowrap;
+    color: var(--ink);
+}
+
+.stop-badge-hut {
+    display: block;
+}
+
+.stop-text {
+    min-width: 0;
+}
+
+.stop-title {
+    margin: 0 0 10px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--coin-gold);
+}
+
+.stop-description {
+    max-width: 72ch;
+    margin: 0;
+    line-height: 1.8;
+}
+
+/* The big way in: what Enter opens, with the key drawn underneath. */
+.enter-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-width: 168px;
+    padding: 12px 18px;
+    font-size: 15px;
+    border: var(--pixel) solid var(--ink);
+    box-shadow: inset calc(-1 * var(--pixel)) calc(-1 * var(--pixel)) 0 var(--coin-dark);
+}
+
+.enter-button .keycap {
+    background: var(--cloud-white);
+    box-shadow: inset 0 -4px 0 var(--idle-gray);
+}
+
+.enter-button:focus-visible {
+    outline: var(--pixel) solid var(--cloud-white);
+    outline-offset: 2px;
+}
+
+/* On a phone the stop text takes its own full-width row. */
+@media (max-width: 720px) {
+    .status-section.is-stop {
+        order: 3;
+        flex-basis: 100%;
+    }
+
+    .enter-button {
+        flex: 1;
+    }
+}
+
+/* The screens use display: flex, which would otherwise beat the hidden attribute. */
+[hidden] {
+    display: none !important;
+}

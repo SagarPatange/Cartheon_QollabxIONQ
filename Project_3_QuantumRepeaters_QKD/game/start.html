@@ -1,0 +1,77 @@
+<!doctype html>
+<!--
+  Start page: the title screen, then the overworld map that leads to each level.
+  Run the backend (npm run backend) and open http://localhost:8001; start.html#map opens the map directly.
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quantum Bros</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+    <link rel="stylesheet" href="styles/world.css">
+    <link rel="stylesheet" href="styles/start.css">
+    <link rel="stylesheet" href="styles/scroll_hint.css">
+    <script type="module" src="src/start/start_main.js"></script>
+    <script type="module" src="src/start/scroll_hint_main.js"></script>
+</head>
+<body class="start-page">
+    <section id="title-screen" class="title-screen">
+        <div class="cloud cloud-one"></div>
+        <div class="cloud cloud-two"></div>
+        <div class="cloud cloud-three"></div>
+        <div class="title-card">
+            <h1 class="title-logo">
+                <span class="title-line">Qollab x IONQ</span>
+                <span class="title-line is-big">HACKATHON!!!</span>
+            </h1>
+            <p class="title-intro is-mission">Help Mario save Princess Peach from Qowser!</p>
+            <p class="title-intro">
+                Qowser's cloud turtles tap every fiber. Share an entangled key with Peach: if a turtle peeks,
+                the qubits snitch.
+            </p>
+            <button id="continue-button" class="pixel-button title-button">Continue ▶</button>
+            <p class="title-hint">or press Enter</p>
+        </div>
+        <div class="hill hill-left"></div>
+        <div class="hill hill-right"></div>
+        <div class="ground"></div>
+    </section>
+
+    <section id="map-screen" class="map-screen" hidden>
+        <header class="status-bar">
+            <div class="status-section is-world">
+                <p class="world-name"><span id="world-mario-slot"></span>World Q</p>
+                <p class="key-hint"><span id="arrow-keys" class="keycap-row"></span>Move</p>
+            </div>
+            <div class="status-section is-stop">
+                <span id="stop-badge-slot" class="stop-badge-slot" aria-hidden="true"></span>
+                <div class="stop-text">
+                    <h2 id="stop-title" class="stop-title"></h2>
+                    <p id="stop-description" class="stop-description"></p>
+                </div>
+            </div>
+            <button id="enter-button" class="pixel-button enter-button" type="button">
+                <span id="enter-label" class="enter-label">Play level</span>
+                <span class="keycap">Enter</span>
+            </button>
+        </header>
+        <div class="map-frame">
+            <div id="map-viewport" class="map-viewport">
+                <div id="world-map" class="world-map"></div>
+            </div>
+            <button id="scroll-hint-left" class="pixel-button scroll-hint is-left" type="button"
+                    aria-label="Scroll the map left" hidden>
+                <span class="scroll-hint-arrow" aria-hidden="true">◀</span>
+                <span>Back</span>
+            </button>
+            <button id="scroll-hint-right" class="pixel-button scroll-hint is-right" type="button"
+                    aria-label="Scroll the map right to see more" hidden>
+                <span class="scroll-hint-arrow" aria-hidden="true">▶</span>
+                <span>More</span>
+            </button>
+        </div>
+    </section>
+</body>
+</html>

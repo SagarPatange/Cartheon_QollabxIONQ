@@ -1,0 +1,34 @@
+<!doctype html>
+<!--
+  Toad's QEC hut: not a level, a place on the world map where Mario learns basic quantum error correction.
+  Front end only. Open it from the world map (start.html#map).
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Toad's QEC hut</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+    <link rel="stylesheet" href="styles/world.css">
+    <link rel="stylesheet" href="styles/hut.css">
+    <script type="module" src="src/hut/hut_main.js"></script>
+</head>
+<body class="hut-page">
+    <header class="hud">
+        <div class="hud-item"><span class="hud-label">TOAD'S HUT</span><span>QEC</span></div>
+        <a class="hud-link" href="start.html#map-hut">◀ Map</a>
+    </header>
+
+    <main class="hut-room">
+        <div id="toad" class="toad"></div>
+        <div class="toad-speech">
+            <p>Welcome, Mario! Qubits are fragile: a stray bump can flip |0⟩ into |1⟩. You can't just copy a qubit
+                to keep a backup, but you <em>can</em> spread one logical qubit over several physical ones.</p>
+            <p>Here is the simplest code: |0̄⟩ = |000⟩ and |1̄⟩ = |111⟩. Two parity checks compare neighbours without
+                ever reading the logical bit, so they spot a flip without destroying the superposition.</p>
+        </div>
+    </main>
+
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!doctype html>
+<!--
+  World 1-K: Mario and Luigi send messages across the Alice–Bob–Charlie–David repeater chain while cloud turtles
+  try to eavesdrop. The simulation runs in the Python backend: run `npm run backend` and open
+  http://localhost:8001/qkd.html (or http://localhost:8001 for the title screen).
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>World 1-K</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+    <link rel="stylesheet" href="styles/world.css">
+    <link rel="stylesheet" href="styles/towers.css">
+    <link rel="stylesheet" href="styles/qkd.css">
+    <script type="module" src="src/qkd/qkd_main.js"></script>
+</head>
+<body class="level-page">
+    <header class="hud">
+        <div class="hud-item"><span class="hud-label">KEY</span><span id="hud-key">000</span></div>
+        <div class="hud-item"><span class="hud-label">WORLD</span><span>1-K</span></div>
+        <div class="hud-item"><span class="hud-label">STEP</span><span id="hud-step">--</span></div>
+        <div class="hud-item"><span class="hud-label">QBER</span><span id="hud-qber">--</span></div>
+        <a class="hud-link" href="start.html#map-level3">◀ Map</a>
+    </header>
+
+    <main class="world">
+        <div class="cloud cloud-one"></div>
+        <div class="cloud cloud-two"></div>
+        <div class="cloud cloud-three"></div>
+        <div class="hill hill-left"></div>
+        <div class="hill hill-right"></div>
+        <p id="status-banner" class="sky-status" aria-live="polite">Share a quantum key. Send a secret message!</p>
+        <div class="track-scroller">
+            <div id="track" class="track qkd-track"></div>
+        </div>
+        <div class="ground"></div>
+    </main>
+
+    <section class="controls qkd-controls">
+        <div class="plumber-panel is-mario">
+            <label class="control-field">
+                Mario says
+                <input id="mario-input" class="message-input" type="text" value="Its-a me!" autocomplete="off">
+            </label>
+            <div class="action-row">
+                <button class="pixel-button action-button" data-sender="mario"
+                        data-kind="classical">Q Classical</button>
+                <button class="pixel-button action-button" data-sender="mario"
+                        data-kind="encrypted">W Encrypted</button>
+                <button class="pixel-button action-button" data-sender="mario" data-kind="quantum">E Quantum</button>
+            </div>
+        </div>
+
+        <div class="settings-panel">
+            <label class="toggle-field">
+                <input id="turtle-toggle" type="checkbox">
+                Cloud turtles eavesdrop
+            </label>
+            <label class="control-field">
+                Turtles tap <span id="tap-label">100%</span>
+                <input id="tap-slider" type="range">
+            </label>
+            <label class="control-field">
+                Physical error p <span id="error-label">0.1%</span>
+                <input id="error-slider" type="range">
+            </label>
+            <label class="control-field">
+                Seed
+                <input id="seed-input" type="number" inputmode="numeric">
+            </label>
+        </div>
+
+        <div class="plumber-panel is-luigi">
+            <label class="control-field">
+                Luigi says
+                <input id="luigi-input" class="message-input" type="text" value="Mamma mia!" autocomplete="off">
+            </label>
+            <div class="action-row">
+                <button class="pixel-button action-button" data-sender="luigi"
+                        data-kind="classical">I Classical</button>
+                <button class="pixel-button action-button" data-sender="luigi"
+                        data-kind="encrypted">O Encrypted</button>
+                <button class="pixel-button action-button" data-sender="luigi" data-kind="quantum">P Quantum</button>
+            </div>
+        </div>
+    </section>
+
+</body>
+</html>

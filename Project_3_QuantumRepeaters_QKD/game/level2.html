@@ -1,0 +1,47 @@
+<!doctype html>
+<!--
+  Level 2: one logical Bell pair between Alice and Bob (docs/qre_cec_protocol.md, phases 1-3). The Stim backend runs
+  the protocol; the page plays it back one phase per Space press (keys only, no button bar). Run `npm run backend`
+  and open it from the map.
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Level 2</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+    <link rel="stylesheet" href="styles/world.css">
+    <link rel="stylesheet" href="styles/towers.css">
+    <link rel="stylesheet" href="styles/qkd.css">
+    <link rel="stylesheet" href="styles/bsm_link.css">
+    <link rel="stylesheet" href="styles/qubit_tower.css">
+    <link rel="stylesheet" href="styles/level2.css">
+    <script type="module" src="src/level2/level2_main.js"></script>
+</head>
+<body class="level2-page">
+    <header class="hud">
+        <div class="hud-item"><span class="hud-label">TRIES</span><span id="hud-tries">000</span></div>
+        <div class="hud-item"><span class="hud-label">WORLD</span><span>1-2</span></div>
+        <div class="hud-item"><span class="hud-label">PAIRS</span><span id="hud-pairs">0/7</span></div>
+        <div class="hud-item"><span class="hud-label">LOGICAL PAIR</span><span id="hud-logical">NO</span></div>
+        <a class="hud-link" href="start.html#map-level2">◀ Map</a>
+    </header>
+
+    <main id="world" class="world">
+        <div class="cloud cloud-one"></div>
+        <div class="cloud cloud-two"></div>
+        <div class="hill hill-left"></div>
+        <div class="hill hill-right"></div>
+        <div class="sky-panel">
+            <p id="status-banner" class="sky-status" aria-live="polite">Link Alice and Bob with a logical Bell pair!</p>
+            <p id="key-hints" class="key-hints" aria-live="polite"></p>
+        </div>
+        <div id="track-scroller" class="track-scroller">
+            <div id="track" class="track qkd-track level2-track"></div>
+        </div>
+        <div class="ground"></div>
+    </main>
+
+</body>
+</html>

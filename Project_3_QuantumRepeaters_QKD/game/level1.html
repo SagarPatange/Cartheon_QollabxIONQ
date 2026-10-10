@@ -1,0 +1,57 @@
+<!doctype html>
+<!--
+  Level 1: quantum repeaters from the ground up. Two nodes, Mario and Luigi, with a BSM in the middle of the fiber.
+  Front end only. Run `npm run backend` (or `npm run serve`) and open level1.html from the world map.
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Level 1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+    <link rel="stylesheet" href="styles/world.css">
+    <link rel="stylesheet" href="styles/towers.css">
+    <link rel="stylesheet" href="styles/qkd.css">
+    <link rel="stylesheet" href="styles/bsm_link.css">
+    <link rel="stylesheet" href="styles/qubit_tower.css">
+    <link rel="stylesheet" href="styles/settings_panel.css">
+    <link rel="stylesheet" href="styles/level1.css">
+    <script type="module" src="src/level1/level1_main.js"></script>
+</head>
+<body class="level1-page">
+    <header class="hud">
+        <div class="hud-item"><span class="hud-label">TRIES</span><span id="hud-tries">000</span></div>
+        <div class="hud-item"><span class="hud-label">WORLD</span><span>1-1</span></div>
+        <div class="hud-item"><span class="hud-label">Ψ+ PAIRS</span><span id="hud-pairs">0/3</span></div>
+        <div class="hud-item"><span class="hud-label">TELEPORT</span><span id="hud-teleports">0· 1·</span></div>
+        <a class="hud-link" href="start.html#map-level1">◀ Map</a>
+        <button id="settings-button" class="hud-link hud-settings" type="button" aria-controls="settings-panel"
+                aria-expanded="false">Settings</button>
+    </header>
+
+    <aside id="settings-panel" class="settings-panel" aria-label="Link settings">
+        <h2 class="settings-title">Link settings</h2>
+        <div id="settings-rows" class="settings-rows"></div>
+        <p id="settings-summary" class="settings-summary"></p>
+        <button id="settings-close" class="pixel-button settings-close" type="button">Esc · Close</button>
+    </aside>
+
+    <main id="world" class="world">
+        <div class="cloud cloud-one"></div>
+        <div class="cloud cloud-two"></div>
+        <div class="hill hill-left"></div>
+        <div class="hill hill-right"></div>
+        <div class="sky-panel">
+            <p id="status-banner" class="sky-status">Fill 3 Bell pairs, then teleport a 0 and a 1!</p>
+            <p id="key-hints" class="key-hints" aria-live="polite"></p>
+            <p id="pause-badge" class="pause-badge" hidden>PAUSED</p>
+        </div>
+        <div id="track-scroller" class="track-scroller">
+            <div id="track" class="track qkd-track level1-track"></div>
+        </div>
+        <div class="ground"></div>
+    </main>
+
+</body>
+</html>

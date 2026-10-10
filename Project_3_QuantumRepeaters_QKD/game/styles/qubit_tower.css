@@ -1,0 +1,127 @@
+/*
+ * The glowing qubit tower used by Levels 1 and 2 (src/qubit_tower.js), on top of towers.css: a glass window with
+ * vertical stacks of qubit orbs, and a readout badge. The is-<state> classes on the orbs are set by each level.
+ */
+
+.qubit-tower-body {
+    padding: 10px 8px;
+}
+
+/* Dark glass with a faint scanline, rimmed in cyan like a lab window. */
+.qubit-window {
+    display: flex;
+    gap: 14px;
+    padding: 8px 10px;
+    background:
+        repeating-linear-gradient(0deg, rgba(60, 188, 252, 0.08) 0 2px, transparent 2px 6px),
+        #0b1030;
+    border: 3px solid var(--ink);
+    box-shadow: inset 0 0 0 2px #3cbcfc55, 0 0 10px #3cbcfc66;
+}
+
+.qubit-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+/* One qubit: a pixel orb with a highlight in its top-left and a shadow in its bottom-right. */
+.qubit-orb {
+    display: grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    font-size: 11px;
+    color: var(--ink);
+    background: #1d2550;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    box-shadow: inset -3px -3px 0 #00000055, inset 2px 2px 0 #ffffff33;
+    transition: background 200ms, box-shadow 200ms;
+}
+
+/* Data qubits are squarer: they are blocks of the code, not photons. */
+.qubit-stack.is-block .qubit-orb {
+    border-radius: 4px;
+}
+
+/* A heralded pair: gold, breathing slowly. */
+.qubit-orb.is-pair {
+    background: var(--coin-gold);
+    box-shadow: inset -3px -3px 0 #ac7c00, inset 2px 2px 0 #ffffff88, 0 0 10px var(--coin-gold);
+    animation: orb-breathe 2s ease-in-out infinite alternate;
+}
+
+@keyframes orb-breathe {
+    to { box-shadow: inset -3px -3px 0 #ac7c00, inset 2px 2px 0 #ffffff88, 0 0 4px var(--coin-gold); }
+}
+
+.qubit-orb.is-used {
+    background: #1d2550;
+    box-shadow: none;
+    opacity: 0.35;
+    animation: none;
+}
+
+.qubit-orb.is-flipping {
+    animation: cell-flip 0.4s steps(2) 1;
+}
+
+@keyframes cell-flip {
+    50% { background: var(--cloud-white); scale: 1 -1; }
+}
+
+.qubit-orb.is-plus {
+    background: var(--coin-gold);
+    box-shadow: inset -3px -3px 0 #ac7c00, inset 2px 2px 0 #ffffff88, 0 0 8px var(--coin-gold);
+}
+
+.qubit-orb.is-zero {
+    background: var(--qubit-blue);
+    box-shadow: inset -3px -3px 0 var(--qubit-dark-blue), inset 2px 2px 0 #ffffff88, 0 0 8px var(--qubit-blue);
+}
+
+/* Once the logical pair exists, both code blocks pulse together: one shared state across the fiber. */
+.qubit-tower.is-linked .qubit-stack.is-block .qubit-orb {
+    animation: block-entangled 1.6s ease-in-out infinite alternate;
+}
+
+@keyframes block-entangled {
+    to { box-shadow: inset -3px -3px 0 #00000055, inset 2px 2px 0 #ffffffaa, 0 0 16px var(--cloud-white); }
+}
+
+.qubit-orb.is-rejected {
+    animation: cell-reject 0.6s steps(2) 1;
+}
+
+@keyframes cell-reject {
+    50% { color: var(--text-light); background: var(--error-red); }
+}
+
+.qubit-orb.is-correcting {
+    color: var(--text-light);
+    background: var(--mario-red);
+    box-shadow: 0 0 10px var(--mario-red);
+}
+
+.qubit-orb.is-measured {
+    background: var(--cloud-white);
+    box-shadow: inset -3px -3px 0 var(--idle-gray);
+}
+
+/* The final check: each tower's decoded logical bit, in a gold badge over its battlements. */
+.tower-readout {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    translate: -50% 0;
+    padding: 6px 10px;
+    font-size: 16px;
+    color: var(--ink);
+    background: var(--coin-gold);
+    border: var(--pixel) solid var(--ink);
+}
+
+.tower-readout:empty {
+    visibility: hidden;
+}

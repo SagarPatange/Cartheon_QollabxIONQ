@@ -1,0 +1,79 @@
+/*
+ * Scroll hints on the overworld map: gold arrows pinned to the edges of the map view (not the map itself),
+ * so the player can see the map goes on past the screen. Read by start.html; driven by src/start/scroll_hint_main.js.
+ */
+
+/* The hints are placed against the frame, which does not scroll, so they stay put while the map moves. */
+.map-frame {
+    position: relative;
+}
+
+.scroll-hint {
+    position: absolute;
+    /* Centred with auto margins, not translate, because .pixel-button:active already uses translate. */
+    top: 0;
+    bottom: 0;
+    height: fit-content;
+    margin-block: auto;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 10px;
+    line-height: 1.8;  /* the game-design floor for Press Start 2P text */
+}
+
+.scroll-hint[hidden] {
+    display: none;
+}
+
+/* Sit just inside the viewport's border: the frame's 10px padding plus one pixel border, plus a small gap. */
+.scroll-hint.is-right {
+    right: calc(10px + var(--pixel) + 8px);
+}
+
+.scroll-hint.is-left {
+    left: calc(10px + var(--pixel) + 8px);
+}
+
+.scroll-hint-arrow {
+    font-size: 22px;
+}
+
+.scroll-hint:focus-visible {
+    outline: var(--pixel) solid var(--cloud-white);
+    outline-offset: var(--pixel);
+}
+
+/* A two-step nudge toward the hidden part of the map, in whole pixels to match the NES look. */
+@keyframes scroll-hint-nudge-right {
+    0%, 60%, 100% { transform: translateX(0); }
+    70%, 90% { transform: translateX(6px); }
+}
+
+@keyframes scroll-hint-nudge-left {
+    0%, 60%, 100% { transform: translateX(0); }
+    70%, 90% { transform: translateX(-6px); }
+}
+
+.scroll-hint.is-right {
+    animation: scroll-hint-nudge-right 1.6s steps(1, end) infinite;
+}
+
+.scroll-hint.is-left {
+    animation: scroll-hint-nudge-left 1.6s steps(1, end) infinite;
+}
+
+/* Hovering or focusing the hint holds it still so it is easy to click. */
+.scroll-hint:hover,
+.scroll-hint:focus-visible {
+    animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .scroll-hint.is-right,
+    .scroll-hint.is-left {
+        animation: none;
+    }
+}

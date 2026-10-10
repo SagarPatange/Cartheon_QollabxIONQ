@@ -1,0 +1,94 @@
+/*
+ * Level 2 additions on top of world.css, towers.css, qkd.css, bsm_link.css and qubit_tower.css: the page layout, a
+ * missed photon, the bits flying along the fiber and the banner. Classes are set by
+ * src/level2/render_level2.js.
+ */
+
+/* The scene fills the window: HUD on top, controls at the bottom, the world takes everything between. */
+.level2-page {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.level2-page .world {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 0;
+}
+
+.level2-track {
+    height: 400px;
+    min-width: 760px;
+}
+
+/* A round with no click: the photon was lost, so the fiber flashes red. */
+.qkd-link.is-missed .fiber {
+    border-top-color: var(--error-red);
+    opacity: 1;
+}
+
+/* ---------- Bits riding along the fiber during the teleported CNOT ---------- */
+
+.bit-packet {
+    position: absolute;
+    bottom: 130px;
+    left: 0;
+    padding: 3px 5px;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: var(--ink);
+    background: var(--cloud-white);
+    border: 2px solid var(--ink);
+    opacity: 0;
+}
+
+.bit-packet.is-to-bob {
+    animation: packet-to-bob 1s linear forwards;
+}
+
+.bit-packet.is-to-alice {
+    animation: packet-to-alice 1s linear forwards;
+}
+
+@keyframes packet-to-bob {
+    from { opacity: 1; left: 0; }
+    to { opacity: 1; left: calc(100% - 110px); }
+}
+
+@keyframes packet-to-alice {
+    from { opacity: 1; left: calc(100% - 110px); }
+    to { opacity: 1; left: 0; }
+}
+
+/* ---------- The banner over the scene ---------- */
+
+.level2-banner {
+    position: absolute;
+    z-index: 4;
+    top: 8px;
+    left: 50%;
+    translate: -50% 0;
+    padding: 10px 16px;
+    font-size: 14px;
+    white-space: nowrap;
+    border: var(--pixel) solid var(--ink);
+    visibility: hidden;
+}
+
+.level2-banner.is-visible {
+    visibility: visible;
+}
+
+.level2-banner.is-win {
+    color: var(--ink);
+    background: var(--coin-gold);
+}
+
+.level2-banner.is-lose {
+    color: var(--text-light);
+    background: var(--error-red);
+}

@@ -1,0 +1,100 @@
+/*
+ * The fiber link used by Levels 1 and 2 (src/bsm_link.js), on top of towers.css and qkd.css: photons flying from each
+ * tower to the BSM, drawn as a telecom tower in the middle of the fiber.
+ */
+
+/* A photon starts at its tower's end of the fiber and flies to the BSM tower in the middle, in --photon-flight-ms
+   (Level 1 sets it from the link length; 700 ms otherwise). */
+.photon {
+    position: absolute;
+    bottom: 114px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--qubit-blue);
+    box-shadow: 0 0 8px var(--cloud-white);
+    opacity: 0;
+}
+
+.photon.from-left { left: 0; }
+.photon.from-right { right: 0; }
+
+.qkd-link.is-sending .photon.from-left {
+    animation: photon-from-left var(--photon-flight-ms, 700ms) ease-in forwards;
+}
+
+.qkd-link.is-sending .photon.from-right {
+    animation: photon-from-right var(--photon-flight-ms, 700ms) ease-in forwards;
+}
+
+@keyframes photon-from-left {
+    from { opacity: 1; left: 0; }
+    to { opacity: 1; left: calc(50% - 12px); }
+}
+
+@keyframes photon-from-right {
+    from { opacity: 1; right: 0; }
+    to { opacity: 1; right: calc(50% - 12px); }
+}
+
+/*
+ * The BSM: a telecom tower standing on the ground in the middle of the fiber. Its feet are low enough that its
+ * crossarm (162 px tall at 6 px per pixel, crossarm 111 px up) meets the fiber at 120 px, so it stands on a
+ * concrete footing that fills the 9 px down to the ground. Its label sits above it.
+ */
+.bsm-footing {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    translate: -50% 0;
+    width: 102px;
+    height: 9px;
+    background: var(--idle-gray);
+    border: 2px solid var(--ink);
+}
+
+.bsm-tower {
+    position: absolute;
+    left: 50%;
+    bottom: 9px;
+    translate: -50% 0;
+}
+
+.bsm-link .bsm-label {
+    z-index: 3;
+    bottom: 226px;
+    font-size: 16px;
+    text-shadow: 2px 2px 0 var(--ink);
+}
+
+.qkd-link.is-heralding .bsm-tower {
+    animation: bump 0.25s ease-out 4;
+}
+
+/* The BSM's two detector lamps over its tower; a lamp lights when its detector clicks. */
+
+.detector-panel {
+    position: absolute;
+    left: 50%;
+    bottom: 180px;
+    translate: -50% 0;
+    display: flex;
+    gap: 8px;
+}
+
+.detector-lamp {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 34px;
+    font-size: 15px;
+    color: var(--text-light);
+    background: #3a3a3a;
+    border: 2px solid var(--ink);
+}
+
+.detector-lamp.is-lit {
+    color: var(--ink);
+    background: var(--coin-gold);
+    box-shadow: 0 0 10px var(--coin-gold);
+}

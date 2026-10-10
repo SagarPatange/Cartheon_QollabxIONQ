@@ -1,0 +1,377 @@
+/*
+ * The overworld: sky, clouds, hills, brick ground, HUD, control bar and message box.
+ * Tower and link styles live in towers.css.
+ */
+
+:root {
+    --sky-blue: #5c94fc;
+    --cloud-white: #fcfcfc;
+    --hill-green: #00a800;
+    --hill-dark-green: #005800;
+    --brick-orange: #c84c0c;
+    --brick-dark: #7c2c00;
+    --brick-light: #fc9838;
+    --coin-gold: #f8b800;
+    --coin-dark: #ac7c00;
+    --block-orange: #e45c10;
+    --pipe-green: #80d010;
+    --pipe-dark-green: #00a800;
+    --qubit-blue: #3cbcfc;
+    --qubit-dark-blue: #0058f8;
+    --idle-gray: #a4a4a4;
+    --error-red: #d82800;
+    --ink: #000000;
+    --text-light: #fcfcfc;
+    --panel-black: #000000;
+    --pixel: 4px;
+    --font-pixel: "Press Start 2P", ui-monospace, monospace;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--panel-black);
+    color: var(--text-light);
+    font-family: var(--font-pixel);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+/* ---------- HUD ---------- */
+
+.hud {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    padding: 12px 16px;
+    background: var(--sky-blue);
+    text-shadow: 2px 2px 0 var(--ink);
+}
+
+.hud-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    font-size: 19px;
+}
+
+.hud-label {
+    letter-spacing: 1px;
+}
+
+/* Back to the world map: a big gold button, the one way out of every level. */
+.hud-link {
+    align-self: center;
+    padding: 14px 22px;
+    font-size: 16px;
+    color: var(--ink);
+    text-decoration: none;
+    text-shadow: none;
+    background: var(--coin-gold);
+    box-shadow:
+        inset calc(-1 * var(--pixel)) calc(-1 * var(--pixel)) 0 var(--coin-dark),
+        0 0 0 3px var(--ink);
+}
+
+.hud-link:hover {
+    filter: brightness(1.1);
+}
+
+.hud-link:focus-visible {
+    outline: 3px solid var(--cloud-white);
+    outline-offset: 3px;
+}
+
+/* ---------- Overworld ---------- */
+
+.world {
+    position: relative;
+    overflow: hidden;
+    background: var(--sky-blue);
+    padding-top: 64px;
+}
+
+.cloud {
+    position: absolute;
+    width: 96px;
+    height: 28px;
+    background: var(--cloud-white);
+    border-radius: 16px;
+    animation: drift 60s linear infinite;
+}
+
+.cloud::before {
+    content: "";
+    position: absolute;
+    left: 24px;
+    top: -18px;
+    width: 44px;
+    height: 36px;
+    background: var(--cloud-white);
+    border-radius: 50%;
+}
+
+.cloud-one { top: 12px; left: 8%; }
+.cloud-two { top: 36px; left: 48%; animation-duration: 80s; transform: scale(0.8); }
+.cloud-three { top: 8px; left: 78%; animation-duration: 70s; }
+
+@keyframes drift {
+    from { translate: 0 0; }
+    to { translate: -110vw 0; }
+}
+
+.hill {
+    position: absolute;
+    bottom: 64px;
+    background: var(--hill-green);
+    border: var(--pixel) solid var(--hill-dark-green);
+    border-bottom: none;
+    border-radius: 50% 50% 0 0;
+}
+
+.hill-left { left: -40px; width: 260px; height: 120px; }
+.hill-right { right: -60px; width: 200px; height: 80px; }
+
+.track-scroller {
+    position: relative;
+    overflow-x: auto;
+    padding: 0 16px;
+}
+
+.ground {
+    position: relative;
+    height: 64px;
+    background-color: var(--brick-orange);
+    background-image:
+        linear-gradient(var(--brick-dark) 2px, transparent 2px),
+        linear-gradient(90deg, var(--brick-dark) 2px, transparent 2px),
+        linear-gradient(var(--brick-light) 2px, transparent 2px);
+    background-size: 32px 32px, 32px 32px, 32px 32px;
+    background-position: 0 0, 0 0, 2px 2px;
+}
+
+/* ---------- Controls ---------- */
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: var(--brick-dark);
+}
+
+.pixel-button {
+    font-family: var(--font-pixel);
+    font-size: 12px;
+    padding: 10px 14px;
+    color: var(--ink);
+    background: var(--coin-gold);
+    border: none;
+    box-shadow:
+        inset calc(-1 * var(--pixel)) calc(-1 * var(--pixel)) 0 var(--coin-dark),
+        0 0 0 2px var(--ink);
+    cursor: pointer;
+}
+
+.pixel-button:hover:not(:disabled) {
+    filter: brightness(1.1);
+}
+
+.pixel-button:active:not(:disabled) {
+    translate: 0 2px;
+}
+
+.pixel-button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.pixel-button.is-secondary {
+    background: var(--cloud-white);
+    box-shadow:
+        inset calc(-1 * var(--pixel)) calc(-1 * var(--pixel)) 0 var(--idle-gray),
+        0 0 0 2px var(--ink);
+}
+
+.control-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.control-field input {
+    font-family: var(--font-pixel);
+    font-size: 12px;
+    width: 140px;
+}
+
+#seed-input {
+    width: 90px;
+    padding: 6px;
+}
+
+.trials-result {
+    color: var(--coin-gold);
+}
+
+/* ---------- Message box ---------- */
+
+/* A level fills the window: HUD on top, controls at the bottom, and the sky grows to take the rest (no black below). */
+.level-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.level-page .world {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+/* A cream key with a darker bottom edge, the same chunky style as the gold buttons. */
+.keycap {
+    display: inline-grid;
+    place-items: center;
+    min-width: 26px;
+    height: 26px;
+    padding: 0 6px;
+    font-family: var(--font-pixel);
+    font-size: 12px;
+    color: var(--ink);
+    background: #fcd8a8;
+    border: 2px solid var(--ink);
+    box-shadow: inset 0 -4px 0 #c89058;
+}
+
+/*
+ * The goal line and the key hints, stacked in one column at the top of the sky, so the hints always sit below the
+ * goal however many lines it takes.
+ */
+.sky-panel {
+    position: absolute;
+    z-index: 3;
+    top: 24px;
+    left: 50%;
+    translate: -50% 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    width: max-content;
+    max-width: 90%;
+}
+
+.sky-panel > .sky-status,
+.sky-panel > .key-hints {
+    position: static;
+    translate: none;
+    max-width: 100%;
+}
+
+/* Under the goal line: which key does what right now. Keycaps, not buttons; a click on the scene does the Space key. */
+.key-hints {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 20px;
+    width: max-content;
+    max-width: 90%;
+    margin: 0;
+    font-size: 15px;
+    text-shadow: 2px 2px 0 var(--ink);
+}
+
+/* Shown while the game is paused (a lesson note or the settings are up). */
+.pause-badge {
+    margin: 0;
+    padding: 8px 18px;
+    font-size: 22px;
+    letter-spacing: 4px;
+    color: var(--cloud-white);
+    background: var(--ink);
+    border: var(--pixel) solid var(--cloud-white);
+}
+
+.key-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* The keycap is a solid key; only the words next to it get the shadow that keeps them readable on the sky. Bigger
+   than the map's keycaps, so they read from across the room. */
+.key-hints .keycap {
+    min-width: 40px;
+    height: 38px;
+    padding: 0 10px;
+    font-size: 15px;
+    text-shadow: none;
+}
+
+/* The level's goal: one short, fixed line floating in the sky above the play area. */
+.sky-status {
+    position: absolute;
+    z-index: 3;
+    top: 24px;
+    left: 50%;
+    translate: -50% 0;
+    width: max-content;
+    max-width: 90%;
+    margin: 0;
+    padding: 14px 24px;
+    text-align: center;
+    font-size: 19px;
+    line-height: 1.6;
+    color: var(--ink);
+    background: var(--cloud-white);
+    border: var(--pixel) solid var(--ink);
+}
+
+/* While the goal types itself out: left-aligned, with a block cursor blinking once a second. */
+.sky-status.is-typing {
+    text-align: left;
+}
+
+.sky-status.is-typing::after {
+    content: "";
+    display: inline-block;
+    width: 0.6em;
+    height: 1em;
+    margin-left: 4px;
+    vertical-align: -2px;
+    background: var(--ink);
+    animation: cursor-blink 1s steps(2) infinite;
+}
+
+@keyframes cursor-blink {
+    50% { visibility: hidden; }
+}
+
+/* Five seconds after it finishes typing, the goal fades away for good. */
+.sky-status.is-faded {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 800ms, visibility 0s linear 800ms;
+}
+
+/* Something went wrong (Level 3's simulator): the same line in red, saying what happened. */
+.sky-status.is-problem {
+    font-size: 14px;
+    color: var(--text-light);
+    background: var(--error-red);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}
