@@ -1,0 +1,16 @@
+.venv/
+.pip-cache/
+__pycache__/
+*.pyc
+
+# Generated optimizer reports and per-submission awards; recreate by running code.
+/results/
+
+# Downloaded SPP document archives and extracted copies; retain source metadata.
+/data/reference/*
+!/data/reference/provenance.json
+
+# Additional local tooling caches and logs.
+.pytest_cache/
+.ruff_cache/
+*.log

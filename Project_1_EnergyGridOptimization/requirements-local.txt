@@ -1,0 +1,4 @@
+# Local classical baseline; Qollab/WebAssembly compatibility is not established.
+numpy==2.5.3
+scipy==1.18.1
+osqp==1.1.3

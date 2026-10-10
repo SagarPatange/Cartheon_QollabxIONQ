@@ -1,0 +1,2 @@
+# Preserve the original SPP dataset bytes and provenance hashes on Windows.
+data/*.csv -text
