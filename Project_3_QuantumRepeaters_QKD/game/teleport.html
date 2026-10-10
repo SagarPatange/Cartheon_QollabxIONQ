@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
-  Level 2: quantum teleportation. Mario teleports a qubit to Luigi with the Bell pair they share (Stage 2-1, a
-  tutorial), then the word "HI", bit by bit (Stage 2-2). The backend simulates every teleport (POST /api/teleport);
+  Level 2: quantum teleportation. Mario teleports a qubit to Luigi with the Bell pair they share (a tutorial),
+  then the word "HI", bit by bit (the HI challenge). The HUD shows neither stage names nor the seed. The backend simulates every teleport (POST /api/teleport);
   the page plays back what it computed. Run `npm run backend` and open it from the map.
 -->
 <html lang="en">
@@ -24,9 +24,7 @@
     <header id="hud" class="hud">
         <div class="hud-item"><span class="hud-label">TRIES</span><span id="hud-tries">000</span></div>
         <div class="hud-item"><span class="hud-label">WORLD</span><span>1-2</span></div>
-        <div class="hud-item"><span class="hud-label">STAGE</span><span id="hud-stage">2-1</span></div>
         <div class="hud-item"><span class="hud-label">LUIGI'S WORD</span><span id="hud-word">--</span></div>
-        <div class="hud-item"><span class="hud-label">SEED</span><span id="hud-seed">--</span></div>
         <button id="cheat-button" class="hud-link hud-cheat" type="button" aria-controls="cheat-sheet"
                 aria-expanded="false" title="Cheat sheet (C)">Cheat sheet <span class="keycap">C</span></button>
         <a class="hud-link" href="start.html#map-teleport">◀ Map</a>
@@ -67,7 +65,7 @@
 
                 <section class="cheat-section">
                     <h3 class="cheat-heading">The circuit</h3>
-                    <svg class="teleport-circuit" viewBox="-14 -2 328 168" role="img"
+                    <svg id="teleport-circuit" class="teleport-circuit" viewBox="-14 -2 328 168" role="img"
                          aria-labelledby="circuit-title circuit-description">
                         <title id="circuit-title">Teleportation circuit</title>
                         <desc id="circuit-description">Three qubits: Mario's message, Mario's half of the Bell pair,
@@ -85,39 +83,50 @@
                             <line x1="44" y1="74" x2="188" y2="74"/>
                             <line x1="44" y1="118" x2="296" y2="118"/>
                         </g>
-                        <g class="circuit-classical">
-                            <path d="M206 28 H262 V104 M206 32 H258 V104"/>
-                            <path d="M206 72 H230 V104 M206 76 H226 V104"/>
+                        <!-- Each step is a group the page lights up as the teleport reaches it (circuit_progress.js). -->
+                        <g class="circuit-step" data-step="pair">
+                            <rect class="circuit-section" x="48" y="56" width="62" height="78"/>
+                            <text class="circuit-section-label" x="79" y="150">Level 1</text>
+                            <g class="circuit-gate">
+                                <rect x="54" y="62" width="22" height="24"/>
+                                <text x="65" y="79">H</text>
+                            </g>
+                            <line class="circuit-control-line" x1="94" y1="74" x2="94" y2="118"/>
+                            <circle class="circuit-control" cx="94" cy="74" r="4"/>
+                            <circle class="circuit-target" cx="94" cy="118" r="8"/>
+                            <line class="circuit-control-line" x1="86" y1="118" x2="102" y2="118"/>
                         </g>
-                        <rect class="circuit-section" x="48" y="56" width="62" height="78"/>
-                        <text class="circuit-section-label" x="79" y="150">Level 1</text>
-                        <g class="circuit-gate">
-                            <rect x="54" y="62" width="22" height="24"/>
-                            <text x="65" y="79">H</text>
+                        <g class="circuit-step" data-step="bell">
+                            <line class="circuit-control-line" x1="128" y1="30" x2="128" y2="74"/>
+                            <circle class="circuit-control" cx="128" cy="30" r="4"/>
+                            <circle class="circuit-target" cx="128" cy="74" r="8"/>
+                            <line class="circuit-control-line" x1="120" y1="74" x2="136" y2="74"/>
+                            <g class="circuit-gate">
+                                <rect x="146" y="18" width="22" height="24"/>
+                                <text x="157" y="35">H</text>
+                            </g>
                         </g>
-                        <line class="circuit-control-line" x1="94" y1="74" x2="94" y2="118"/>
-                        <circle class="circuit-control" cx="94" cy="74" r="4"/>
-                        <circle class="circuit-target" cx="94" cy="118" r="8"/>
-                        <line class="circuit-control-line" x1="86" y1="118" x2="102" y2="118"/>
-                        <line class="circuit-control-line" x1="128" y1="30" x2="128" y2="74"/>
-                        <circle class="circuit-control" cx="128" cy="30" r="4"/>
-                        <circle class="circuit-target" cx="128" cy="74" r="8"/>
-                        <line class="circuit-control-line" x1="120" y1="74" x2="136" y2="74"/>
-                        <g class="circuit-gate">
-                            <rect x="146" y="18" width="22" height="24"/>
-                            <text x="157" y="35">H</text>
+                        <g class="circuit-step" data-step="measure">
+                            <g class="circuit-gate circuit-meter">
+                                <rect x="182" y="18" width="24" height="24"/>
+                                <path d="M186 36 Q194 24 202 36 M194 36 L200 24"/>
+                                <rect x="182" y="62" width="24" height="24"/>
+                                <path d="M186 80 Q194 68 202 80 M194 80 L200 68"/>
+                            </g>
                         </g>
-                        <g class="circuit-gate circuit-meter">
-                            <rect x="182" y="18" width="24" height="24"/>
-                            <path d="M186 36 Q194 24 202 36 M194 36 L200 24"/>
-                            <rect x="182" y="62" width="24" height="24"/>
-                            <path d="M186 80 Q194 68 202 80 M194 80 L200 68"/>
+                        <g class="circuit-step" data-step="send">
+                            <g class="circuit-classical">
+                                <path d="M206 28 H262 V104 M206 32 H258 V104"/>
+                                <path d="M206 72 H230 V104 M206 76 H226 V104"/>
+                            </g>
+                            <text id="circuit-z-label" class="circuit-bit-label" x="214" y="22">z_fix</text>
+                            <text id="circuit-x-label" class="circuit-bit-label" x="210" y="66">x_fix</text>
                         </g>
-                        <text class="circuit-bit-label" x="214" y="22">z_fix</text>
-                        <text class="circuit-bit-label" x="210" y="66">x_fix</text>
-                        <g class="circuit-gate is-fix">
+                        <g class="circuit-step circuit-gate is-fix" data-step="fixX">
                             <rect x="216" y="106" width="24" height="24"/>
                             <text x="228" y="123">X</text>
+                        </g>
+                        <g class="circuit-step circuit-gate is-fix" data-step="fixZ">
                             <rect x="248" y="106" width="24" height="24"/>
                             <text x="260" y="123">Z</text>
                         </g>

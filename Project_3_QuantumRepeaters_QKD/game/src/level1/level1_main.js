@@ -10,9 +10,10 @@
  * tip per setting, pointing at it from beside the panel, Space for next. The default link cannot hold 3 pairs at
  * once, so the tour ends on the level's hint: change the settings.
  *
- * Space (or a click on the scene) sends photons; each click at the BSM stores a Bell pair in both towers (3 slots),
- * and Mario and Luigi jump. Pairs decohere after the memory lifetime. The first click and the first decoherence pause
- * the game with a lesson note (Space continues). R starts over. Goal: fill all 3 slots at once.
+ * Space sends photons (a mouse click does nothing, so only Space moves the level on); each click at the BSM stores
+ * a Bell pair in both towers (3 slots), and Mario and Luigi jump. Pairs decohere after the memory lifetime. The
+ * first click and the first decoherence pause the game with a lesson note (Space continues). R starts over. Goal:
+ * fill all 3 slots at once.
  *
  * The gear button (or Esc) slides in a panel that pauses the game and changes the link: detector efficiency,
  * fiber attenuation, internode distance and memory lifetime. Reads level1.html.
@@ -85,12 +86,9 @@ function startLevel1() {
         renderLevel1(game, elements);
     });
     resetLevel1(game, elements);
-    elements.worldElement.addEventListener("click", () => handleClick(game, elements));
     elements.settingsButton.append(drawSprite(GEAR_SPRITE, GEAR_PIXEL_SIZE, "gear-icon"));
     elements.settingsButton.addEventListener("click", () => toggleSettings(game, elements));
     elements.settingsCloseButton.addEventListener("click", () => toggleSettings(game, elements));
-    elements.settingsTour.addEventListener("click", () => advanceSettingsTour(game, elements));
-    elements.tourBackdrop.addEventListener("click", () => advanceSettingsTour(game, elements));
     document.addEventListener("keydown", (keyEvent) => handleLevel1Key(game, elements, keyEvent));
     setInterval(() => tickClock(game, elements), CLOCK_TICK_MS);
     playGoalIntro(elements.statusElement).then(() => {
@@ -240,21 +238,6 @@ function handleLevel1Key(game, elements, keyEvent) {
         keyEvent.preventDefault();
         action();
     }
-}
-
-
-/**
- * A click on the scene does what Space does.
- */
-function handleClick(game, elements) {
-    if (game.isSettingsOpen) {
-        return;
-    }
-    if (game.openLesson !== null) {
-        closeLesson(game, elements);
-        return;
-    }
-    handleSend(game, elements);
 }
 
 

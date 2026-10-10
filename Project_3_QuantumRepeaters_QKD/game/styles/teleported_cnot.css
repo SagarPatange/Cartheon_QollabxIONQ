@@ -1,0 +1,171 @@
+/*
+ * Level 4 (teleported_cnot.html) on top of world.css, circuit_picture.css and lesson_level.css: the fix toggles, the
+ * block board's tiles and Bell-pair links, and the bits sent each way. Classes are set by
+ * src/teleported_cnot/render_teleported_cnot.js.
+ */
+
+.cnot-left-body,
+.cnot-right-body {
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+}
+
+.cnot-right-body {
+    min-width: 300px;
+}
+
+.cnot-legend {
+    margin: 0;
+    font-size: 10px;
+    color: #333333;
+}
+
+/* ---------- Fix toggles ---------- */
+
+.cnot-toggles {
+    display: grid;
+    gap: 10px;
+}
+
+.cnot-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    padding: 8px 12px;
+    font-size: 12px;
+    border: 3px solid var(--ink);
+    opacity: 0.55;
+}
+
+/* While choosing the toggles are live; a chosen one is gold and shows its letter in the box. */
+.cnot-toggles.is-choosing .cnot-toggle {
+    opacity: 1;
+}
+
+.cnot-toggle.is-on {
+    background: var(--coin-gold);
+}
+
+.cnot-toggle-box {
+    min-width: 3ch;
+    font-size: 15px;
+    white-space: pre;
+}
+
+.cnot-verdict {
+    margin: 0;
+    font-size: 12px;
+    text-align: center;
+}
+
+/* ---------- The block board ---------- */
+
+.cnot-grid {
+    display: grid;
+    grid-template-columns: auto repeat(7, 44px);
+    align-items: center;
+    gap: 8px 10px;
+}
+
+.cnot-row-label {
+    padding-right: 6px;
+    font-size: 11px;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.cnot-tile {
+    position: relative;
+    display: grid;
+    place-items: center;
+    height: 40px;
+    font-size: 13px;
+    background: var(--cloud-white);
+    border: 3px solid var(--ink);
+}
+
+.cnot-tile.is-data.is-mario.is-encoded {
+    background: var(--coin-gold);
+}
+
+.cnot-tile.is-data.is-luigi.is-encoded {
+    background: var(--qubit-blue);
+}
+
+.cnot-tile.is-half {
+    height: 30px;
+    border-style: dashed;
+}
+
+.cnot-tile.is-half.is-live {
+    background: #fcd8e8;
+    border-style: solid;
+}
+
+/* A measured half: grey, holding its bit. */
+.cnot-tile.is-half.is-measured {
+    color: var(--cloud-white);
+    background: #555555;
+    border-style: solid;
+}
+
+/* The qubit the turtle's error landed on: red with "!", then green with a tick once fixed. */
+.cnot-tile.is-flagged {
+    color: var(--cloud-white);
+    background: var(--error-red);
+}
+
+.cnot-tile.is-healed {
+    background: var(--pipe-green);
+}
+
+/* A fix that landed on a data qubit: a small black badge with the letter, in the tile's corner. */
+.cnot-badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    padding: 2px 4px;
+    font-size: 10px;
+    color: var(--cloud-white);
+    background: var(--ink);
+}
+
+/* A Bell pair: a dashed pink line between Mario's half and Luigi's. */
+.cnot-link {
+    justify-self: center;
+    width: 0;
+    height: 24px;
+    border-left: 4px dashed transparent;
+    font-size: 14px;
+}
+
+.cnot-link.is-live {
+    border-left-color: #e40058;
+}
+
+/* The pair the turtle flipped: a red "!" instead of the line. */
+.cnot-link.is-bad {
+    width: auto;
+    padding: 0 6px;
+    color: var(--cloud-white);
+    background: var(--error-red);
+    border: none;
+}
+
+.cnot-packets {
+    display: grid;
+    gap: 6px;
+    min-height: 48px;
+}
+
+.cnot-packet {
+    margin: 0;
+    font-size: 12px;
+    text-align: center;
+}
+
+.lesson-luigi {
+    display: block;
+}

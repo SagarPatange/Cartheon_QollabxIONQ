@@ -318,9 +318,7 @@ time, and then causes an error half the time, so she adds about **25 %** errors 
 ## References
 
 1. S. Patange, C. Zhan, B. Li, J. Chung, A. Zang, L. Jiang, and R. Kettimuthu, "Realistic simulation of quantum
-   repeater with encoding and classical error correction," arXiv:2605.06928 [quant-ph]. Simulation code:
-   S. Patange *et al.*, *Quantum Repeater Encoding*, GitHub repository,
-   https://github.com/SagarPatange/Quantum-Repeater-Encoding.
+   repeater with encoding and classical error correction," arXiv:2605.06928 [quant-ph].
 2. L. Jiang, J. M. Taylor, K. Nemoto, W. J. Munro, R. Van Meter, and M. D. Lukin, "Quantum repeater with
    encoding," *Phys. Rev. A* **79**, 032325 (2009).
 3. S. D. Barrett and P. Kok, "Efficient high-fidelity quantum computation using matter qubits and linear optics,"
@@ -357,12 +355,8 @@ This effort is supported by Qollab & IonQ.
 
 **Starting points, from before the build window opened (Oct 9, 2026, 19:00 ET):**
 
-- **Quantum-Repeater-Encoding** (S. Patange *et al.*,
-  [github.com/SagarPatange/Quantum-Repeater-Encoding](https://github.com/SagarPatange/Quantum-Repeater-Encoding)):
-  our earlier SeQUeNCe-based [10] simulation of QRE-CEC, the code behind [1]. It was the starting point for the
-  protocol the game plays: heralded Bell pairs, Steane encoding, the teleported CNOT and encoded swapping.
-- **Our paper [1]** (arXiv:2605.06928, `docs/paper.pdf`): the physics the levels teach. Figures 1–4 are reproduced
-  from it.
+- **Our paper [1]** (arXiv:2605.06928, `docs/paper.pdf`): the starting point for the protocol the game plays:
+  heralded Bell pairs, Steane encoding, the teleported CNOT and encoded swapping. Figures 1–4 are reproduced from it.
 - **Mario-QNext**, a first prototype of this game made on Oct 8, 2026 and copied into this repo on Oct 9 at about
   21:10 ET. It already had the Stim backend (Barrett–Kok heralding, the Steane code, the logical link, the QRE-CEC
   chain, BBM92 key distillation and the FastAPI server) with its tests, the title screen and world map, Level 1, the

@@ -1,0 +1,183 @@
+/*
+ * Circuits (src/circuit_picture.js) and the Steane diagram (src/steane_diagram.js), on top of world.css. Shared by
+ * Toad's QEC hut and Levels 3 and 4, which add the states below: a dashed ghost gate for where the next one would go,
+ * faded gates that have not happened yet, and the circles' readings.
+ */
+
+/* ---------- Circuits (circuit_picture.js) ---------- */
+
+.qec-circuit {
+    display: block;
+    font-family: var(--font-pixel);
+    font-size: 12px;
+}
+
+.qec-circuit text {
+    fill: var(--ink);
+}
+
+.qec-wire {
+    stroke: var(--ink);
+    stroke-width: 2;
+}
+
+/* A wire segment an X fault has spread to: red and thick, and the wire ends in an "X!" note as well. */
+.qec-wire.is-faulty {
+    stroke: var(--error-red);
+    stroke-width: 6;
+}
+
+.qec-wire-start {
+    font-family: system-ui, sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.qec-gate rect {
+    fill: var(--coin-gold);
+    stroke: var(--ink);
+    stroke-width: 2;
+}
+
+.qec-gate.is-measure rect {
+    fill: var(--cloud-white);
+}
+
+.qec-cnot line,
+.qec-cnot-plus {
+    stroke: var(--ink);
+    stroke-width: 2;
+}
+
+.qec-cnot circle {
+    fill: var(--ink);
+}
+
+.qec-cnot circle.qec-cnot-target {
+    fill: var(--qubit-blue);
+    stroke: var(--ink);
+    stroke-width: 2;
+}
+
+.qec-fault rect {
+    fill: var(--error-red);
+    stroke: var(--ink);
+    stroke-width: 2;
+}
+
+.qec-circuit .qec-fault text {
+    fill: var(--cloud-white);
+}
+
+.qec-circuit .qec-fault text.qec-fault-word,
+.qec-circuit .qec-end-note {
+    fill: var(--error-red);
+    font-size: 11px;
+}
+
+.qec-column-group rect {
+    fill: var(--cloud-white);
+    stroke: var(--idle-gray);
+    stroke-width: 2;
+    stroke-dasharray: 4 4;
+}
+
+.qec-circuit .qec-column-label {
+    font-size: 10px;
+}
+
+/* Where the next CNOT would go: dashed and see-through, so it never looks placed. */
+.qec-cnot.is-ghost line,
+.qec-cnot.is-ghost .qec-cnot-plus,
+.qec-cnot.is-ghost circle.qec-cnot-target {
+    stroke-dasharray: 4 3;
+}
+
+.qec-cnot.is-ghost {
+    opacity: 0.6;
+}
+
+.qec-cnot.is-ghost circle.qec-cnot-target {
+    fill: var(--cloud-white);
+}
+
+/* A gate that has not happened yet. */
+.qec-circuit .is-future {
+    opacity: 0.22;
+}
+
+/* ---------- The Steane diagram ---------- */
+
+.qec-steane-diagram {
+    display: block;
+    font-family: var(--font-pixel);
+}
+
+.qec-check-circle {
+    fill-opacity: 0.35;
+    stroke: var(--ink);
+    stroke-width: 3;
+}
+
+.qec-check-circle.is-check-1 {
+    fill: var(--coin-gold);
+}
+
+.qec-check-circle.is-check-2 {
+    fill: var(--qubit-blue);
+}
+
+.qec-check-circle.is-check-3 {
+    fill: var(--pipe-green);
+}
+
+.qec-check-label {
+    font-size: 12px;
+    fill: var(--ink);
+}
+
+.qec-qubit-dot circle {
+    fill: var(--cloud-white);
+    stroke: var(--ink);
+    stroke-width: 3;
+}
+
+.qec-qubit-dot text {
+    font-size: 11px;
+    fill: var(--ink);
+}
+
+/* Level 3's readings on the circles. Each label also says "+1" or "?", so the state never relies on colour alone. */
+.qec-check-circle.is-random {
+    fill-opacity: 0.08;
+    stroke-dasharray: 8 6;
+}
+
+.qec-check-circle.is-lit {
+    fill-opacity: 0.6;
+    stroke-width: 5;
+}
+
+/* A check that caught an error: red, and its syndrome bit reads 1 in the table beside it. */
+.qec-check-circle.is-flagged {
+    fill: var(--error-red);
+    fill-opacity: 0.45;
+    stroke-width: 5;
+}
+
+/* The qubit the player is about to fix: a gold dot with a thick ring. */
+.qec-qubit-dot.is-cursor circle {
+    fill: var(--coin-gold);
+    stroke-width: 6;
+}
+
+/* The circle the build round is spreading along: a thick blue outline (the message names it too). */
+.qec-check-circle.is-active {
+    stroke: var(--qubit-dark-blue);
+    stroke-width: 6;
+}
+
+/* Level 3 labels say "4567 +1" or "4567 ?"; a little smaller so the two bottom labels never touch. */
+.lesson-page .qec-check-label {
+    font-size: 10px;
+}

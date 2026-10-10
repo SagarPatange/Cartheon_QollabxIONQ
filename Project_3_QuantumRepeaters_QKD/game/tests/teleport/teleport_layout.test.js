@@ -5,7 +5,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { MAX_TRACK_SCALE, MIN_TRACK_SCALE, computeTrackScale } from "../../src/teleport/teleport_layout.js";
+import {
+    MAX_TRACK_SCALE, MIN_TRACK_SCALE, TRACK_MAX_WIDTH_PX, TRACK_MIN_WIDTH_PX, computeTrackScale, computeTrackWidth,
+} from "../../src/teleport/teleport_layout.js";
 
 const TRACK = { trackHeightPx: 340, trackMinWidthPx: 900 };
 
@@ -26,4 +28,11 @@ test("a huge window stops at the largest zoom, and a broken size fails fast", ()
     assert.equal(computeTrackScale({ ...TRACK, freeHeightPx: 5000, freeWidthPx: 9000 }), MAX_TRACK_SCALE);
     assert.throws(() => computeTrackScale({ trackHeightPx: 0, trackMinWidthPx: 900, freeHeightPx: 1, freeWidthPx: 1 }),
         /positive/);
+});
+
+
+test("the scene's width covers the free width but stays between its smallest and largest", () => {
+    assert.equal(computeTrackWidth(1000, 1), 1000);
+    assert.equal(computeTrackWidth(2400, 1.2), TRACK_MAX_WIDTH_PX);
+    assert.equal(computeTrackWidth(600, 1), TRACK_MIN_WIDTH_PX);
 });

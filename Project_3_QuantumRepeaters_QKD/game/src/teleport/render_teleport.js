@@ -127,11 +127,29 @@ export function showLessonNote(scene, anchor, text) {
         targetElement.classList.toggle("is-lesson-focus", targetAnchor === anchor);
     }
     scene.noteElement.hidden = anchor === null;
+    scene.noteElement.classList.remove("is-review");
     if (anchor === null) {
         return;
     }
     scene.noteElement.querySelector(".lesson-text").textContent = text;
     showNoteLocked(scene.noteElement, true);
+}
+
+
+/**
+ * Show an earlier lesson note again, read-only: its text, the part of the scene it was about, and a last line saying
+ * which earlier note this is and how to move on.
+ *
+ * @param {object} scene
+ * @param {string} anchor - where the note was about.
+ * @param {string} text
+ * @param {string} positionText - e.g. "Earlier note 2 of 4".
+ */
+export function showReviewNote(scene, anchor, text, positionText) {
+    showLessonNote(scene, anchor, text);
+    scene.noteElement.classList.remove("is-locked");
+    scene.noteElement.classList.add("is-review");
+    scene.noteElement.querySelector(".lesson-continue").textContent = `${positionText} · B: back · Space: next`;
 }
 
 

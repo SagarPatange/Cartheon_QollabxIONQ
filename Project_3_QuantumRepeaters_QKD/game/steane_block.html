@@ -1,0 +1,64 @@
+<!doctype html>
+<!--
+  Level 3 (map id "steane-block"): build a Steane |0̄⟩ block CNOT by CNOT (docs/qre_cec_protocol.md, phase 2), check
+  it with the paper's ancilla, then find and fix an X, a Z and a Y error from their syndromes. The Stim backend
+  computes every check and syndrome (POST /api/steane-block, /api/steane-errors); keys only. Run `npm run backend`
+  and open it from the map.
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Level 3: Build a Steane block</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+    <link rel="stylesheet" href="styles/world.css">
+    <link rel="stylesheet" href="styles/circuit_picture.css">
+    <link rel="stylesheet" href="styles/lesson_level.css">
+    <link rel="stylesheet" href="styles/steane_block.css">
+    <script type="module" src="src/steane_block/steane_block_main.js"></script>
+</head>
+<body class="lesson-page">
+    <header class="hud">
+        <div class="hud-item"><span class="hud-label">CNOTS</span><span id="hud-cnots">00</span></div>
+        <div class="hud-item"><span class="hud-label">WORLD</span><span>1-3</span></div>
+        <div class="hud-item"><span class="hud-label">CHECKS</span><span id="hud-checks">0/6</span></div>
+        <div class="hud-item"><span class="hud-label">BLOCK</span><span id="hud-block">NO</span></div>
+        <a class="hud-link" href="start.html#map-steane-block">◀ Map</a>
+    </header>
+
+    <main id="world" class="world lesson-world">
+        <h1 class="lesson-page-title">Level 3: Build a Steane block</h1>
+        <div class="cloud cloud-one"></div>
+        <div class="cloud cloud-two"></div>
+        <div class="hill hill-left"></div>
+        <div class="hill hill-right"></div>
+        <div class="sky-panel">
+            <p id="status-banner" class="sky-status" aria-live="polite">Encode Mario's qubits into a Steane block!</p>
+            <p id="key-hints" class="key-hints" aria-live="polite"></p>
+        </div>
+        <div id="stage" class="lesson-stage">
+            <div id="lesson-content" class="lesson-content">
+                <div class="lesson-board">
+                    <section class="lesson-card" aria-labelledby="left-card-title">
+                        <h2 id="left-card-title" class="lesson-card-title">Mario's encoder</h2>
+                        <div id="left-card-body" class="steane-left-body"></div>
+                    </section>
+                    <section class="lesson-card" aria-labelledby="checks-title">
+                        <h2 id="checks-title" class="lesson-card-title">The 3 circles</h2>
+                        <div id="diagram" class="steane-diagram-holder"></div>
+                    </section>
+                </div>
+                <div class="lesson-message">
+                    <div id="message-toad" class="lesson-message-toad" aria-hidden="true"></div>
+                    <p id="lesson-message" class="lesson-message-text" aria-live="polite"></p>
+                </div>
+            </div>
+            <div id="banner" class="lesson-banner" role="status"></div>
+        </div>
+        <div id="cast" class="lesson-cast"></div>
+        <div id="turtle" class="lesson-turtle" aria-hidden="true"></div>
+        <div class="ground"></div>
+    </main>
+</body>
+</html>

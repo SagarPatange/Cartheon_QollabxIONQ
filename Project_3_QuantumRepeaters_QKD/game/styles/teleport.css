@@ -110,10 +110,12 @@
 
 /* ---------- The scene ---------- */
 
+/* Height and width are set by teleport_main.js (teleport_layout.js); a scene narrower than the window is centred. */
 .teleport-track {
     --station-width: 140px;
-    height: 340px;
+    height: 280px;
     min-width: 940px;
+    margin: 0 auto;
     padding-top: 0;
 }
 
@@ -316,9 +318,9 @@
     top: calc(100% + 6px);
     left: 50%;
     translate: -50% 0;
-    font-size: 9px;
+    font-size: 14px;
     white-space: nowrap;
-    text-shadow: 1px 1px 0 var(--ink);
+    text-shadow: 2px 2px 0 var(--ink);
 }
 
 /* The two bits riding the pipe, as a white tag. */
@@ -577,6 +579,68 @@
 .circuit-bit-label {
     font-size: 7px;
     fill: var(--ink);
+}
+
+/* ---------- The circuit follows the teleport (src/teleport/circuit_progress.js) ---------- */
+
+/* Steps still to come are faded; steps done are solid; the step happening now glows gold. */
+.circuit-step {
+    transition: opacity 250ms ease;
+}
+
+.circuit-step.is-pending,
+.circuit-step.is-off {
+    opacity: 0.25;
+}
+
+.circuit-step.is-current rect,
+.circuit-step.is-current circle {
+    animation: circuit-glow 1s ease-in-out infinite alternate;
+}
+
+@keyframes circuit-glow {
+    from { filter: drop-shadow(0 0 0 var(--coin-gold)); }
+    to { filter: drop-shadow(0 0 4px var(--coin-gold)); }
+}
+
+/* The bits on their way: the double wires run gold, the light flowing down toward Luigi's fixes. */
+.circuit-step[data-step="send"].is-current .circuit-classical path {
+    stroke: var(--block-orange);
+    stroke-dasharray: 4 3;
+    animation: circuit-bits-flow 0.6s linear infinite;
+}
+
+@keyframes circuit-bits-flow {
+    to { stroke-dashoffset: -7; }
+}
+
+.circuit-step[data-step="send"]:not(.is-pending) .circuit-bit-label {
+    font-weight: bold;
+}
+
+/* A fix Luigi has switched on glows; once he confirms, an applied fix flashes twice, then stays lit. */
+.circuit-step.is-on rect,
+.circuit-step.is-applied rect {
+    filter: drop-shadow(0 0 4px var(--pipe-green));
+}
+
+.circuit-step.is-applied {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: circuit-fix-applied 0.35s ease-out 2;
+}
+
+@keyframes circuit-fix-applied {
+    50% { scale: 1.25; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .circuit-step.is-current rect,
+    .circuit-step.is-current circle,
+    .circuit-step[data-step="send"].is-current .circuit-classical path,
+    .circuit-step.is-applied {
+        animation: none;
+    }
 }
 
 /* The part Level 1 already made: the Bell pair. */

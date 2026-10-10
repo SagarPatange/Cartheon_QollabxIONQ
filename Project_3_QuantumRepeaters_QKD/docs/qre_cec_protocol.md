@@ -1,8 +1,7 @@
 # QRE-CEC: Quantum Repeater with Encoding and Classical Error Correction
 
 How a chain of repeaters gives two far-apart people one **logical** Bell pair: a Bell pair stored in error-correcting
-code blocks, so single errors along the way get fixed. Written from the paper ([`paper.pdf`](paper.pdf)) and checked
-against the code in [Quantum-Repeater-Encoding](https://github.com/SagarPatange/Quantum-Repeater-Encoding).
+code blocks, so single errors along the way get fixed. Written from the paper ([`paper.pdf`](paper.pdf)).
 
 ## The idea in one paragraph
 
@@ -166,7 +165,7 @@ Checks run for this document:
 
 - S. Patange, C. Zhan, B. Li, J. Chung, A. Zang, L. Jiang, R. Kettimuthu, "Realistic Simulation of Quantum Repeater
   with Encoding and Classical Error Correction" (2026), [arXiv:2605.06928](https://arxiv.org/abs/2605.06928), and
-  [`docs/paper.pdf`](paper.pdf) in this repo. Code: [github.com/SagarPatange/Quantum-Repeater-Encoding](https://github.com/SagarPatange/Quantum-Repeater-Encoding).
+  [`docs/paper.pdf`](paper.pdf) in this repo.
 - L. Jiang, J. M. Taylor, K. Nemoto, W. J. Munro, R. Van Meter, M. D. Lukin, "Quantum repeater with encoding",
   *Phys. Rev. A* 79, 032325 (2009), [arXiv:0809.3629](https://arxiv.org/abs/0809.3629). The original QRE-CEC protocol.
 - S. D. Barrett and P. Kok, "Efficient high-fidelity quantum computation using matter qubits and linear optics",

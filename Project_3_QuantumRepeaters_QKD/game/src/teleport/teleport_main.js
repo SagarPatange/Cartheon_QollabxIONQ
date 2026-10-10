@@ -14,7 +14,11 @@
  */
 
 import { BACKEND_HINT, requestTeleports } from "./teleport_client.js";
-import { computeTrackScale } from "./teleport_layout.js";
+import { areBitsMeasured, circuitStepStates, renderCircuit } from "./circuit_progress.js";
+import { countReviewable, startReview, stepReview } from "./lesson_history.js";
+import {
+    TRACK_MIN_WIDTH_PX, TUTORIAL_TRACK_HEIGHT_PX, WORD_TRACK_HEIGHT_PX, computeTrackScale, computeTrackWidth,
+} from "./teleport_layout.js";
 import { findNeededFix, findPairSlot, formatBellBits, formatKet, readLuigiResult } from "./teleport_rules.js";
 import {
     ARRIVED_PHASE, CHALLENGE_LESSON, FIX_LESSON, LINK_ANCHOR, MEASURED_PHASE, READY_PHASE, READ_PHASE, SENDING_PHASE,
@@ -25,7 +29,8 @@ import {
 } from "./teleport_word.js";
 import {
     buildTeleportTrack, loadPipe, playBellMeasurement, playCheer, playLuigiReading, playPipeFlight, prepareTeleport,
-    renderFixPanel, renderFixTable, renderWordBoard, showBanner, showLessonNote, showWordBoard, unlockLessonNote,
+    renderFixPanel, renderFixTable, renderWordBoard, showBanner, showLessonNote, showReviewNote, showWordBoard,
+    unlockLessonNote,
 } from "./render_teleport.js";
 import { findElementsById, playGoalIntro, renderKeyHints } from "../page_helpers.js";
 
@@ -39,7 +44,6 @@ const LESSON_READ_MS = 1000;
 const READING_HOLD_MS = 1000;
 const HUD_DIGIT_COUNT = 3;
 // Natural size of the scene (styles/teleport.css .teleport-track).
-const TRACK_SIZE = { trackHeightPx: 340, trackMinWidthPx: 940 };
 // Below the scene the brick ground; around it the scroller's side padding and a gap under the sky (teleport.css).
 const GROUND_HEIGHT_PX = 64;
 const SCROLLER_SIDE_PADDING_PX = 16;
@@ -61,8 +65,6 @@ function startTeleportLevel() {
     // The sky keeps one fixed height whatever it shows, so the scene stays the same size through every stage; only
     // the window (or the cheat sheet narrowing the world) refits it.
     elements.skyPanel.style.height = `${SKY_RESERVED_HEIGHT_PX}px`;
-    const resizeObserver = new ResizeObserver(() => fitTeleportTrack(elements));
-    resizeObserver.observe(elements.worldElement);
 
     // isStarted stays false until the goal has typed itself out; until then keys and clicks do nothing.
     const game = {
@@ -70,9 +72,12 @@ function startTeleportLevel() {
         teleportsStarted: 0,
         phase: READY_PHASE, toggles: { ...NO_TOGGLES }, bitsRead: [], tryCount: 0, isBusy: false, problem: null,
         lessonsSeen: new Set(), openLesson: null, isLessonLocked: false, isCheatSheetOpen: false,
+        // Every lesson note shown so far, oldest first ({anchor, text}), and the one B is showing again (or null).
+        lessonHistory: [], reviewIndex: null,
         hasShownCheatSheet: false, banner: null,
     };
-    elements.worldElement.addEventListener("click", () => handleSpace(game, elements));
+    const resizeObserver = new ResizeObserver(() => fitTeleportTrack(game, elements));
+    resizeObserver.observe(elements.worldElement);
     elements.cheatButton.addEventListener("click", (clickEvent) => {
         toggleCheatSheet(game, elements);
         // After a mouse click, hand Space back to the game; a keyboard press keeps the focus where it is.
@@ -107,12 +112,11 @@ function findTeleportElements() {
         keyHintsElement: "key-hints",
         summaryElement: "scene-summary",
         triesElement: "hud-tries",
-        stageElement: "hud-stage",
         wordElement: "hud-word",
-        seedElement: "hud-seed",
         cheatButton: "cheat-button",
         cheatSheet: "cheat-sheet",
         cheatCloseButton: "cheat-close",
+        circuitElement: "teleport-circuit",
         fixTableBody: "fix-table-body",
     });
 }
@@ -120,23 +124,27 @@ function findTeleportElements() {
 
 /**
  * Zoom the scene to fill the height the sky's fixed reserve leaves free (and no wider than the world), so the two
- * never overlap and the scene does not change size as lessons and banners come and go.
+ * never overlap and the scene does not change size as lessons and banners come and go. It changes once, when the
+ * HI challenge's word board needs the taller scene.
  */
-function fitTeleportTrack(elements) {
+function fitTeleportTrack(game, elements) {
     const worldStyle = getComputedStyle(elements.worldElement);
     const worldPaddingTopPx = Number.parseFloat(worldStyle.paddingTop);
     const freeHeightPx = elements.worldElement.clientHeight - worldPaddingTopPx - SKY_RESERVED_HEIGHT_PX - SKY_GAP_PX
         - GROUND_HEIGHT_PX;
     const freeWidthPx = elements.scrollerElement.clientWidth - 2 * SCROLLER_SIDE_PADDING_PX;
-    const scale = computeTrackScale({ ...TRACK_SIZE, freeHeightPx, freeWidthPx });
+    const trackHeightPx = game.stage === CHALLENGE_STAGE ? WORD_TRACK_HEIGHT_PX : TUTORIAL_TRACK_HEIGHT_PX;
+    const scale = computeTrackScale({ trackHeightPx, trackMinWidthPx: TRACK_MIN_WIDTH_PX, freeHeightPx, freeWidthPx });
     elements.trackElement.style.zoom = String(scale);
-    elements.trackElement.style.width = `${Math.max(freeWidthPx / scale, TRACK_SIZE.trackMinWidthPx)}px`;
+    elements.trackElement.style.height = `${trackHeightPx}px`;
+    elements.trackElement.style.width = `${computeTrackWidth(freeWidthPx, scale)}px`;
 }
 
 
 /**
- * Space or Enter continues a lesson; otherwise Space plays, X and Z flip the fix switches, C opens the cheat sheet,
- * Esc closes it, R retries with a fresh run, S skips the tutorial.
+ * Space or Enter continues a lesson; otherwise Space makes the Bell measurement, X and Z flip the fix switches,
+ * Enter confirms the fix, C opens the cheat sheet, Esc closes it, R retries with a fresh run, S skips the tutorial,
+ * B (or ←) goes back over earlier lesson notes. While going back, only B, Space, Enter and Esc work.
  */
 function handleTeleportKey(game, elements, keyEvent) {
     if (!game.isStarted || keyEvent.ctrlKey || keyEvent.metaKey || keyEvent.altKey) {
@@ -147,9 +155,15 @@ function handleTeleportKey(game, elements, keyEvent) {
     if (isOnButton && isActivationKey) {
         return;
     }
+    if (game.reviewIndex !== null) {
+        handleReviewKey(game, elements, keyEvent);
+        return;
+    }
     const keyActions = {
+        b: () => beginReview(game, elements),
+        ArrowLeft: () => beginReview(game, elements),
         " ": () => handleSpace(game, elements),
-        Enter: () => closeLesson(game, elements),
+        Enter: () => handleEnter(game, elements),
         x: () => flipFixSwitch(game, elements, "isXOn"),
         z: () => flipFixSwitch(game, elements, "isZOn"),
         c: () => toggleCheatSheet(game, elements),
@@ -167,7 +181,63 @@ function handleTeleportKey(game, elements, keyEvent) {
 
 
 /**
- * Space (or a click on the scene): put a lesson away, make the Bell measurement, or confirm the fix.
+ * While going back over notes: B (or ←) shows the one before, Space or Enter (or →) the one after, Esc stops.
+ */
+function handleReviewKey(game, elements, keyEvent) {
+    const stepByKey = { b: -1, B: -1, ArrowLeft: -1, " ": 1, Enter: 1, ArrowRight: 1 };
+    if (keyEvent.key === "Escape") {
+        keyEvent.preventDefault();
+        game.reviewIndex = null;
+        showReviewState(game, elements);
+        return;
+    }
+    const direction = stepByKey[keyEvent.key];
+    if (direction === undefined) {
+        return;
+    }
+    keyEvent.preventDefault();
+    const isLessonOpen = game.openLesson !== null;
+    game.reviewIndex = stepReview(game.reviewIndex, direction, game.lessonHistory.length, isLessonOpen);
+    showReviewState(game, elements);
+}
+
+
+/**
+ * B: show the note before the open lesson, or the latest note if none is open (say a stray Space put it away).
+ */
+function beginReview(game, elements) {
+    game.reviewIndex = startReview(game.lessonHistory.length, game.openLesson !== null);
+    if (game.reviewIndex !== null) {
+        showReviewState(game, elements);
+    }
+}
+
+
+/**
+ * Show the earlier note being reviewed; once review is over, put back the open lesson's own note (or none).
+ */
+function showReviewState(game, elements) {
+    if (game.reviewIndex !== null) {
+        const entry = game.lessonHistory[game.reviewIndex];
+        const reviewableCount = countReviewable(game.lessonHistory.length, game.openLesson !== null);
+        const positionText = `Earlier note ${game.reviewIndex + 1} of ${reviewableCount}`;
+        showReviewNote(elements.scene, entry.anchor, entry.text, positionText);
+    } else if (game.openLesson !== null) {
+        const current = game.lessonHistory[game.lessonHistory.length - 1];
+        showLessonNote(elements.scene, current.anchor, current.text);
+        if (!game.isLessonLocked) {
+            unlockLessonNote(elements.scene);
+        }
+    } else {
+        showLessonNote(elements.scene, null);
+    }
+    renderTeleport(game, elements);
+}
+
+
+/**
+ * Space: put a lesson away, or make the Bell measurement. (Confirming the fix is Enter's job, so a stray Space
+ * never sends a fix Luigi did not mean.)
  */
 function handleSpace(game, elements) {
     if (!game.isStarted || game.isBusy) {
@@ -177,12 +247,24 @@ function handleSpace(game, elements) {
         closeLesson(game, elements);
         return;
     }
-    if (game.teleport === null) {
+    if (game.teleport !== null && game.phase === READY_PHASE) {
+        makeBellMeasurement(game, elements);
+    }
+}
+
+
+/**
+ * Enter: put a lesson away, or confirm Luigi's fix once the bits have arrived.
+ */
+function handleEnter(game, elements) {
+    if (!game.isStarted || game.isBusy) {
         return;
     }
-    if (game.phase === READY_PHASE) {
-        makeBellMeasurement(game, elements);
-    } else if (game.phase === ARRIVED_PHASE) {
+    if (game.openLesson !== null) {
+        closeLesson(game, elements);
+        return;
+    }
+    if (game.teleport !== null && game.phase === ARRIVED_PHASE) {
         confirmFix(game, elements);
     }
 }
@@ -209,6 +291,7 @@ async function startChallengeWord(game, elements) {
     Object.assign(game, { stage: CHALLENGE_STAGE, teleportIndex: 0, bitsRead: [], wordTeleports: [] });
     showBanner(elements.scene, "", "");
     showWordBoard(elements.scene, true);
+    fitTeleportTrack(game, elements);
     const response = await fetchTeleports(game, elements, encodeWord(CHALLENGE_WORD));
     if (response === null) {
         return;
@@ -369,7 +452,7 @@ function moveOnAfterReading(game, elements) {
  */
 function finishTutorial(game, elements) {
     playCheer(elements.scene);
-    showBanner(elements.scene, "STAGE 2-1 CLEAR!", "is-win");
+    showBanner(elements.scene, "TUTORIAL CLEAR!", "is-win");
     openLessonOnce(game, elements, TUTORIAL_DONE_LESSON, LINK_ANCHOR, () => startChallengeWord(game, elements));
 }
 
@@ -440,7 +523,11 @@ function openLessonOnce(game, elements, lessonId, anchor, onClose) {
     game.lessonsSeen.add(lessonId);
     game.openLesson = { lessonId, onClose };
     game.isLessonLocked = true;
-    showLessonNote(elements.scene, anchor, describeLesson(lessonId, game));
+    // A new lesson ends any going-back, and joins the history B can return to.
+    game.reviewIndex = null;
+    const text = describeLesson(lessonId, game);
+    game.lessonHistory.push({ anchor, text });
+    showLessonNote(elements.scene, anchor, text);
     renderTeleport(game, elements);
     const openedLesson = game.openLesson;
     setTimeout(() => {
@@ -448,7 +535,10 @@ function openLessonOnce(game, elements, lessonId, anchor, onClose) {
             return;
         }
         game.isLessonLocked = false;
-        unlockLessonNote(elements.scene);
+        // While an earlier note is being re-read, leave it alone; ending the review shows this one unlocked.
+        if (game.reviewIndex === null) {
+            unlockLessonNote(elements.scene);
+        }
         renderTeleport(game, elements);
     }, LESSON_READ_MS);
 }
@@ -523,11 +613,9 @@ function closeCheatSheet(game, elements) {
  */
 function renderTeleport(game, elements) {
     elements.triesElement.textContent = String(game.tryCount).padStart(HUD_DIGIT_COUNT, "0");
-    elements.stageElement.textContent = game.stage;
     elements.wordElement.textContent = game.stage === CHALLENGE_STAGE
         ? formatWordProgress(game.bitsRead, CHALLENGE_WORD)
         : "--";
-    elements.seedElement.textContent = game.seed === null ? "--" : String(game.seed);
     renderProblem(game, elements);
     renderFixPanel(elements.scene, describeFixView(game));
     if (game.stage === CHALLENGE_STAGE) {
@@ -535,6 +623,9 @@ function renderTeleport(game, elements) {
     }
     const isTutorialFix = game.stage === TUTORIAL_STAGE && hasBitsArrived(game);
     renderFixTable(elements.fixTableBody, isTutorialFix ? formatBellBits(game.teleport.bell_bits) : "");
+    const phase = game.teleport === null ? null : game.phase;
+    const measuredBits = areBitsMeasured(phase) ? game.teleport.bell_bits : null;
+    renderCircuit(elements.circuitElement, circuitStepStates(phase, game.toggles), measuredBits);
     renderKeyHints(elements.keyHintsElement, listKeyHints(game));
     const summaryText = describeScene(game);
     if (elements.summaryElement.textContent !== summaryText) {
@@ -586,34 +677,37 @@ function renderProblem(game, elements) {
 
 
 /**
- * Which keys do something right now.
+ * Which keys do something right now. The cheat sheet is left out (its HUD button already shows its key, C), and so
+ * is S, the skip past the tutorial, which stays as a quiet shortcut for players who know it.
  */
 function listKeyHints(game) {
     if (!game.isStarted) {
         return [];
     }
-    const cheatHint = { key: "C", action: "Cheat sheet" };
     const retryHint = { key: "R", action: "Retry" };
-    if (game.openLesson !== null) {
-        return game.isLessonLocked ? [cheatHint] : [{ key: "Space", action: "Continue" }, cheatHint];
+    const isLessonOpen = game.openLesson !== null;
+    const canGoBack = countReviewable(game.lessonHistory.length, isLessonOpen) > 0;
+    const backHints = canGoBack ? [{ key: "B", action: "Back" }] : [];
+    if (game.reviewIndex !== null) {
+        return [{ key: "B", action: "Back" }, { key: "Space", action: "Next" }];
+    }
+    if (isLessonOpen) {
+        return game.isLessonLocked ? backHints : [{ key: "Space", action: "Continue" }, ...backHints];
     }
     if (game.isBusy && game.teleport === null) {
         return [{ key: "…", action: "Loading" }];
     }
     if (game.isBusy) {
-        return [cheatHint];
+        return backHints;
     }
     const hints = [];
     if (game.teleport !== null && game.phase === READY_PHASE) {
         hints.push({ key: "Space", action: "Bell measurement" });
     }
     if (game.teleport !== null && game.phase === ARRIVED_PHASE) {
-        hints.push({ key: "X", action: "X fix" }, { key: "Z", action: "Z fix" }, { key: "Space", action: "Confirm" });
+        hints.push({ key: "X", action: "X fix" }, { key: "Z", action: "Z fix" }, { key: "Enter", action: "Confirm" });
     }
-    hints.push(cheatHint, retryHint);
-    if (game.stage === TUTORIAL_STAGE) {
-        hints.push({ key: "S", action: "Skip to 2-2" });
-    }
+    hints.push(retryHint, ...backHints);
     return hints;
 }
 
@@ -626,9 +720,9 @@ function describeScene(game) {
         return game.problem;
     }
     if (game.teleport === null) {
-        return `Stage ${game.stage}. Luigi's word: ${formatWordProgress(game.bitsRead, CHALLENGE_WORD)}.`;
+        return `${describeStage(game)}. Luigi's word: ${formatWordProgress(game.bitsRead, CHALLENGE_WORD)}.`;
     }
-    const sending = `Stage ${game.stage}: Mario sends ${formatKet(game.teleport.state)}.`;
+    const sending = `${describeStage(game)}: Mario sends ${formatKet(game.teleport.state)}.`;
     if (game.phase === READY_PHASE || game.phase === MEASURED_PHASE || game.phase === SENDING_PHASE) {
         return sending;
     }
@@ -640,6 +734,14 @@ function describeScene(game) {
     const verdict = game.result.isRightState ? "right" : "wrong";
     const needed = findNeededFix(game.teleport.bell_bits);
     return `${sending} ${bits} Luigi read ${game.result.reading}: ${verdict}. Needed fix: ${needed}.`;
+}
+
+
+/**
+ * The stage in words for the screen-reader summary: "Tutorial" or "HI challenge".
+ */
+function describeStage(game) {
+    return game.stage === TUTORIAL_STAGE ? "Tutorial" : `${CHALLENGE_WORD} challenge`;
 }
 
 

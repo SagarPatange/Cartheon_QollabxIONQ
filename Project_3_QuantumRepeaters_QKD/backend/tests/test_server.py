@@ -115,3 +115,40 @@ def test_a_bad_teleport_request_gets_a_422(request_body):
 def test_the_new_level_pages_are_listed():
     assert "teleport.html" in PAGE_NAMES
     assert "bb84_hut.html" in PAGE_NAMES
+
+
+def test_the_steane_encoder_cnots_give_an_encoded_block_and_a_bad_cnot_gets_a_422():
+    textbook_cnots = [[4, 5], [4, 6], [4, 7], [2, 3], [2, 6], [2, 7], [1, 3], [1, 5], [1, 7]]
+    body = client.post("/api/steane-block", json={"cnots": textbook_cnots}).json()
+    assert body == {
+        "x_checks": [1, 1, 1], "z_checks": [1, 1, 1], "logical_z": 1, "is_encoded": True, "verification_bit": 0,
+    }
+    empty_body = client.post("/api/steane-block", json={"cnots": []}).json()
+    assert empty_body["is_encoded"] is False
+    assert empty_body["verification_bit"] is None
+    assert client.post("/api/steane-block", json={"cnots": [[3, 3]]}).status_code == 422
+    assert client.post("/api/steane-block", json={"cnots": [[8, 1]]}).status_code == 422
+
+
+def test_steane_errors_come_as_x_z_y_rounds_with_every_fix_and_repeat_with_a_seed():
+    body = client.post("/api/steane-errors", json={"seed": 4}).json()
+    assert [error_round["pauli"] for error_round in body["rounds"]] == ["X", "Z", "Y"]
+    for error_round in body["rounds"]:
+        assert len(error_round["fixes"]) == 21
+        right_fix = error_round["fixes"][f"{error_round['pauli']}{error_round['position']}"]
+        assert right_fix["is_fixed"] is True
+    assert client.post("/api/steane-errors", json={"seed": 4}).json() == body
+
+
+def test_teleported_cnot_returns_four_rounds_and_repeats_with_a_seed():
+    body = client.post("/api/teleported-cnot", json={"seed": 8}).json()
+    assert set(body["classical_round"]["readings"]) == {"none", "x", "z", "xz"}
+    assert set(body["bell_round"]["readings"]) == {"none", "x", "z", "xz"}
+    assert [block_round["bad_pair"] is None for block_round in body["block_rounds"]] == [True, False]
+    assert client.post("/api/teleported-cnot", json={"seed": 8}).json() == body
+    assert client.post("/api/teleported-cnot", json={}).status_code == 200
+
+
+def test_the_two_new_level_pages_are_listed():
+    assert "steane_block.html" in PAGE_NAMES
+    assert "teleported_cnot.html" in PAGE_NAMES

@@ -1,5 +1,5 @@
-"""HTTP server: POST /api/send runs one Level 3 message, POST /api/logical-pair one Level 2 logical pair and
-POST /api/teleport the teleportation level's states through the simulator; the pages are served alongside them.
+"""HTTP server: every level's simulator calls (POST /api/send, /api/logical-pair, /api/teleport, /api/steane-block,
+/api/steane-errors and /api/teleported-cnot), with the pages served alongside them.
 
 Run from backend/:  .venv/bin/python -m uvicorn quantum_bros.server:app --port 8001
 then open http://localhost:8001. Only the pages, src/ and styles/ are served from the repo root.
@@ -17,13 +17,18 @@ from quantum_bros.api_models import (
     MAX_SEED,
     LogicalPairRequest,
     LogicalPairResponse,
+    SeededRequest,
     SendRequest,
     SendResponse,
+    SteaneBlockRequest,
+    SteaneBlockResponse,
+    SteaneErrorsResponse,
+    TeleportedCnotResponse,
     TeleportRequest,
     TeleportResponse,
 )
 from quantum_bros.backends.stim_backend import StimBackend
-from quantum_bros.protocol import logical_link, messaging, steps, teleport
+from quantum_bros.protocol import logical_link, messaging, steane_block, steps, teleport, teleported_cnot_lesson
 from quantum_bros.protocol.network import QuantumNetwork
 from quantum_bros.protocol.noise import make_uniform_noise
 
@@ -37,6 +42,8 @@ PAGE_NAMES = [
     "qkd.html",
     "teleport.html",
     "bb84_hut.html",
+    "steane_block.html",
+    "teleported_cnot.html",
 ]
 
 app = FastAPI(title="Quantum Bros simulator")
@@ -115,6 +122,40 @@ def teleport_states(request: TeleportRequest) -> TeleportResponse:
     results = teleport.run_teleports(StimBackend, request.states, random.Random(seed))
     teleports = [dataclasses.asdict(result) for result in results]
     return TeleportResponse(seed=seed, teleports=teleports)
+
+
+@app.post("/api/steane-block")
+def check_steane_block(request: SteaneBlockRequest) -> SteaneBlockResponse:
+    """steane_block.html, Part A: what each check reads after the H gates and the player's CNOTs. Noiseless and
+    deterministic, so no seed. A CNOT outside q1-q7 or onto its own qubit gets a 422."""
+    try:
+        report = steane_block.run_build(StimBackend(seed=0), request.cnots)
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    return SteaneBlockResponse(**dataclasses.asdict(report))
+
+
+@app.post("/api/steane-errors")
+def make_steane_errors(request: SeededRequest) -> SteaneErrorsResponse:
+    """steane_block.html, Part B: three errors (X, Z, Y) on random qubits, their syndromes and every fix's result."""
+    seed = pick_seed(request.seed)
+    rounds = steane_block.run_error_rounds(StimBackend, random.Random(seed))
+    return SteaneErrorsResponse(seed=seed, rounds=[dataclasses.asdict(error_round) for error_round in rounds])
+
+
+@app.post("/api/teleported-cnot")
+def run_teleported_cnot(request: SeededRequest) -> TeleportedCnotResponse:
+    """teleported_cnot.html: the four rounds of the teleported CNOT lesson."""
+    seed = pick_seed(request.seed)
+    report = teleported_cnot_lesson.run_lesson(StimBackend, random.Random(seed))
+    return TeleportedCnotResponse(seed=seed, **dataclasses.asdict(report))
+
+
+def pick_seed(requested_seed: int | None) -> int:
+    """The request's seed, or a fresh one when it gave none."""
+    if requested_seed is None:
+        return random.randrange(MAX_SEED + 1)
+    return requested_seed
 
 
 def dispatch_message(network: QuantumNetwork, request: SendRequest) -> messaging.MessageResult:

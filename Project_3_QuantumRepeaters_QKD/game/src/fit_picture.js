@@ -1,6 +1,7 @@
 /**
- * How much to shrink (or, for vector pictures, enlarge) a panel's picture so it fits the space left for it, so every panel fits the window without
- * scrolling. Pure; hut_pager.js measures the sizes and applies the scale (both of Toad's huts).
+ * How much to shrink (or, for vector pictures, enlarge) a picture so it fits the space left for it, so a page fits the
+ * window without scrolling. Pure; hut_pager.js (both of Toad's huts) and lesson_stage.js (Levels 3 and 4) measure the
+ * sizes and apply the scale.
  */
 
 // Below this the pictures' text is too small to read; a smaller window scrolls instead.

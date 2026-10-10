@@ -1,5 +1,6 @@
-"""Request and response shapes for POST /api/send (Level 3), POST /api/logical-pair (Level 2) and POST /api/teleport
-(teleport.html). Pydantic rejects a bad request with a 422 before any simulation."""
+"""Request and response shapes for POST /api/send (qkd.html), POST /api/logical-pair (level2.html), POST /api/teleport
+(teleport.html), POST /api/steane-block and /api/steane-errors (steane_block.html) and POST /api/teleported-cnot
+(teleported_cnot.html). Pydantic rejects a bad request with a 422 before any simulation."""
 
 from typing import Literal
 
@@ -13,6 +14,9 @@ MAX_TELEPORT_STATES = 16
 
 # Seeds go into Stim and random.Random; keep them in the range both accept and JSON carries exactly.
 MAX_SEED = 2**32 - 1
+
+# The Steane encoder needs 9 CNOTs; this leaves room for wrong tries the player has not undone yet.
+MAX_BUILD_CNOTS = 40
 
 
 class SendRequest(BaseModel):
@@ -127,3 +131,82 @@ class TeleportResponse(BaseModel):
 
     seed: int
     teleports: list[TeleportModel]
+
+
+class SeededRequest(BaseModel):
+    """A run that needs only a seed. No seed means the server picks one."""
+
+    seed: int | None = Field(default=None, ge=0, le=MAX_SEED)
+
+
+class SteaneBlockRequest(BaseModel):
+    """steane_block.html, Part A: the player's CNOTs so far, as 1-based (control, target) positions."""
+
+    cnots: list[tuple[int, int]] = Field(default_factory=list, max_length=MAX_BUILD_CNOTS)
+
+
+class SteaneBlockResponse(BaseModel):
+    """What each check would read (+1 or 0 = random), Z̄, whether the block is |0̄⟩, and the ancilla check's bit."""
+
+    x_checks: list[int]
+    z_checks: list[int]
+    logical_z: int
+    is_encoded: bool
+    verification_bit: int | None
+
+
+class FixResultModel(BaseModel):
+    """The syndromes and the Z̄ check's bit after one fix, and whether the block is |0̄⟩ again."""
+
+    z_syndrome: list[int]
+    x_syndrome: list[int]
+    logical_bit: int
+    is_fixed: bool
+
+
+class ErrorRoundModel(BaseModel):
+    """One error: its Pauli and qubit, the measured syndromes, and every fix's result (keys like "X6")."""
+
+    pauli: Literal["X", "Z", "Y"]
+    position: int
+    z_syndrome: list[int]
+    x_syndrome: list[int]
+    fixes: dict[str, FixResultModel]
+
+
+class SteaneErrorsResponse(BaseModel):
+    """steane_block.html, Part B: the three error rounds, plus the seed so the run can be repeated."""
+
+    seed: int
+    rounds: list[ErrorRoundModel]
+
+
+class PairRoundModel(BaseModel):
+    """A one-pair round: Mario's bit m, Luigi's bit n, and the readings after each fix ("none", "x", "z", "xz")."""
+
+    m: int
+    n: int
+    readings: dict[str, dict[str, int]]
+
+
+class BlockRoundModel(BaseModel):
+    """A transversal round on two Steane blocks; bad_pair is the Bell pair a turtle flipped (1-7), or null."""
+
+    bad_pair: int | None
+    m_bits: list[int]
+    n_bits: list[int]
+    raw_zz_bit: int
+    raw_xx_bit: int
+    luigi_z_syndrome: list[int]
+    luigi_x_syndrome: list[int]
+    fixed_zz_bit: int
+    fixed_xx_bit: int
+
+
+class TeleportedCnotResponse(BaseModel):
+    """teleported_cnot.html: all four rounds, plus the seed so the run can be repeated."""
+
+    seed: int
+    classical_round: PairRoundModel
+    bell_round: PairRoundModel
+    block_rounds: list[BlockRoundModel]

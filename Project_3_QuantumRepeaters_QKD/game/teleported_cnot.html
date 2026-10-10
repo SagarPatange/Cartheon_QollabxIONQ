@@ -1,0 +1,64 @@
+<!doctype html>
+<!--
+  Level 4 (map id "teleported-cnot"): the teleported CNOT of the paper's Fig. 4, first on one Bell pair, then on all 7
+  pairs between two Steane blocks (docs/qre_cec_protocol.md, phase 3), with a turtle spoiling one pair at the end.
+  The Stim backend computes every bit and reading (POST /api/teleported-cnot); keys only. Run `npm run backend` and
+  open it from the map.
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Level 4: Teleported CNOT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+    <link rel="stylesheet" href="styles/world.css">
+    <link rel="stylesheet" href="styles/circuit_picture.css">
+    <link rel="stylesheet" href="styles/lesson_level.css">
+    <link rel="stylesheet" href="styles/teleported_cnot.css">
+    <script type="module" src="src/teleported_cnot/teleported_cnot_main.js"></script>
+</head>
+<body class="lesson-page">
+    <header class="hud">
+        <div class="hud-item"><span class="hud-label">ROUND</span><span id="hud-round">1/4</span></div>
+        <div class="hud-item"><span class="hud-label">WORLD</span><span>1-4</span></div>
+        <div class="hud-item"><span class="hud-label">BELL PAIRS</span><span id="hud-pairs">1</span></div>
+        <div class="hud-item"><span class="hud-label">CNOT DONE</span><span id="hud-done">NO</span></div>
+        <a class="hud-link" href="start.html#map-teleported-cnot">◀ Map</a>
+    </header>
+
+    <main id="world" class="world lesson-world">
+        <h1 class="lesson-page-title">Level 4: Teleported CNOT</h1>
+        <div class="cloud cloud-one"></div>
+        <div class="cloud cloud-two"></div>
+        <div class="hill hill-left"></div>
+        <div class="hill hill-right"></div>
+        <div class="sky-panel">
+            <p id="status-banner" class="sky-status" aria-live="polite">Do a CNOT from Mario's qubit to Luigi's!</p>
+            <p id="key-hints" class="key-hints" aria-live="polite"></p>
+        </div>
+        <div id="stage" class="lesson-stage">
+            <div id="lesson-content" class="lesson-content">
+                <div class="lesson-board">
+                    <section class="lesson-card" aria-labelledby="left-card-title">
+                        <h2 id="left-card-title" class="lesson-card-title">One Bell pair</h2>
+                        <div id="left-card-body" class="cnot-left-body"></div>
+                    </section>
+                    <section class="lesson-card" aria-labelledby="right-card-title">
+                        <h2 id="right-card-title" class="lesson-card-title">Fixes</h2>
+                        <div id="right-card-body" class="cnot-right-body"></div>
+                    </section>
+                </div>
+                <div class="lesson-message">
+                    <div id="message-toad" class="lesson-message-toad" aria-hidden="true"></div>
+                    <p id="lesson-message" class="lesson-message-text" aria-live="polite"></p>
+                </div>
+            </div>
+            <div id="banner" class="lesson-banner" role="status"></div>
+        </div>
+        <div id="cast" class="lesson-cast"></div>
+        <div id="turtle" class="lesson-turtle" aria-hidden="true"></div>
+        <div class="ground"></div>
+    </main>
+</body>
+</html>

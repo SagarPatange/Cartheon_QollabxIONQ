@@ -1,7 +1,7 @@
 /**
- * Level 2 page entry point: build one logical Bell pair between Alice and Bob, one phase per Space press (or click on
- * the scene; the first press heralds all 7 pairs in a row); R starts a new run. The goal types itself out first and the level starts once it has. Keycap hints
- * under the goal say what Space does next.
+ * Level 2 page entry point: build one logical Bell pair between Alice and Bob, one phase per Space press (a mouse
+ * click does nothing; the first press heralds all 7 pairs in a row); R starts a new run. The goal types itself out
+ * first and the level starts once it has. Keycap hints under the goal say what Space does next.
  *
  * The backend runs the whole protocol on Stim when the page opens (and on every new run); the page then plays back
  * what it did: 7 Barrett–Kok pairs, encoding, the teleported CNOT and a final check. Reads level2.html.
@@ -40,11 +40,10 @@ function startLevel2() {
     fitTrackToWorld(elements, TRACK_SIZE);
     window.addEventListener("resize", () => fitTrackToWorld(elements, TRACK_SIZE));
 
-    // isStarted stays false until the goal has typed itself out; until then keys and clicks do nothing.
+    // isStarted stays false until the goal has typed itself out; until then keys do nothing.
     const game = {
         response: null, steps: [], stepIndex: 0, tryCount: 0, pairCount: 0, isBusy: false, isStarted: false,
     };
-    elements.worldElement.addEventListener("click", () => playNextStep(game, elements));
     document.addEventListener("keydown", (keyEvent) => handleLevel2Key(game, elements, keyEvent));
     renderLevel2(game, elements);
     playGoalIntro(elements.statusElement).then(() => {

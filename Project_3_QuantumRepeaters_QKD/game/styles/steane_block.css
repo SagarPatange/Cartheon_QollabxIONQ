@@ -1,0 +1,31 @@
+/*
+ * Level 3 (steane_block.html) on top of world.css, circuit_picture.css and lesson_level.css: the left card's body (the
+ * encoder circuit, or the syndrome table with the fix picker) and the fix picker itself. Classes are set by
+ * src/steane_block/render_steane_block.js.
+ */
+
+.steane-left-body {
+    display: grid;
+    justify-items: center;
+    gap: 14px;
+}
+
+.steane-syndrome-table th[scope="row"] {
+    font-size: 12px;
+    background: var(--cloud-white);
+}
+
+/* The chosen fix in brackets, e.g. "Fix: [X]  Z   Y  on q3"; a monospace layout keeps the brackets from shifting. */
+.steane-fix-picker {
+    margin: 0;
+    padding: 8px 14px;
+    font-size: 15px;
+    white-space: pre;
+    background: var(--coin-gold);
+    border: 3px solid var(--ink);
+}
+
+.lesson-mario,
+.lesson-toad {
+    display: block;
+}

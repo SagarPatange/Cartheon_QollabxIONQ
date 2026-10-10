@@ -12,6 +12,15 @@ export const MIN_TRACK_SCALE = 0.6;
 // Above this the pixel art just gets blurry and the sky gets crowded out on big screens.
 export const MAX_TRACK_SCALE = 1.6;
 
+// The scene's natural height: in the tutorial the tallest thing over the towers is a tower's bit readout; in the HI
+// challenge the word board rises higher, so the scene is taller (and drawn a little smaller).
+export const TUTORIAL_TRACK_HEIGHT_PX = 280;
+export const WORD_TRACK_HEIGHT_PX = 340;
+// The scene's natural width: never narrower (the link needs room), and never wider, so on a wide window the two
+// towers stay close together in the middle instead of drifting to the edges.
+export const TRACK_MIN_WIDTH_PX = 940;
+export const TRACK_MAX_WIDTH_PX = 1040;
+
 
 /**
  * The zoom that fits the scene into the free space: as large as both the free height and the free width allow,
@@ -30,4 +39,18 @@ export function computeTrackScale(space) {
     const widthScale = space.freeWidthPx / space.trackMinWidthPx;
     const fittingScale = Math.min(heightScale, widthScale);
     return Math.min(MAX_TRACK_SCALE, Math.max(MIN_TRACK_SCALE, fittingScale));
+}
+
+
+/**
+ * The scene's natural width at a zoom: the free width it covers, kept between TRACK_MIN_WIDTH_PX and
+ * TRACK_MAX_WIDTH_PX (the page centres it when it is narrower than the window).
+ *
+ * @param {number} freeWidthPx - the room for the scene on screen.
+ * @param {number} scale - from computeTrackScale.
+ * @returns {number}
+ */
+export function computeTrackWidth(freeWidthPx, scale) {
+    const coveredWidthPx = freeWidthPx / scale;
+    return Math.min(TRACK_MAX_WIDTH_PX, Math.max(TRACK_MIN_WIDTH_PX, coveredWidthPx));
 }

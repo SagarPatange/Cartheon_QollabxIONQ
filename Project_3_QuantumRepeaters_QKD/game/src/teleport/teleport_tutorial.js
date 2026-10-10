@@ -132,7 +132,7 @@ export function describeLesson(lessonId, context) {
         [PLUS_LESSON]: () => `Now the block holds ${formatKet(context.teleport.state)}. Luigi reads it in the +/− `
             + "basis, so the Z fix will matter.",
         [PLUS_FIX_LESSON]: () => describeFixLesson(context.teleport),
-        [TUTORIAL_DONE_LESSON]: () => "STAGE 2-1 CLEAR! A shared pair plus two bits moved a whole qubit. Next: "
+        [TUTORIAL_DONE_LESSON]: () => "TUTORIAL CLEAR! A shared pair plus two bits moved a whole qubit. Next: "
             + `send Luigi the word ${CHALLENGE_WORD}.`,
         [CHALLENGE_LESSON]: () => describeChallengeLesson(),
     };
@@ -167,7 +167,7 @@ function describeBellLesson(teleport) {
  */
 function describeFixLesson(teleport) {
     return `Luigi got bits ${formatBellBits(teleport.bell_bits)}. Find them in the cheat sheet (C), set the fix `
-        + "with the X and Z keys, then press Space.";
+        + "with the X and Z keys, then press Enter.";
 }
 
 
@@ -199,6 +199,6 @@ function describeChallengeLesson() {
     for (const letter of CHALLENGE_WORD) {
         letterCodes.push(`${letter} = ${encodeLetter(letter)}`);
     }
-    return `STAGE 2-2: Luigi needs the word ${CHALLENGE_WORD}, 5 bits a letter: ${letterCodes.join(", ")}. `
-        + "Each bit: Space, set the fix, Space.";
+    return `CHALLENGE: Luigi needs the word ${CHALLENGE_WORD}, 5 bits a letter: ${letterCodes.join(", ")}. `
+        + "Each bit: Space, set the fix, Enter.";
 }

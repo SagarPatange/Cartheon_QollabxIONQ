@@ -1,17 +1,21 @@
 /**
- * Draws a quantum circuit from qec_codes.js ({wires, columns}) as an inline SVG in the game's pixel style: wires with
- * their labels and starting states, H boxes, CNOTs (● on the control, ⊕ on the target), and measurement boxes.
- * Optionally marks one X fault and draws, in red and thicker, every wire segment its X has spread to by then
- * (spreadXFault), with a text tag at the end of each such wire so the spread never relies on colour alone.
+ * Draws a quantum circuit ({wires, columns}, as hut/qec_codes.js builds them) as an inline SVG in the game's pixel
+ * style: wires with their labels and starting states, H, X and Z boxes, CNOTs (● on the control, ⊕ on the target), and
+ * measurement boxes. Used by Toad's QEC hut and by Levels 3 and 4.
+ *
+ * Options: mark one X fault and draw, in red and thicker, every wire segment its X has spread to by then
+ * (spreadXFault), with a text tag at the end of each such wire so the spread never relies on colour alone; fade the
+ * columns that have not happened yet; keep room for a fixed number of columns so a growing circuit doesn't jump. A
+ * gate with look "ghost" is drawn dashed (where the next gate would go).
  *
  * Writes only the element it returns; the caller gives it an aria-label.
  */
 
-import { spreadXFault } from "./qec_codes.js";
+import { spreadXFault } from "./hut/qec_codes.js";
 
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
-// The circuit's layout, in SVG units (1 unit = 1 CSS pixel before the hut fits the picture to its box).
+// The circuit's layout, in SVG units (1 unit = 1 CSS pixel before the page fits the picture to its box).
 const LAYOUT = {
     wireGap: 40,
     columnGap: 48,
@@ -25,6 +29,8 @@ const LAYOUT = {
     targetRadius: 12,
     faultSize: 22,
 };
+// The letter in each single-qubit gate's box.
+const GATE_LETTERS = { h: "H", x: "X", z: "Z" };
 
 
 /**
@@ -32,12 +38,14 @@ const LAYOUT = {
  *
  * @param {{wires: object[], columns: object[][]}} circuit - from qec_codes.js.
  * @param {{fault?: {wire: string, afterColumn: number}, endNotes?: Object<string, string>,
- *     columnGroups?: {from: number, to: number, label: string}[]}} [options] - a fault to mark, a short note at the
- *     end of some wires (e.g. "X"), and labelled bands over groups of columns.
+ *     columnGroups?: {from: number, to: number, label: string}[], doneColumnCount?: number,
+ *     minColumnCount?: number}} [options] - a fault to mark, a short note at the end of some wires (e.g. "X"),
+ *     labelled bands over groups of columns, how many columns have happened (later ones are faded), and the fewest
+ *     columns to leave room for.
  * @returns {SVGSVGElement}
  */
 export function drawCircuit(circuit, options = {}) {
-    const geometry = measureCircuit(circuit);
+    const geometry = measureCircuit(circuit, options.minColumnCount ?? 0);
     const svgElement = createSvgElement("svg", {
         viewBox: `0 0 ${geometry.widthPx} ${geometry.heightPx}`,
         width: geometry.widthPx,
@@ -53,9 +61,15 @@ export function drawCircuit(circuit, options = {}) {
     if (options.fault !== undefined) {
         svgElement.append(...drawFaultSpread(circuit, options.fault, geometry));
     }
+    const doneColumnCount = options.doneColumnCount ?? circuit.columns.length;
     for (let i = 0; i < circuit.columns.length; i++) {
         for (const gate of circuit.columns[i]) {
-            svgElement.append(drawGate(gate, findColumnX(i), geometry));
+            const gateElement = drawGate(gate, findColumnX(i), geometry);
+            if (gate.look !== undefined) {
+                gateElement.classList.add(`is-${gate.look}`);
+            }
+            gateElement.classList.toggle("is-future", i >= doneColumnCount);
+            svgElement.append(gateElement);
         }
     }
     for (const [wireId, note] of Object.entries(options.endNotes ?? {})) {
@@ -68,12 +82,13 @@ export function drawCircuit(circuit, options = {}) {
 /**
  * The circuit's size, where each wire sits, and where each wire's line stops (at its measurement box, if any).
  */
-function measureCircuit(circuit) {
+function measureCircuit(circuit, minColumnCount) {
     const wireY = {};
     for (let i = 0; i < circuit.wires.length; i++) {
         wireY[circuit.wires[i].id] = LAYOUT.topMargin + i * LAYOUT.wireGap;
     }
-    const lastColumnX = findColumnX(circuit.columns.length - 1);
+    const columnCount = Math.max(circuit.columns.length, minColumnCount);
+    const lastColumnX = findColumnX(columnCount - 1);
     const lineEndX = {};
     for (const wire of circuit.wires) {
         lineEndX[wire.id] = lastColumnX + LAYOUT.columnGap / 2;
@@ -124,8 +139,9 @@ function drawWire(wire, geometry) {
  * One gate, centred on its column.
  */
 function drawGate(gate, columnX, geometry) {
-    if (gate.gate === "h") {
-        return drawGateBox("H", LAYOUT.gateSize, { x: columnX, y: geometry.wireY[gate.wire] }, "qec-gate");
+    const boxLetter = GATE_LETTERS[gate.gate];
+    if (boxLetter !== undefined) {
+        return drawGateBox(boxLetter, LAYOUT.gateSize, { x: columnX, y: geometry.wireY[gate.wire] }, "qec-gate");
     }
     if (gate.gate === "measure") {
         // "MX" or "MZ": the basis is part of the box, so nothing else needs to sit after it.
@@ -163,8 +179,10 @@ function drawCnot(columnX, controlY, targetY) {
         cx: columnX, cy: targetY, r: LAYOUT.targetRadius, class: "qec-cnot-target",
     }));
     const radius = LAYOUT.targetRadius;
+    const horizontalStroke = `M ${columnX - radius} ${targetY} H ${columnX + radius}`;
+    const verticalStroke = `M ${columnX} ${targetY - radius} V ${targetY + radius}`;
     groupElement.append(createSvgElement("path", {
-        d: `M ${columnX - radius} ${targetY} H ${columnX + radius} M ${columnX} ${targetY - radius} V ${targetY + radius}`,
+        d: `${horizontalStroke} ${verticalStroke}`,
         class: "qec-cnot-plus",
     }));
     return groupElement;

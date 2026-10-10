@@ -105,17 +105,10 @@
         </aside>
     </main>
 
-    <section class="why" aria-labelledby="why-title">
-        <div class="section-header">
-            <h2 id="why-title">Why these decisions</h2>
-            <span id="why-note" class="note"></span>
-        </div>
-        <p id="why-rule" class="why-rule"></p>
-        <div id="why-groups" class="why-groups"></div>
-
-        <div class="epoch" aria-labelledby="epoch-heading">
+    <section class="epoch-card" aria-labelledby="epoch-heading">
+        <div class="epoch">
             <div class="epoch-header">
-                <h3 id="epoch-heading">Decision by decision</h3>
+                <h2 id="epoch-heading">Decision by decision</h2>
                 <div class="epoch-nav">
                     <button id="epoch-prev" class="epoch-step" type="button" aria-label="Previous decision">‹</button>
                     <span id="epoch-title" class="epoch-title"></span>
@@ -125,6 +118,12 @@
             <p id="epoch-summary" class="epoch-summary"></p>
             <div class="epoch-scroll">
                 <table class="epoch-table">
+                    <colgroup>
+                        <col class="epoch-col-load">
+                        <col class="epoch-col-decision">
+                        <col class="epoch-col-reason">
+                        <col class="epoch-col-options">
+                    </colgroup>
                     <thead>
                         <tr>
                             <th scope="col">Load</th>

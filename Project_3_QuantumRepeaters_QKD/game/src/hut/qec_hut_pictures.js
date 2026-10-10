@@ -7,23 +7,17 @@
  * carry an aria-label. Writes only the elements it returns.
  */
 
-import { drawCircuit } from "./circuit_picture.js";
+import { drawCircuit } from "../circuit_picture.js";
 import {
-    ANCILLA_WIRE, FLAG_WIRE, STEANE_DIAGRAM, STEANE_QUBIT_COUNT, buildBitFlipCircuit, buildCheckCircuit,
+    ANCILLA_WIRE, FLAG_WIRE, STEANE_QUBIT_COUNT, buildBitFlipCircuit, buildCheckCircuit,
     buildSteaneEncoderCircuit, decodeSteaneXErrors, findCorrectableErrorCount, findDataWireId, findHookFaultColumn,
     listBitFlipSyndromeTable, listDataPositions, listExampleCodes, listSteaneCheckPositions, spreadXFault,
 } from "./qec_codes.js";
 import { createElement } from "../page_helpers.js";
 import { LUIGI_SPRITE, MARIO_SPRITE, drawSprite } from "../pixel_sprites.js";
+import { describeSteaneDiagram, drawSteaneDiagram } from "../steane_diagram.js";
 
-const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 const PLAYER_PIXEL_SIZE = 3;
-// The Steane diagram's drawing area, in the units of STEANE_DIAGRAM.
-// The Steane diagram's drawing area, in the units of STEANE_DIAGRAM.
-const STEANE_DIAGRAM_SIZE = { widthPx: 300, heightPx: 270 };
-const QUBIT_DOT_RADIUS = 13;
-// How far outside its circle a check's name sits.
-const CIRCLE_LABEL_GAP = 14;
 
 const PICTURE_BUILDERS = {
     why: buildWhyPicture,
@@ -157,66 +151,11 @@ function buildCodeTablePicture() {
 function buildSteaneDiagramPicture() {
     const pictureElement = createElement("div", "qec-side-by-side");
     const checkPositions = listSteaneCheckPositions();
-    const svgElement = createSvgElement("svg", {
-        viewBox: `0 0 ${STEANE_DIAGRAM_SIZE.widthPx} ${STEANE_DIAGRAM_SIZE.heightPx}`,
-        width: STEANE_DIAGRAM_SIZE.widthPx,
-        height: STEANE_DIAGRAM_SIZE.heightPx,
-        class: "qec-steane-diagram",
-        role: "img",
-        "aria-label": describeSteaneDiagram(checkPositions),
-    });
-    for (let i = 0; i < STEANE_DIAGRAM.circles.length; i++) {
-        svgElement.append(...drawCheckCircle(STEANE_DIAGRAM.circles[i], checkPositions[i], i));
-    }
-    for (const [positionText, spot] of Object.entries(STEANE_DIAGRAM.qubitSpots)) {
-        svgElement.append(drawQubitDot(positionText, spot));
-    }
+    const { svgElement } = drawSteaneDiagram(checkPositions);
+    svgElement.setAttribute("role", "img");
+    svgElement.setAttribute("aria-label", describeSteaneDiagram(checkPositions));
     pictureElement.append(svgElement, buildStabilizerList(checkPositions));
     return pictureElement;
-}
-
-
-/**
- * The diagram in words: which qubits each circle holds.
- */
-function describeSteaneDiagram(checkPositions) {
-    const circleTexts = checkPositions.map((positions, i) => `circle ${i + 1} holds qubits ${positions.join(", ")}`);
-    return `Three overlapping circles, one per check: ${circleTexts.join("; ")}. Qubit 7 sits in all three.`;
-}
-
-
-/**
- * One check's circle and its name (e.g. "4567"): above the top circle, below the two bottom ones.
- */
-function drawCheckCircle(circle, positions, circleIndex) {
-    const circleElement = createSvgElement("circle", {
-        cx: circle.centerX, cy: circle.centerY, r: STEANE_DIAGRAM.circleRadius,
-        class: `qec-check-circle is-check-${circleIndex + 1}`,
-    });
-    const isTopCircle = circleIndex === 0;
-    const labelOffset = STEANE_DIAGRAM.circleRadius + CIRCLE_LABEL_GAP;
-    const labelY = isTopCircle ? circle.centerY - labelOffset : circle.centerY + labelOffset;
-    const labelElement = createSvgElement("text", {
-        x: circle.centerX, y: labelY, "text-anchor": "middle", "dominant-baseline": "central",
-        class: "qec-check-label",
-    });
-    labelElement.textContent = positions.join("");
-    return [circleElement, labelElement];
-}
-
-
-/**
- * A numbered qubit dot.
- */
-function drawQubitDot(positionText, spot) {
-    const groupElement = createSvgElement("g", { class: "qec-qubit-dot" });
-    groupElement.append(createSvgElement("circle", { cx: spot.x, cy: spot.y, r: QUBIT_DOT_RADIUS }));
-    const numberElement = createSvgElement("text", {
-        x: spot.x, y: spot.y + 1, "text-anchor": "middle", "dominant-baseline": "central",
-    });
-    numberElement.textContent = positionText;
-    groupElement.append(numberElement);
-    return groupElement;
 }
 
 
@@ -376,14 +315,3 @@ function createTextElement(tagName, className, text) {
     return element;
 }
 
-
-/**
- * An SVG element with its attributes set.
- */
-function createSvgElement(tagName, attributes) {
-    const element = document.createElementNS(SVG_NAMESPACE, tagName);
-    for (const [name, value] of Object.entries(attributes)) {
-        element.setAttribute(name, String(value));
-    }
-    return element;
-}

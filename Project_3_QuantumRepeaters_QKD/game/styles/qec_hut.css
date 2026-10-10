@@ -1,89 +1,8 @@
 /*
- * Toad's QEC hut on top of world.css and hut.css: the pictures of the QEC panels (circuits, tables, the Steane
- * diagram). The page layout, controls and footer are shared with the BB84 hut and live in hut.css.
+ * Toad's QEC hut on top of world.css, hut.css and circuit_picture.css: the pictures of the QEC panels (tables, cards,
+ * the two Steane blocks). Circuits and the Steane diagram are styled in circuit_picture.css, shared with Levels 3 and
+ * 4; the page layout, controls and footer are shared with the BB84 hut and live in hut.css.
  */
-
-/* ---------- Circuits (circuit_picture.js) ---------- */
-
-.qec-circuit {
-    display: block;
-    font-family: var(--font-pixel);
-    font-size: 12px;
-}
-
-.qec-circuit text {
-    fill: var(--ink);
-}
-
-.qec-wire {
-    stroke: var(--ink);
-    stroke-width: 2;
-}
-
-/* A wire segment an X fault has spread to: red and thick, and the wire ends in an "X!" note as well. */
-.qec-wire.is-faulty {
-    stroke: var(--error-red);
-    stroke-width: 6;
-}
-
-.qec-wire-start {
-    font-family: system-ui, sans-serif;
-    font-size: 16px;
-    font-weight: 700;
-}
-
-.qec-gate rect {
-    fill: var(--coin-gold);
-    stroke: var(--ink);
-    stroke-width: 2;
-}
-
-.qec-gate.is-measure rect {
-    fill: var(--cloud-white);
-}
-
-.qec-cnot line,
-.qec-cnot-plus {
-    stroke: var(--ink);
-    stroke-width: 2;
-}
-
-.qec-cnot circle {
-    fill: var(--ink);
-}
-
-.qec-cnot circle.qec-cnot-target {
-    fill: var(--qubit-blue);
-    stroke: var(--ink);
-    stroke-width: 2;
-}
-
-.qec-fault rect {
-    fill: var(--error-red);
-    stroke: var(--ink);
-    stroke-width: 2;
-}
-
-.qec-circuit .qec-fault text {
-    fill: var(--cloud-white);
-}
-
-.qec-circuit .qec-fault text.qec-fault-word,
-.qec-circuit .qec-end-note {
-    fill: var(--error-red);
-    font-size: 11px;
-}
-
-.qec-column-group rect {
-    fill: var(--cloud-white);
-    stroke: var(--idle-gray);
-    stroke-width: 2;
-    stroke-dasharray: 4 4;
-}
-
-.qec-circuit .qec-column-label {
-    font-size: 10px;
-}
 
 /* ---------- Layouts ---------- */
 
@@ -211,47 +130,6 @@
 .qec-verdict.is-forbidden {
     color: var(--cloud-white);
     background: var(--error-red);
-}
-
-/* ---------- The Steane diagram ---------- */
-
-.qec-steane-diagram {
-    display: block;
-    font-family: var(--font-pixel);
-}
-
-.qec-check-circle {
-    fill-opacity: 0.35;
-    stroke: var(--ink);
-    stroke-width: 3;
-}
-
-.qec-check-circle.is-check-1 {
-    fill: var(--coin-gold);
-}
-
-.qec-check-circle.is-check-2 {
-    fill: var(--qubit-blue);
-}
-
-.qec-check-circle.is-check-3 {
-    fill: var(--pipe-green);
-}
-
-.qec-check-label {
-    font-size: 12px;
-    fill: var(--ink);
-}
-
-.qec-qubit-dot circle {
-    fill: var(--cloud-white);
-    stroke: var(--ink);
-    stroke-width: 3;
-}
-
-.qec-qubit-dot text {
-    font-size: 11px;
-    fill: var(--ink);
 }
 
 /* ---------- To the game: two blocks joined by Bell pairs ---------- */

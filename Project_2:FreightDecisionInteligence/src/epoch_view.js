@@ -10,6 +10,11 @@ import { formatDay, formatMoney, simulationClock } from "./format.js";
 const KIND_ORDER = { accept: 0, hold: 1, decline: 2 };
 const KIND_LABELS = { accept: "Accept", hold: "Hold", decline: "Decline" };
 const EQUIPMENT_NAMES = { R: "reefer", D: "dry van" };
+// formatDay gives "Tue 8 Mar 2022": the weekday is the first 3 letters, then a space.
+const WEEKDAY_LENGTH = 3;
+const WEEKDAY_PREFIX_LENGTH = WEEKDAY_LENGTH + 1;
+// As wide as a digit, so a padded number does not shift the text after it.
+const FIGURE_SPACE = "\u2007";
 
 /** The index of the last epoch at or before `minute`, or −1 before the first decision. */
 export function epochIndexAt(epochs, minute) {
@@ -91,9 +96,16 @@ export class EpochView {
     }
 }
 
+/**
+ * "Week of 7 Mar 2022 · Tue 17:00 · decision 18 of 63": the week the run covers, then the weekday and time of this
+ * decision. The decision number is padded with a figure space so the line keeps one width from 1 to 63.
+ */
 function describeEpochTime(replay, minute, index, epochCount) {
     const clock = simulationClock(minute);
-    return `${formatDay(replay.start_date, clock.dayIndex)} ${clock.time} · decision ${index + 1} of ${epochCount}`;
+    const weekStartText = formatDay(replay.start_date, 0).slice(WEEKDAY_PREFIX_LENGTH);
+    const weekday = formatDay(replay.start_date, clock.dayIndex).slice(0, WEEKDAY_LENGTH);
+    const decisionNumber = String(index + 1).padStart(String(epochCount).length, FIGURE_SPACE);
+    return `Week of ${weekStartText} · ${weekday} ${clock.time} · decision ${decisionNumber} of ${epochCount}`;
 }
 
 function describeEpoch(epoch) {
@@ -146,18 +158,21 @@ function buildReasonCell(decision) {
 /** "3 in reach", then a chip per truck weighed: ID, city, empty miles, and margin and score for the optimizer. */
 function buildOptionsCell(decision) {
     const cell = document.createElement("td");
-    cell.className = "epoch-options";
     if (decision.reachable === null || decision.reachable === undefined) {
         cell.textContent = "—";
         return cell;
     }
+    // The chips wrap inside their own box: a flex table cell would not keep the column's fixed width.
+    const options = document.createElement("div");
+    options.className = "epoch-options";
     const reach = document.createElement("span");
     reach.className = "epoch-reach";
     reach.textContent = `${decision.reachable} in reach`;
-    cell.append(reach);
+    options.append(reach);
     for (const option of decision.options) {
-        cell.append(buildOptionChip(option));
+        options.append(buildOptionChip(option));
     }
+    cell.append(options);
     return cell;
 }
 

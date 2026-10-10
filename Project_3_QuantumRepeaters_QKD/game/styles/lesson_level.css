@@ -1,0 +1,223 @@
+/*
+ * The page layout Levels 3 and 4 share, on top of world.css and circuit_picture.css: the HUD, the sky with the goal
+ * and key hints, the lesson board (white cards framed like blocks) with Toad's message under it, Mario and Luigi on
+ * the ground, the cloud turtle, and the level-clear banner. Classes are set by src/lesson_stage.js and each level's
+ * render file.
+ */
+
+.lesson-page {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+}
+
+/* The world: the sky line on top, the stage in the middle taking whatever height is left, the ground at the bottom. */
+.lesson-world {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    padding-top: 12px;
+}
+
+/* Here the goal and hints take room in the flow, so the board starts below them. */
+.lesson-world .sky-panel {
+    position: static;
+    translate: none;
+    margin: 0 auto;
+    gap: 10px;
+}
+
+.lesson-world .sky-status {
+    font-size: 16px;
+    padding: 10px 20px;
+}
+
+.lesson-world .key-hints {
+    font-size: 13px;
+}
+
+.lesson-world .key-hints .keycap {
+    height: 32px;
+    font-size: 13px;
+}
+
+/* The sides are padded wide enough for Mario and Luigi standing on the ground, so the board never covers them. */
+.lesson-stage {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    flex: 1;
+    place-items: center;
+    min-height: 0;
+    padding: 12px 104px;
+}
+
+/* The board and the message, zoomed as one by fitBoardToStage. */
+.lesson-content {
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+}
+
+.lesson-board {
+    display: flex;
+    align-items: stretch;
+    gap: 16px;
+}
+
+.lesson-card {
+    display: grid;
+    align-content: start;
+    justify-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    color: var(--ink);
+    background: var(--cloud-white);
+    border: var(--pixel) solid var(--ink);
+}
+
+.lesson-card-title {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* Toad's running commentary: always two lines tall, so the board doesn't jump as it changes. */
+.lesson-message {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 76px;
+    margin: 0;
+    padding: 10px 16px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--ink);
+    background: var(--cloud-white);
+    border: var(--pixel) solid var(--ink);
+}
+
+.lesson-message-toad {
+    flex: none;
+}
+
+.lesson-message-text {
+    margin: 0;
+}
+
+/* The page's title is in the HUD and the goal line; the heading stays for screen readers, out of sight. */
+.lesson-page-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* ---------- Characters on the ground ---------- */
+
+.lesson-cast {
+    position: absolute;
+    z-index: 1;
+    right: 24px;
+    bottom: 64px;
+    left: 24px;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+}
+
+/* The cloud turtle: hidden until it flies across the sky to zap. */
+.lesson-turtle {
+    position: absolute;
+    z-index: 4;
+    top: 70px;
+    left: -120px;
+    visibility: hidden;
+}
+
+.lesson-turtle.is-flying {
+    visibility: visible;
+    animation: turtle-fly 1.4s linear forwards;
+}
+
+@keyframes turtle-fly {
+    from { left: -120px; }
+    to { left: calc(100% + 120px); }
+}
+
+/* The zapped thing flashes red and white a few times. */
+.is-zapped {
+    animation: zap-flash 0.25s steps(2) 4;
+}
+
+@keyframes zap-flash {
+    50% { filter: invert(1) sepia(1) saturate(8) hue-rotate(-30deg); }
+}
+
+/* ---------- Banner ---------- */
+
+.lesson-banner {
+    position: absolute;
+    z-index: 5;
+    top: 8px;
+    left: 50%;
+    translate: -50% 0;
+    padding: 12px 22px;
+    font-size: 18px;
+    white-space: nowrap;
+    color: var(--ink);
+    background: var(--coin-gold);
+    border: var(--pixel) solid var(--ink);
+    visibility: hidden;
+}
+
+.lesson-banner.is-visible {
+    visibility: visible;
+}
+
+/* ---------- Small tables (syndromes, readings) ---------- */
+
+.lesson-table {
+    border-collapse: separate;
+    border-spacing: 4px;
+    font-size: 13px;
+}
+
+.lesson-table caption {
+    padding-bottom: 8px;
+    font-size: 12px;
+}
+
+.lesson-table th,
+.lesson-table td {
+    min-width: 44px;
+    height: 34px;
+    padding: 2px 10px;
+    text-align: center;
+    white-space: nowrap;
+    background: var(--cloud-white);
+    border: 2px solid var(--ink);
+}
+
+.lesson-table th {
+    font-size: 11px;
+    background: var(--coin-gold);
+}
+
+/* A syndrome bit that reads 1: red and bold, and the digit itself says 1, so not colour alone. */
+.lesson-table td.is-one {
+    font-weight: 700;
+    color: var(--cloud-white);
+    background: var(--error-red);
+}
+
+.lesson-table td.is-unknown {
+    color: #666666;
+}

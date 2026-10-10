@@ -55,6 +55,14 @@ class StimBackend:
         return [int(outcome) for outcome in outcomes]
 
 
+    def peek_pauli_expectation(self, paulis_by_qubit: dict[int, str]) -> int:
+        """See QuantumBackend.peek_pauli_expectation. A tableau knows this exactly: ±1 or 0, never in between."""
+        pauli_string = stim.PauliString(max(paulis_by_qubit) + 1)
+        for qubit, pauli_letter in paulis_by_qubit.items():
+            pauli_string[qubit] = pauli_letter
+        return int(self.simulator.peek_observable_expectation(pauli_string))
+
+
 def flatten_pairs(qubit_pairs: list[tuple[int, int]]) -> list[int]:
     """[(0, 1), (2, 3)] → [0, 1, 2, 3], the target layout Stim expects for two-qubit gates."""
     flat_targets = []

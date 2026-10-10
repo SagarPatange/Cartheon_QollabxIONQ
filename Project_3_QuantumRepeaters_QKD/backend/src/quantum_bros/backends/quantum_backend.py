@@ -40,3 +40,8 @@ class QuantumBackend(Protocol):
 
     def measure(self, qubits: list[int]) -> list[int]:
         """Measure each qubit in the Z basis and return the outcomes as 0/1, in the same order."""
+
+    def peek_pauli_expectation(self, paulis_by_qubit: dict[int, str]) -> int:
+        """The expectation of a product of Paulis ({qubit: "X" | "Y" | "Z"}) in the current state, without disturbing
+        it: +1 or -1 when measuring it would surely give that value, 0 when the outcome would be random. Only for
+        showing what a check would read; protocols must measure, never peek, to decide what to do."""

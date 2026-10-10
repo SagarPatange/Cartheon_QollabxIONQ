@@ -582,10 +582,9 @@ input[type="date"] {
 }
 
 
-/* Why these decisions: a card like Compare objectives. The rule on top, then one column per outcome with its
-   total, and each reason with a thin purple bar for its share of that outcome. */
+/* Decision by decision: a card like Compare objectives, showing one decision epoch at a time. */
 
-.why {
+.epoch-card {
     margin: 40px var(--space-5) 0;
     padding: var(--space-4) var(--space-5) var(--space-5);
     border: 1px solid var(--color-line);
@@ -610,81 +609,6 @@ input[type="date"] {
     margin-top: 0;
 }
 
-.why-rule {
-    margin-bottom: var(--space-4);
-    padding-bottom: var(--space-4);
-    border-bottom: 1px solid var(--color-line);
-    color: var(--color-secondary);
-    font-size: 14px;
-    line-height: 1.5;
-}
-
-.why-groups {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: var(--space-4) 32px;
-}
-
-.why-group-header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    margin-bottom: var(--space-2);
-}
-
-.why-group-header h3 {
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.why-total {
-    font-size: 22px;
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-}
-
-.why-reasons {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.why-reasons li {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 6px var(--space-3);
-    font-size: 13px;
-    line-height: 1.4;
-}
-
-.why-reason-text {
-    color: var(--color-muted);
-}
-
-.why-reason-count {
-    color: var(--color-secondary);
-    font-variant-numeric: tabular-nums;
-}
-
-/* The share of this outcome: a track the width of the column, filled to --share in the trucks' purple. */
-.why-bar {
-    grid-column: 1 / -1;
-    height: 4px;
-    border-radius: 999px;
-    background: linear-gradient(to right, var(--color-truck) var(--share), var(--color-line) var(--share));
-}
-
-/* Decision by decision: one decision epoch at a time, inside the Why card. */
-
-.epoch {
-    margin-top: 28px;
-    padding-top: var(--space-4);
-    border-top: 1px solid var(--color-line);
-}
-
 .epoch-header {
     display: flex;
     flex-wrap: wrap;
@@ -693,8 +617,8 @@ input[type="date"] {
     gap: var(--space-3);
 }
 
-.epoch-header h3 {
-    font-size: 14px;
+.epoch-header h2 {
+    font-size: 16px;
     font-weight: 600;
 }
 
@@ -704,10 +628,13 @@ input[type="date"] {
     gap: var(--space-3);
 }
 
+/* One width whatever the decision, so the ‹ › buttons never move as you step. */
 .epoch-title {
+    min-width: 420px;
     font-size: 14px;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
+    text-align: center;
 }
 
 .epoch-step {
@@ -735,9 +662,24 @@ input[type="date"] {
     border-top: 1px solid var(--color-line);
 }
 
+/* Fixed column widths, the same for every decision: the columns do not jump as you step through them. */
 .epoch-table {
     width: 100%;
+    min-width: 960px;
     border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.epoch-col-load {
+    width: 24%;
+}
+
+.epoch-col-decision {
+    width: 104px;
+}
+
+.epoch-col-reason {
+    width: 30%;
 }
 
 .epoch-table thead th {
@@ -767,7 +709,7 @@ input[type="date"] {
     display: block;
     color: var(--color-text);
     font-weight: 600;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
 }
 
 .epoch-facts {
@@ -776,11 +718,10 @@ input[type="date"] {
     color: var(--color-muted);
     font-size: 12px;
     font-weight: 400;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
 }
 
 .epoch-reason {
-    min-width: 260px;
     color: var(--color-secondary);
 }
 
@@ -788,7 +729,6 @@ input[type="date"] {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    min-width: 320px;
 }
 
 .epoch-reach {
@@ -843,8 +783,9 @@ input[type="date"] {
     text-align: right;
 }
 
+/* Every run name sits a little in from the row's edge, so a highlighted row has room around its text. */
 .compare-table th:first-child {
-    padding-left: 0;
+    padding-left: var(--space-4);
     text-align: left;
 }
 
