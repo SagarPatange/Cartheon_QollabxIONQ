@@ -1,0 +1,339 @@
+/* Truckload Dispatch: white, greys and black, square corners. Black marks what is happening now. */
+
+:root {
+    --color-background: #ffffff;
+    --color-surface: #fafafa;
+    --color-line: #e5e5e5;
+    --color-faint: #d4d4d4;
+    --color-mid: #a3a3a3;
+    --color-muted: #737373;
+    --color-secondary: #404040;
+    --color-text: #0a0a0a;
+
+    --font-sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+
+    --panel-width: 340px;
+}
+
+* {
+    box-sizing: border-box;
+    border-radius: 0;
+}
+
+html,
+body {
+    margin: 0;
+    background: var(--color-background);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+h1,
+h2,
+p {
+    margin: 0;
+}
+
+.topbar {
+    padding: var(--space-4) var(--space-5);
+    border-bottom: 1px solid var(--color-line);
+}
+
+h1 {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+/* Map */
+
+.layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--panel-width);
+    flex: 1;
+}
+
+.map-area {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-5);
+    min-width: 0;
+}
+
+.map-frame {
+    flex: 1;
+    min-height: 480px;
+    border: 1px solid var(--color-line);
+    background: var(--color-surface);
+}
+
+/* OpenStreetMap tiles in grey so the data stays the only thing in black. */
+.map-frame .leaflet-tile-pane {
+    filter: grayscale(1) contrast(0.85) brightness(1.06);
+}
+
+.leaflet-container {
+    font-family: var(--font-sans);
+}
+
+.leaflet-control-zoom a,
+.leaflet-control-attribution,
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip,
+.leaflet-tooltip {
+    border-radius: 0 !important;
+}
+
+.leaflet-tooltip.city-label {
+    padding: 0 var(--space-1);
+    border: none;
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: none;
+    color: var(--color-text);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.leaflet-tooltip.city-label::before {
+    display: none;
+}
+
+.leaflet-tooltip.map-tooltip {
+    border: 1px solid var(--color-faint);
+    box-shadow: none;
+    font-size: 12px;
+}
+
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: var(--color-muted);
+    font-size: 12px;
+}
+
+.legend li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.legend-line {
+    width: 20px;
+    border-top: 1px solid #9a9a9a;
+}
+
+.legend-marker,
+.legend-city {
+    border: 1.5px solid var(--color-text);
+    border-radius: 50%;
+}
+
+.legend-marker {
+    width: 8px;
+    height: 8px;
+}
+
+.legend-marker-reefer,
+.legend-city-sender {
+    background: var(--color-text);
+}
+
+.legend-marker-dry,
+.legend-city-receiver {
+    background: var(--color-background);
+}
+
+.legend-city {
+    width: 11px;
+    height: 11px;
+    border-width: 1px;
+}
+
+/* Controls */
+
+.controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+}
+
+.field-inline {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.field-label {
+    color: var(--color-muted);
+    font-size: 12px;
+}
+
+input[type="date"],
+select,
+.play-button {
+    min-height: 36px;
+    padding: 0 var(--space-3);
+    border: 1px solid var(--color-faint);
+    background: var(--color-background);
+    color: var(--color-text);
+    font: inherit;
+}
+
+select,
+input[type="date"] {
+    cursor: pointer;
+}
+
+.play-button {
+    min-width: 76px;
+    border-color: var(--color-text);
+    background: var(--color-text);
+    color: var(--color-background);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.time-slider {
+    flex: 1;
+    min-width: 0;
+    accent-color: var(--color-text);
+    cursor: pointer;
+}
+
+/* Panel */
+
+.panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    padding: var(--space-4) var(--space-5);
+    border-left: 1px solid var(--color-line);
+}
+
+.date {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.time {
+    font-size: 40px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4) var(--space-3);
+    margin: 0;
+}
+
+.stat dt {
+    color: var(--color-muted);
+    font-size: 12px;
+}
+
+.stat dd {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.booking {
+    color: var(--color-secondary);
+    font-size: 13px;
+}
+
+.panel-section h2 {
+    margin-bottom: var(--space-2);
+    color: var(--color-secondary);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.rows {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-variant-numeric: tabular-nums;
+}
+
+.rows li {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--space-1) 0;
+    border-bottom: 1px solid var(--color-line);
+}
+
+.rows-after {
+    margin-top: var(--space-3);
+}
+
+.row-value {
+    color: var(--color-muted);
+}
+
+.footer {
+    padding: var(--space-3) var(--space-5);
+    border-top: 1px solid var(--color-line);
+    color: var(--color-muted);
+    font-size: 12px;
+}
+
+.footer a {
+    color: var(--color-secondary);
+}
+
+:focus-visible {
+    outline: 2px solid var(--color-text);
+    outline-offset: 2px;
+}
+
+@media (max-width: 960px) {
+    .layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .panel {
+        border-left: none;
+        border-top: 1px solid var(--color-line);
+    }
+
+    .map-frame {
+        min-height: 360px;
+    }
+
+    .controls {
+        flex-wrap: wrap;
+    }
+
+    .time-slider {
+        order: 3;
+        flex-basis: 100%;
+    }
+}

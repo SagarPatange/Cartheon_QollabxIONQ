@@ -120,7 +120,7 @@ export function buildQkdLink() {
     const bsmNode = createElement("div", "question-block");
     bsmNode.textContent = "?";
     const bsmLabel = createElement("div", "bsm-label");
-    bsmLabel.textContent = "BSM";
+    bsmLabel.textContent = "BSM Node";
     linkElement.append(bsmNode, bsmLabel);
 
     linkElement.append(createElement("div", "logical-arc"));

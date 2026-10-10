@@ -73,9 +73,10 @@ end-to-end logical Bell pair.*
 ![Level 1](docs/images/level1.png)
 
 **You play:** Mario and Luigi each have a tower with 3 memory slots, and the telecom tower between them is the
-**BSM** (Bell-state measurement station): a beam splitter with two detectors, D+ and D−. Press **Space** to fire a
-photon from each tower. When a detector clicks, both towers store a Bell pair Ψ+. **Goals:** fill all 3 slots at
-once, and teleport both a **0** and a **1** to Luigi (keys **0** and **1**). **Esc** opens the link settings.
+**BSM Node** (Bell-state measurement station): a beam splitter with two detectors, D+ and D−. The level opens like a
+story: it pauses to introduce the memories (one Rydberg atom per slot), asks you to press **Space**, then freezes
+the first try just after each atom emits its photon. Press **Space** to fire a photon from each tower. When a detector clicks, both towers store a Bell pair Ψ+. **Goal:** fill all 3 slots at
+once, before any pair decoheres. **Esc** opens the link settings.
 
 ### 1. A qubit that emits a photon
 

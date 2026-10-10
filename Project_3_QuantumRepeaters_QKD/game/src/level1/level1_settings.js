@@ -24,10 +24,6 @@ export const LINK_SETTINGS = [
         min: 5, max: 60, step: 1, defaultValue: 20,
     },
     {
-        id: "extraDelaySeconds", label: "Extra delay per try", unit: " s",
-        min: 0, max: 2, step: 0.1, defaultValue: 0,
-    },
-    {
         id: "memoryLifetimeSeconds", label: "Memory lifetime", unit: " s",
         min: 5, max: 30, step: 1, defaultValue: 10,
     },
@@ -64,14 +60,13 @@ export function toLinkPhysics(settings) {
 
 
 /**
- * How long one try takes in game time: photons out to the BSM and its click back, plus any extra delay.
+ * How long one try takes in game time: photons out to the BSM and its click back.
  *
  * @param {Object<string, number>} settings
  * @returns {number} milliseconds.
  */
 export function computeTryDurationMs(settings) {
-    const travelMs = settings.internodeDistanceKm * GAME_MS_PER_KM;
-    return Math.round(travelMs + settings.extraDelaySeconds * MS_PER_SECOND);
+    return Math.round(settings.internodeDistanceKm * GAME_MS_PER_KM);
 }
 
 

@@ -1,9 +1,11 @@
 /*
- * The slide-in settings panel (src/settings_panel.js): it slides in from the right edge, under the HUD, while the
- * game is paused.
+ * The slide-in settings panel (src/settings_panel.js): it slides in from the right edge while the game is paused.
+ * Grey and compact: each setting is a plain row (name and value chip, slider, its range), split from the next by a
+ * line. The panel is classed link-settings, not settings-panel, because qkd.css (also loaded by Level 1) styles its
+ * own .settings-panel.
  */
 
-.settings-panel {
+.link-settings {
     position: fixed;
     z-index: 20;
     top: 0;
@@ -11,12 +13,12 @@
     bottom: 0;
     display: flex;
     flex-direction: column;
-    gap: 18px;
-    width: min(400px, 100vw);
-    padding: 24px 22px;
+    gap: 12px;
+    width: min(340px, 100vw);
+    padding: 16px 16px;
     overflow-y: auto;
     color: var(--ink);
-    background: #fcd8a8;
+    background: #d4d4d4;
     border-left: var(--pixel) solid var(--ink);
     box-shadow: -8px 0 0 #00000033;
     translate: 100% 0;
@@ -24,59 +26,232 @@
     transition: translate 300ms ease-out, visibility 0s linear 300ms;
 }
 
-.settings-panel.is-open {
+.link-settings.is-open {
     translate: 0 0;
     visibility: visible;
     transition: translate 300ms ease-out;
 }
 
-.settings-title {
-    margin: 0;
-    font-size: 19px;
-}
-
-.settings-row {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.settings-row-head {
+.link-settings-header {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     gap: 12px;
-    font-size: 12px;
-    line-height: 1.6;
+    padding-bottom: 10px;
+    border-bottom: 3px solid var(--ink);
 }
 
-.settings-value {
-    white-space: nowrap;
-    color: var(--brick-dark);
-}
-
-.settings-slider {
-    width: 100%;
-    accent-color: var(--brick-orange);
-}
-
-/* What the settings add up to, e.g. the chance per try. */
-.settings-summary {
+.link-settings-title {
     margin: 0;
-    padding: 12px;
-    font-size: 12px;
-    line-height: 1.8;
-    background: var(--cloud-white);
+    font-size: 13px;
+}
+
+.link-settings-close {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    font-family: var(--font-pixel);
+    font-size: 15px;
+    line-height: 1;
+    color: var(--ink);
+    background: var(--coin-gold);
+    border: none;
+    box-shadow:
+        inset -3px -3px 0 var(--coin-dark),
+        0 0 0 3px var(--ink);
+    cursor: pointer;
+}
+
+.link-settings-close:hover {
+    filter: brightness(1.1);
+}
+
+.link-settings-close:focus-visible {
+    outline: 3px solid var(--qubit-dark-blue);
+    outline-offset: 4px;
+}
+
+.link-settings-rows {
+    display: flex;
+    flex-direction: column;
+}
+
+/* ---------- One plain row per setting, a line between rows ---------- */
+
+.setting-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 0;
+    border-bottom: 2px solid #a4a4a4;
+}
+
+.setting-card:first-child {
+    padding-top: 2px;
+}
+
+.setting-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.setting-value {
+    flex-shrink: 0;
+    padding: 4px 6px;
+    font-size: 9px;
+    white-space: nowrap;
+    background: var(--coin-gold);
+    border: 2px solid var(--ink);
+}
+
+.setting-range {
+    display: flex;
+    justify-content: space-between;
+    font-size: 7px;
+    color: #5a5a5a;
+}
+
+/* ---------- Pixel slider: a boxed track filled up to the thumb (--fill, set by the script), a gold block thumb */
+
+.setting-slider {
+    width: 100%;
+    height: 22px;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.setting-slider::-webkit-slider-runnable-track {
+    box-sizing: border-box;
+    height: 12px;
+    background: linear-gradient(to right, var(--brick-orange) var(--fill), var(--cloud-white) var(--fill));
     border: 3px solid var(--ink);
 }
 
-.settings-close {
-    align-self: flex-start;
-    font-size: 14px;
+.setting-slider::-moz-range-track {
+    box-sizing: border-box;
+    height: 12px;
+    background: linear-gradient(to right, var(--brick-orange) var(--fill), var(--cloud-white) var(--fill));
+    border: 3px solid var(--ink);
 }
 
-/* The HUD's way in, beside the Map button. */
+/* The track's inside is 6 px tall, so a 22 px thumb is centred 8 px above it. */
+.setting-slider::-webkit-slider-thumb {
+    box-sizing: border-box;
+    width: 16px;
+    height: 22px;
+    margin-top: -8px;
+    background: var(--coin-gold);
+    border: 3px solid var(--ink);
+    border-radius: 0;
+    box-shadow: inset -3px -3px 0 var(--coin-dark);
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.setting-slider::-moz-range-thumb {
+    box-sizing: border-box;
+    width: 16px;
+    height: 22px;
+    background: var(--coin-gold);
+    border: 3px solid var(--ink);
+    border-radius: 0;
+    box-shadow: inset -3px -3px 0 var(--coin-dark);
+}
+
+.setting-slider:focus-visible {
+    outline: 3px solid var(--qubit-dark-blue);
+    outline-offset: 4px;
+}
+
+/* ---------- What the settings add up to, e.g. the chance per try ---------- */
+
+.link-settings-summary {
+    margin: 0;
+    padding: 10px 12px;
+    font-size: 10px;
+    line-height: 1.8;
+    color: var(--text-light);
+    background: var(--ink);
+    border: 3px solid var(--ink);
+    box-shadow: inset 0 0 0 2px var(--coin-gold);
+}
+
+.link-settings-hint {
+    margin: 0;
+    font-size: 8px;
+    line-height: 1.6;
+    color: #4a4a4a;
+}
+
+/* ---------- The HUD's gear button, beside the Map button ---------- */
+
 .hud-settings {
-    font-family: var(--font-pixel);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px;
     border: none;
     cursor: pointer;
+}
+
+.hud-settings .gear-icon {
+    display: block;
+    transition: rotate 300ms ease-out;
+}
+
+.hud-settings:hover .gear-icon {
+    rotate: 45deg;
+}
+
+.hud-settings[aria-expanded="true"] .gear-icon {
+    rotate: 90deg;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hud-settings .gear-icon {
+        transition: none;
+    }
+}
+
+/* ---------- The guided tour after the first Bell pair: a tip box, and the setting it points at ---------- */
+
+.settings-tour {
+    margin: 0;
+    padding: 10px 12px;
+    font-size: 10px;
+    line-height: 1.7;
+    background: var(--cloud-white);
+    border: 3px solid var(--error-red);
+    cursor: pointer;
+}
+
+.settings-tour-text,
+.settings-tour-continue {
+    margin: 0;
+}
+
+.settings-tour-continue {
+    margin-top: 6px;
+    font-size: 8px;
+    color: var(--brick-dark);
+}
+
+.settings-tour.is-locked .settings-tour-continue {
+    color: var(--idle-gray);
+}
+
+.setting-card.is-highlighted {
+    margin: 0 -8px;
+    padding-left: 8px;
+    padding-right: 8px;
+    background: #fff3c4;
+    outline: 3px solid var(--error-red);
+    outline-offset: -3px;
 }

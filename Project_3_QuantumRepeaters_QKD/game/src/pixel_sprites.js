@@ -73,6 +73,26 @@ export const ARROW_SPRITE = {
 
 // A telecom tower that carries the QKD fiber: red beacon (R), mast and legs (K), dish (W), steel bracing (G).
 // Row 8 is the crossarm the fiber hangs from (TELECOM_TOWER_CROSSARM_ROW).
+// A cog with eight teeth and a hole in the middle, for the Settings button.
+export const GEAR_SPRITE = {
+    rows: [
+        ".....GGG.....",
+        "..G..GGG..G..",
+        ".GGGGGGGGGGG.",
+        "..GGGGGGGGG..",
+        "..GGG...GGG..",
+        "GGGG.....GGGG",
+        "GGGG.....GGGG",
+        "GGGG.....GGGG",
+        "..GGG...GGG..",
+        "..GGGGGGGGG..",
+        ".GGGGGGGGGGG.",
+        "..G..GGG..G..",
+        ".....GGG.....",
+    ],
+    palette: { G: "#000000" },
+};
+
 export const TELECOM_TOWER_CROSSARM_ROW = 8;
 export const TELECOM_TOWER_SPRITE = {
     rows: [

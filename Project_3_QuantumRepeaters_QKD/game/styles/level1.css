@@ -90,6 +90,11 @@
     color: var(--brick-dark);
 }
 
+/* For the first seconds the note is locked, so it gets read: its last line is grey and the press does nothing. */
+.lesson-note.is-locked .lesson-continue {
+    color: var(--idle-gray);
+}
+
 /* Each tower's note hangs from its inner edge, toward the middle of the screen; the BSM's sits centred over it. */
 .lesson-note.is-mario {
     left: 0;
@@ -100,6 +105,12 @@
     left: auto;
     right: 0;
     translate: 0 0;
+}
+
+/* Every tower sits at z-index 1, which would trap its note under the BSM Node's label; lift the tower while its
+   note is up. */
+.level1-track .tower:has(> .lesson-note:not([hidden])) {
+    z-index: 6;
 }
 
 /* The tail points down at the middle of the tower (half the tower's width in from the note's edge). */
@@ -131,14 +142,9 @@
     left: 50%;
 }
 
-/* Mario and Luigi get room to stand beside their towers, so a speech bubble fits on one line. */
+/* Mario and Luigi get room to stand beside their towers. */
 .level1-track {
     --station-width: 150px;
-}
-
-.level1-track .station-bubble {
-    max-width: none;
-    white-space: nowrap;
 }
 
 /* The towers carry the names, so the plumbers' own name tags would only repeat them. */
@@ -178,4 +184,54 @@
 
 @keyframes banner-pop {
     from { scale: 0.4; }
+}
+
+/* ---------- Story mode: the memory lesson, the first Space, the first emission ---------- */
+
+/* While the memory lesson is up, both towers' memory windows glow gold so the player sees what it is about. */
+.qubit-tower.is-introducing-memory .qubit-window {
+    box-shadow: 0 0 0 3px var(--coin-gold), 0 0 18px var(--coin-gold);
+    animation: memory-window-glow 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes memory-window-glow {
+    to { box-shadow: 0 0 0 3px var(--coin-gold), 0 0 4px var(--coin-gold); }
+}
+
+/* The player's first move, asked for in the sky once the memory lesson is done. */
+.story-prompt {
+    margin: 0;
+    padding: 10px 16px;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--coin-gold);
+    border: 3px solid var(--ink);
+    box-shadow: inset -3px -3px 0 var(--coin-dark);
+    animation: story-prompt-blink 1s steps(2, jump-none) infinite;
+}
+
+@keyframes story-prompt-blink {
+    to { filter: brightness(1.25); }
+}
+
+/* The first try stops just after the atoms emit: each photon waits, swollen and glowing, at its own tower. The
+   selectors match bsm_link.css's flight rules, whose `animation` shorthand would otherwise reset the play state. */
+.qkd-link.is-sending.is-emitting .photon.from-left,
+.qkd-link.is-sending.is-emitting .photon.from-right {
+    animation-play-state: paused;
+    scale: 1.8;
+    box-shadow: 0 0 14px var(--cloud-white), 0 0 6px var(--qubit-blue);
+}
+
+/* The atom that just emitted a photon flashes blue in its memory slot. */
+.qubit-orb.is-emitting {
+    background: var(--qubit-blue);
+    box-shadow: inset -3px -3px 0 var(--qubit-dark-blue), inset 2px 2px 0 #ffffff88, 0 0 12px var(--qubit-blue);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .qubit-tower.is-introducing-memory .qubit-window,
+    .story-prompt {
+        animation: none;
+    }
 }

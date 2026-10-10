@@ -26,9 +26,17 @@ test("the defaults give the classic level: about a 32 % chance per try, 0.7 s tr
 });
 
 
-test("a longer link and extra delay make each try slower", () => {
-    const settings = { ...createDefaultSettings(), internodeDistanceKm: 40, extraDelaySeconds: 0.5 };
-    assert.equal(computeTryDurationMs(settings), 1900);
+test("a longer link makes each try slower", () => {
+    const settings = { ...createDefaultSettings(), internodeDistanceKm: 40 };
+    assert.equal(computeTryDurationMs(settings), 1400);
+});
+
+
+test("the panel offers 4 settings, with no extra delay per try", () => {
+    const settingIds = LINK_SETTINGS.map((spec) => spec.id);
+    assert.deepEqual(settingIds, [
+        "detectorEfficiencyPercent", "attenuationDbPerKm", "internodeDistanceKm", "memoryLifetimeSeconds",
+    ]);
 });
 
 

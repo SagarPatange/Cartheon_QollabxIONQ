@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Truckload Dispatch</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <header class="topbar">
+        <h1>Truckload Dispatch</h1>
+    </header>
+
+    <main class="layout">
+        <section class="map-area" aria-label="US lane map">
+            <div id="map" class="map-frame" role="region" aria-label="Map of US lanes, cities and loads on the road"></div>
+            <ul class="legend" aria-label="Legend">
+                <li><span class="legend-line"></span>Lane on real roads, width = 3-year volume</li>
+                <li><span class="legend-marker legend-marker-reefer"></span>Reefer load on the road</li>
+                <li><span class="legend-marker legend-marker-dry"></span>Dry van load on the road</li>
+                <li><span class="legend-city legend-city-sender"></span>City sends more than it receives</li>
+                <li><span class="legend-city legend-city-receiver"></span>Receives more</li>
+            </ul>
+            <div class="controls">
+                <label class="field-inline">
+                    <span class="field-label">Date</span>
+                    <input id="date-input" type="date" min="2022-01-01" max="2024-12-31" value="2022-03-01">
+                </label>
+                <button id="play-button" class="play-button" type="button">Pause</button>
+                <input id="time-slider" class="time-slider" type="range" min="0" max="1439" step="1" value="0"
+                       aria-label="Time of day">
+                <label class="field-inline">
+                    <span class="field-label">Speed</span>
+                    <select id="speed-select" aria-label="Playback speed">
+                        <option value="60">1 h / s</option>
+                        <option value="180" selected>3 h / s</option>
+                        <option value="360">6 h / s</option>
+                        <option value="720">12 h / s</option>
+                    </select>
+                </label>
+            </div>
+        </section>
+
+        <aside class="panel" aria-label="The day in numbers">
+            <div>
+                <p id="date" class="date">—</p>
+                <p id="time" class="time">00:00</p>
+            </div>
+            <dl class="stats">
+                <div class="stat"><dt>Loads tendered today</dt><dd id="stat-loads">0</dd></div>
+                <div class="stat"><dt>Revenue today</dt><dd id="stat-revenue">$0</dd></div>
+                <div class="stat"><dt>On the road now</dt><dd id="stat-on-road">0</dd></div>
+                <div class="stat"><dt>Reefer / dry van</dt><dd id="stat-equipment">0 / 0</dd></div>
+            </dl>
+            <p id="stat-booking" class="booking"></p>
+            <section class="panel-section">
+                <h2>Busiest lanes today</h2>
+                <ol id="busiest-lanes" class="rows"></ol>
+            </section>
+            <section class="panel-section">
+                <h2>Freight imbalance, 2022–2024 (loads out − in)</h2>
+                <ol id="senders" class="rows"></ol>
+                <ol id="receivers" class="rows rows-after"></ol>
+            </section>
+        </aside>
+    </main>
+
+    <footer class="footer">
+        <p>Loads: <a href="https://www.kaggle.com/datasets/yogape/logistics-operations-database">Logistics Operations
+            Database</a> (synthetic, MIT). Map and routes © OpenStreetMap contributors (ODbL), routed with OSRM.
+            This effort is supported by Qollab &amp; IonQ.</p>
+    </footer>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>

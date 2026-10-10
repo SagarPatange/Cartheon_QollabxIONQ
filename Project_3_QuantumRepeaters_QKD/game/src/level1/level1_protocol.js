@@ -1,15 +1,14 @@
 /**
  * Level 1 as pure state updates: Mario and Luigi each send a photon to the BSM in the middle; each attempt that clicks
  * heralds one Bell pair Ψ⁺, stored in the next free memory slot of both towers (3 slots). A stored pair decoheres a
- * memory lifetime after it was made. Mario can use the oldest pair to teleport a 1-qubit signal (|0⟩ or |1⟩) to
- * Luigi. The round has two goals: fill all 3 slots at once, and teleport both a |0⟩ and a |1⟩.
+ * memory lifetime after it was made. The round's goal: fill all 3 slots at once, before any pair decoheres.
  *
  * The chance that an attempt clicks comes from the link settings (computeHeraldProbability); the channel is otherwise
  * noiseless. Times are game milliseconds (the page's clock, which stops while the game is paused). Reads and writes
  * nothing; each function returns a new state.
  */
 
-// Each tower stores this many halves of Bell pairs; filling every slot at once is the round's first goal.
+// Each tower stores this many halves of Bell pairs; filling every slot at once is the round's goal.
 export const MEMORY_SLOT_COUNT = 3;
 export const PAIRS_TO_CLEAR = MEMORY_SLOT_COUNT;
 // Default memory lifetime: how long a stored pair survives before its memory qubits decohere.
@@ -32,8 +31,7 @@ export const LUIGI_SIDE = "luigi";
  * Each slot holds null or a pair {pairNumber, createdAtMs, decoheringSide}.
  *
  * @returns {{attemptCount: number, lastAttemptSucceeded: boolean | null, clickedDetector: string | null,
- *            slots: (object | null)[], nextPairNumber: number, teleport: object | null, decoherenceCount: number,
- *            hasFilledMemory: boolean, teleportedBits: number[]}}
+ *            slots: (object | null)[], nextPairNumber: number, decoherenceCount: number, hasFilledMemory: boolean}}
  */
 export function createLevel1State() {
     return {
@@ -42,10 +40,8 @@ export function createLevel1State() {
         clickedDetector: null,
         slots: new Array(MEMORY_SLOT_COUNT).fill(null),
         nextPairNumber: 1,
-        teleport: null,
         decoherenceCount: 0,
         hasFilledMemory: false,
-        teleportedBits: [],
     };
 }
 
@@ -70,7 +66,7 @@ export function computeHeraldProbability(link) {
 
 /**
  * One heralding attempt. On success one of the BSM's detectors clicks (D+ or D-, equally likely) and a new Ψ⁺ pair
- * goes into the first free slot. The first goal is met (for good) once PAIRS_TO_CLEAR pairs are stored at once.
+ * goes into the first free slot. The goal is met (for good) once PAIRS_TO_CLEAR pairs are stored at once.
  *
  * @param {object} state - from createLevel1State or an earlier update.
  * @param {number} nowMs - the game clock when the photons arrive.
@@ -81,7 +77,7 @@ export function computeHeraldProbability(link) {
 export function sendPhotons(state, nowMs, nextRandomFloat, heraldProbability) {
     const freeSlot = state.slots.indexOf(null);
     if (freeSlot === -1) {
-        throw new Error("every memory slot holds a pair; use or lose one first");
+        throw new Error("every memory slot holds a pair; wait for one to decohere first");
     }
     const attemptCount = state.attemptCount + 1;
     const isSuccess = nextRandomFloat() < heraldProbability;
@@ -102,36 +98,6 @@ export function sendPhotons(state, nowMs, nextRandomFloat, heraldProbability) {
         nextPairNumber: state.nextPairNumber + 1,
         hasFilledMemory: state.hasFilledMemory || storedPairCount >= PAIRS_TO_CLEAR,
     };
-}
-
-
-/**
- * Teleport one qubit from Mario to Luigi, using up the oldest stored pair.
- *
- * Mario's Bell measurement gives two random classical bits; he sends them to Luigi, who applies X and Z corrections
- * and ends up with exactly the qubit Mario sent.
- *
- * @param {object} state - must hold at least one pair.
- * @param {number} sentBit - 0 for |0⟩, 1 for |1⟩.
- * @param {() => number} nextRandomFloat - uniform draws in [0, 1).
- * @returns {object} the new state, with the pair's slot freed and the teleport recorded.
- */
-export function teleportQubit(state, sentBit, nextRandomFloat) {
-    const slotIndex = findOldestSlot(state);
-    if (slotIndex === -1) {
-        throw new Error("there is no Bell pair yet; send photons first");
-    }
-    if (sentBit !== 0 && sentBit !== 1) {
-        throw new Error(`a qubit signal is |0⟩ or |1⟩, got ${sentBit}`);
-    }
-    const zCorrectionBit = drawFromPair(nextRandomFloat, 0, 1);
-    const xCorrectionBit = drawFromPair(nextRandomFloat, 0, 1);
-    const slots = [...state.slots];
-    slots[slotIndex] = null;
-    const teleport = { sentBit, receivedBit: sentBit, zCorrectionBit, xCorrectionBit, slotIndex };
-    const isNewBit = !state.teleportedBits.includes(sentBit);
-    const teleportedBits = isNewBit ? [...state.teleportedBits, sentBit] : state.teleportedBits;
-    return { ...state, lastAttemptSucceeded: null, clickedDetector: null, slots, teleport, teleportedBits };
 }
 
 
@@ -160,13 +126,13 @@ export function decohereExpiredPairs(state, nowMs, lifetimeMs) {
 
 
 /**
- * Both goals met: all 3 slots were full at once, and both a |0⟩ and a |1⟩ have been teleported.
+ * The goal is met: all 3 slots were full at once.
  *
  * @param {object} state
  * @returns {boolean}
  */
 export function isRoundCleared(state) {
-    return state.hasFilledMemory && state.teleportedBits.includes(0) && state.teleportedBits.includes(1);
+    return state.hasFilledMemory;
 }
 
 
@@ -192,25 +158,6 @@ export function countPairs(state) {
 export function findLifeLeft(pair, nowMs, lifetimeMs) {
     const lifeLeft = 1 - (nowMs - pair.createdAtMs) / lifetimeMs;
     return Math.min(1, Math.max(0, lifeLeft));
-}
-
-
-/**
- * The slot holding the oldest pair, or -1 if there is none.
- */
-function findOldestSlot(state) {
-    let oldestSlot = -1;
-    for (let i = 0; i < state.slots.length; i++) {
-        const pair = state.slots[i];
-        if (pair === null) {
-            continue;
-        }
-        const isOlder = oldestSlot === -1 || pair.createdAtMs < state.slots[oldestSlot].createdAtMs;
-        if (isOlder) {
-            oldestSlot = i;
-        }
-    }
-    return oldestSlot;
 }
 
 

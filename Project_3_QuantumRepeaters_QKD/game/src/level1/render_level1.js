@@ -6,6 +6,7 @@
  * Looks live in styles/qubit_tower.css, styles/bsm_link.css and styles/level1.css.
  */
 
+import { MEMORY_LESSON } from "./level1_lessons.js";
 import { MEMORY_SLOT_COUNT, countPairs, findLifeLeft, isRoundCleared } from "./level1_protocol.js";
 import { buildBsmLink, showDetectorClick } from "../bsm_link.js";
 import { createElement } from "../page_helpers.js";
@@ -19,6 +20,9 @@ const FADING_LIFE_LEFT = 0.3;
 export const MARIO_NOTE = "mario";
 export const LUIGI_NOTE = "luigi";
 export const BSM_NOTE = "bsm";
+// A note's last line while it is still locked (the player is reading), and once it can be put away.
+export const LOCKED_CONTINUE_TEXT = "Read the note…";
+export const READY_CONTINUE_TEXT = "Press Space to continue ▶";
 
 
 /**
@@ -41,7 +45,7 @@ export function buildLevel1Track(trackElement) {
     );
     return {
         marioStation, luigiStation, linkElement, clearBannerElement,
-        luigiReadout: luigi.readoutElement,
+        towerElements: [mario.towerElement, luigi.towerElement],
         memoryOrbs: { mario: mario.stacks.memory, luigi: luigi.stacks.memory },
         notes: {
             [MARIO_NOTE]: buildLessonNote(mario.towerElement, "is-mario"),
@@ -53,13 +57,12 @@ export function buildLevel1Track(trackElement) {
 
 
 /**
- * A lesson note hung over a tower or the BSM, hidden until needed. Its last line says how to carry on.
- * anchorClass lines it up so it never runs off the screen.
+ * A lesson note hung over a tower or the BSM, hidden until needed. Its last line says how to carry on, once the
+ * note unlocks. anchorClass lines it up so it never runs off the screen.
  */
 function buildLessonNote(parentElement, anchorClass) {
     const noteElement = createElement("div", `lesson-note ${anchorClass}`);
     const continueElement = createElement("p", "lesson-continue");
-    continueElement.textContent = "Press Space to continue ▶";
     noteElement.append(createElement("p", "lesson-text"), continueElement);
     noteElement.hidden = true;
     parentElement.append(noteElement);
@@ -68,7 +71,7 @@ function buildLessonNote(parentElement, anchorClass) {
 
 
 /**
- * Show one lesson note with the given text, or hide them all (anchor null).
+ * Show one lesson note with the given text, locked so it cannot be put away yet, or hide them all (anchor null).
  *
  * @param {object} scene
  * @param {string | null} anchor - MARIO_NOTE, LUIGI_NOTE, BSM_NOTE or null.
@@ -80,18 +83,42 @@ export function showLessonNote(scene, anchor, text) {
         noteElement.hidden = !isShown;
         if (isShown) {
             noteElement.querySelector(".lesson-text").textContent = text;
+            showNoteLocked(noteElement, true);
         }
     }
 }
 
 
 /**
- * Draw the game: memory orbs (glow fading with age, fizzling when they decohere), the BSM's lit detector and bump,
- * the Bell-pair arc, the teleported qubit, and the round-clear banner.
+ * Unlock the open lesson note: its last line now says how to carry on.
+ *
+ * @param {object} scene
+ */
+export function unlockLessonNote(scene) {
+    for (const noteElement of Object.values(scene.notes)) {
+        showNoteLocked(noteElement, false);
+    }
+}
+
+
+/**
+ * Grey out a locked note's last line, or show the way on once it unlocks.
+ */
+function showNoteLocked(noteElement, isLocked) {
+    noteElement.classList.toggle("is-locked", isLocked);
+    const continueText = isLocked ? LOCKED_CONTINUE_TEXT : READY_CONTINUE_TEXT;
+    noteElement.querySelector(".lesson-continue").textContent = continueText;
+}
+
+
+/**
+ * Draw the game: memory orbs (glow fading with age, fizzling when they decohere, lit while their atom emits), the
+ * memory windows lit during the memory lesson, the BSM's lit detector and bump, the Bell-pair arc, and the
+ * round-clear banner.
  *
  * @param {object} scene - from buildLevel1Track.
- * @param {{state: object, clockMs: number, lifetimeMs: number,
- *          fizzles: {side: string, slotIndex: number, untilMs: number}[]}} game
+ * @param {{state: object, clockMs: number, lifetimeMs: number, openLessonId: string | null,
+ *          emittingSlotIndex: number | null, fizzles: {side: string, slotIndex: number, untilMs: number}[]}} game
  */
 export function renderLevel1Scene(scene, game) {
     const state = game.state;
@@ -102,13 +129,17 @@ export function renderLevel1Scene(scene, game) {
     for (const side of Object.keys(scene.memoryOrbs)) {
         renderMemoryStack(scene.memoryOrbs[side], side, game);
     }
-    renderTeleport(scene, state.teleport);
+    const isMeetingMemories = game.openLessonId === MEMORY_LESSON;
+    for (const towerElement of scene.towerElements) {
+        towerElement.classList.toggle("is-introducing-memory", isMeetingMemories);
+    }
     scene.clearBannerElement.classList.toggle("is-visible", isRoundCleared(state));
 }
 
 
 /**
- * One tower's memory slots: a stored pair glows gold, dimmer as it ages; a qubit that just decohered fizzles.
+ * One tower's memory slots: a stored pair glows gold, dimmer as it ages; a qubit that just decohered fizzles; the
+ * atom that just emitted a photon flashes blue.
  */
 function renderMemoryStack(orbElements, side, game) {
     for (let i = 0; i < orbElements.length; i++) {
@@ -118,6 +149,8 @@ function renderMemoryStack(orbElements, side, game) {
         orbElement.className = "qubit-orb";
         if (isFizzling) {
             orbElement.classList.add("is-decohered");
+        } else if (game.emittingSlotIndex === i) {
+            orbElement.classList.add("is-emitting");
         } else if (pair !== null) {
             const lifeLeft = findLifeLeft(pair, game.clockMs, game.lifetimeMs);
             orbElement.classList.add("is-pair");
@@ -125,18 +158,6 @@ function renderMemoryStack(orbElements, side, game) {
             orbElement.style.setProperty("--life", lifeLeft.toFixed(2));
         }
     }
-}
-
-
-/**
- * After a teleport: Mario says what he sent, and the badge on Luigi's tower shows what arrived.
- */
-function renderTeleport(scene, teleport) {
-    const hasTeleport = teleport !== null;
-    scene.luigiReadout.textContent = hasTeleport ? `|${teleport.receivedBit}⟩` : "";
-    const bubbleElement = scene.marioStation.querySelector(".station-bubble");
-    bubbleElement.classList.toggle("is-visible", hasTeleport);
-    bubbleElement.textContent = hasTeleport ? `Sent |${teleport.sentBit}⟩` : "";
 }
 
 

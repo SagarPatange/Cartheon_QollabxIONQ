@@ -1,5 +1,5 @@
 /**
- * Tests for src/level1/level1_protocol.js: heralding pairs into memory slots, decoherence, and teleporting one qubit.
+ * Tests for src/level1/level1_protocol.js: heralding pairs into memory slots, decoherence, and the round's goal.
  */
 
 import { test } from "node:test";
@@ -8,7 +8,7 @@ import assert from "node:assert/strict";
 import {
     LUIGI_SIDE, MARIO_SIDE, MEMORY_SLOT_COUNT, MINUS_DETECTOR, PAIRS_TO_CLEAR, PAIR_LIFETIME_MS, PLUS_DETECTOR,
     computeHeraldProbability, countPairs, createLevel1State, decohereExpiredPairs, findLifeLeft, isRoundCleared,
-    sendPhotons, teleportQubit,
+    sendPhotons,
 } from "../../src/level1/level1_protocol.js";
 
 const HERALD_PROBABILITY = 0.3;
@@ -77,24 +77,7 @@ test("life left runs from 1 down to 0 over the pair's lifetime", () => {
 });
 
 
-test("teleporting delivers the qubit Mario sent and uses up the oldest pair", () => {
-    for (const sentBit of [0, 1]) {
-        const state = teleportQubit(stateWithPairsAt([300, 100]), sentBit, () => 0.9);
-        assert.equal(state.teleport.receivedBit, sentBit);
-        assert.equal(state.teleport.slotIndex, 1);
-        assert.equal(state.slots[1], null);
-        assert.equal(countPairs(state), 1);
-    }
-});
-
-
-test("teleporting without a pair or with a bad bit fails fast", () => {
-    assert.throws(() => teleportQubit(createLevel1State(), 0, ALWAYS_SUCCEED), /no Bell pair/);
-    assert.throws(() => teleportQubit(stateWithPairsAt([0]), 2, ALWAYS_SUCCEED), /\|0⟩ or \|1⟩/);
-});
-
-
-test("filling all 3 slots at once meets the first goal, and it stays met", () => {
+test("filling all 3 slots at once meets the goal, and it stays met", () => {
     assert.equal(stateWithPairsAt([0, 100]).hasFilledMemory, false);
     const filled = stateWithPairsAt([0, 100, 200]);
     assert.equal(PAIRS_TO_CLEAR, 3);
@@ -103,17 +86,9 @@ test("filling all 3 slots at once meets the first goal, and it stays met", () =>
 });
 
 
-test("the round clears only with full memory and both a |0⟩ and a |1⟩ teleported", () => {
-    let state = stateWithPairsAt([0, 100, 200]);
-    assert.equal(isRoundCleared(state), false);
-    state = teleportQubit(state, 0, () => 0.9);
-    state = teleportQubit(state, 0, () => 0.9);
-    assert.deepEqual(state.teleportedBits, [0]);
-    assert.equal(isRoundCleared(state), false);
-    state = teleportQubit(state, 1, () => 0.9);
-    assert.equal(isRoundCleared(state), true);
-    const teleportsOnly = teleportQubit(teleportQubit(stateWithPairsAt([0, 100]), 0, () => 0.9), 1, () => 0.9);
-    assert.equal(isRoundCleared(teleportsOnly), false);
+test("the round clears once all 3 slots are full at once", () => {
+    assert.equal(isRoundCleared(stateWithPairsAt([0, 100])), false);
+    assert.equal(isRoundCleared(stateWithPairsAt([0, 100, 200])), true);
 });
 
 
