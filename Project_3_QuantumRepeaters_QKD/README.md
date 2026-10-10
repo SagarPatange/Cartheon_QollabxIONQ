@@ -76,7 +76,9 @@ end-to-end logical Bell pair.*
 **BSM Node** (Bell-state measurement station): a beam splitter with two detectors, D+ and D−. The level opens like a
 story: it pauses to introduce the memories (one Rydberg atom per slot), asks you to press **Space**, then freezes
 the first try just after each atom emits its photon. Press **Space** to fire a photon from each tower. When a detector clicks, both towers store a Bell pair Ψ+. **Goal:** fill all 3 slots at
-once, before any pair decoheres. **Esc** opens the link settings.
+once, before any pair decoheres. The level starts on a poor link (60 km of lossy fiber, 3 s memories) where that is
+impossible: tries take 2.1 s, so the third pair would arrive after the first has died. The way to clear it is to
+change the link settings (**Esc**); the panel says live whether all 3 slots can fill.
 
 ### 1. A qubit that emits a photon
 
@@ -137,7 +139,7 @@ $L = 20$ km. Level 2 runs the full two-round protocol. The first click pauses th
 ### 5. Decoherence
 
 A stored qubit slowly leaks its state into its surroundings. The game gives every pair a **memory lifetime**
-(10 s by default); its orbs dim as it ages, and it is lost when the lifetime runs out. Real memories lose
+(3 s at the start, up to 30 s in the settings); its orbs dim as it ages, and it is lost when the lifetime runs out. Real memories lose
 coherence gradually, on a time scale $T_2$. A link is useful only if pairs can be made faster than they decay, which
 is why distance, detector efficiency and memory lifetime all appear in the settings.
 

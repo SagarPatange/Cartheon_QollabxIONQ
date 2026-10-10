@@ -130,6 +130,26 @@
     left: calc(100% - var(--tower-width) / 2);
 }
 
+/* On a short link the inward note would hit the BSM Node, so it hangs outward instead (src/level1/render_level1.js
+   decides by measuring). */
+.lesson-note.is-mario.is-outward {
+    left: auto;
+    right: 0;
+}
+
+.lesson-note.is-mario.is-outward::after {
+    left: calc(100% - var(--tower-width) / 2);
+}
+
+.lesson-note.is-luigi.is-outward {
+    left: 0;
+    right: auto;
+}
+
+.lesson-note.is-luigi.is-outward::after {
+    left: calc(var(--tower-width) / 2);
+}
+
 /* The BSM's note is wider, so it stays short enough to fit under the sky. */
 .lesson-note.is-bsm {
     bottom: 290px;
@@ -232,4 +252,87 @@
     .story-prompt {
         animation: none;
     }
+}
+
+/* ---------- The link settings, shown in the scene (src/level1/render_level1.js) ---------- */
+
+/* Internode distance: the fiber spans --link-fraction of the track, so a short link pulls the towers in to the BSM
+   Node and the longest one fills the screen. The track keeps everything centred. */
+.level1-track {
+    justify-content: center;
+}
+
+.level1-track .qkd-link {
+    flex: 0 1 calc(var(--link-fraction, 1) * 100%);
+}
+
+/* The distance reads from Mario's end, under the fiber, so it stays clear of the BSM tower even on a short link. */
+.link-distance {
+    position: absolute;
+    left: 12px;
+    bottom: 92px;
+    font-size: 10px;
+    color: var(--text-light);
+    text-shadow: 1px 1px 0 var(--ink);
+    white-space: nowrap;
+}
+
+/* Fiber attenuation: each photon fades and shrinks on its way to the BSM, arriving with --arrival-brightness of its
+   light (10^(−α·L/20)). A floor keeps even the dimmest photon a visible speck. The fiber's core dims the same way. */
+.level1-track .qkd-link.is-sending .photon.from-left {
+    animation-name: level1-photon-from-left;
+}
+
+.level1-track .qkd-link.is-sending .photon.from-right {
+    animation-name: level1-photon-from-right;
+}
+
+@keyframes level1-photon-from-left {
+    from { opacity: 1; scale: 1; left: 0; }
+    to {
+        opacity: max(0.12, var(--arrival-brightness, 1));
+        scale: calc(0.4 + 0.6 * var(--arrival-brightness, 1));
+        left: calc(50% - 12px);
+    }
+}
+
+@keyframes level1-photon-from-right {
+    from { opacity: 1; scale: 1; right: 0; }
+    to {
+        opacity: max(0.12, var(--arrival-brightness, 1));
+        scale: calc(0.4 + 0.6 * var(--arrival-brightness, 1));
+        right: calc(50% - 12px);
+    }
+}
+
+.level1-track .bsm-link .fiber::after {
+    opacity: calc(0.25 + 0.75 * var(--arrival-brightness, 1));
+}
+
+/* Detector efficiency: inefficient detectors look worn, like a Minecraft anvil. Chipped: a few pixel cracks.
+   Damaged: more cracks and a corner broken off. The panel's aria-label says the same in words. */
+.level1-track .detector-lamp {
+    position: relative;
+}
+
+.level1-track .detector-lamp.wear-chipped::after,
+.level1-track .detector-lamp.wear-damaged::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+}
+
+.level1-track .detector-lamp.wear-chipped::after {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 46 34' shape-rendering='crispEdges'%3E%3Cpath d='M4 0v4h4v4h2v4M46 22h-4v4h-4v4h-2v4' fill='none' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E");
+}
+
+.level1-track .detector-lamp.wear-damaged::after {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 46 34' shape-rendering='crispEdges'%3E%3Cpath d='M4 0v4h4v4h2v4h4v4M46 22h-4v4h-4v4h-2v4M20 34v-4h4v-4h2M30 0v4h-2v4h-4M0 20h4v2h4v4' fill='none' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E");
+}
+
+.level1-track .detector-lamp.wear-damaged {
+    clip-path: polygon(0 0, 100% 0, 100% 70%, 82% 100%, 0 100%);
 }

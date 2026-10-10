@@ -6,9 +6,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import {
-    LUIGI_SIDE, MARIO_SIDE, MEMORY_SLOT_COUNT, MINUS_DETECTOR, PAIRS_TO_CLEAR, PAIR_LIFETIME_MS, PLUS_DETECTOR,
-    TWO_CLICK_SHARE,
-    computeHeraldProbability, countPairs, createLevel1State, decohereExpiredPairs, findLifeLeft, isRoundCleared,
+    LUIGI_SIDE, MARIO_SIDE, MEMORY_SLOT_COUNT, MINUS_DETECTOR, ONE_CLICK, PAIRS_TO_CLEAR, PAIR_LIFETIME_MS,
+    PLUS_DETECTOR, TWO_CLICKS, TWO_CLICK_SHARE, computeHeraldProbability, countPairs, createLevel1State, decohereExpiredPairs, findLifeLeft, isRoundCleared,
     sendPhotons,
 } from "../../src/level1/level1_protocol.js";
 
@@ -59,10 +58,17 @@ test("a forced two-click try still uses up exactly one draw, so the random seque
         drawCount += 1;
         return 0;
     };
-    const state = sendPhotons(createLevel1State(), 0, countingDraw, HERALD_PROBABILITY, true);
+    const state = sendPhotons(createLevel1State(), 0, countingDraw, HERALD_PROBABILITY, TWO_CLICKS);
     assert.equal(state.hadTwoClicks, true);
     assert.equal(countPairs(state), 0);
     assert.equal(drawCount, 1);
+});
+
+
+test("a forced one-click try stores a pair even when the draw would have missed", () => {
+    const state = sendPhotons(createLevel1State(), 0, ALWAYS_FAIL, HERALD_PROBABILITY, ONE_CLICK);
+    assert.equal(state.lastAttemptSucceeded, true);
+    assert.equal(countPairs(state), 1);
 });
 
 

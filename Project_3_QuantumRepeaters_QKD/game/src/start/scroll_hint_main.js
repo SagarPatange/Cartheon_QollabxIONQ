@@ -1,6 +1,6 @@
 /**
  * Scroll hints on the overworld map: arrows pinned to the edges of the map view that tell the player the map
- * goes on (Level 3's road runs far right to Peach's castle) and scroll it most of a view-width when clicked.
+ * goes on (Level 4's road runs far right to Peach's castle) and scroll it most of a view-width when clicked.
  *
  * Loaded by start.html as its own module, independent of start_main.js. Reads #map-viewport, #world-map,
  * #scroll-hint-right and #scroll-hint-left; changes only the hints' `hidden` flags and the viewport's scroll.

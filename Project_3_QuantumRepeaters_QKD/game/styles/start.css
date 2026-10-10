@@ -314,35 +314,130 @@
     box-shadow: 0 0 0 3px var(--ink);
 }
 
-/* The QKD fiber: a dark cable with a blue core, strung over the sea from tower to tower. */
+/*
+ * The QKD fiber: a thick pixel cable strung over the sea from tower to tower. Black outline, dark blue sheath, and a
+ * bright cyan core with a white glint, glowing softly so it reads as "light inside".
+ */
 .map-fiber {
     position: absolute;
     z-index: 2;
-    background: var(--qubit-dark-blue);
-    box-shadow: 0 0 0 2px var(--ink);
+    background: linear-gradient(
+        var(--qubit-dark-blue) 0 20%,
+        var(--qubit-blue) 20% 40%,
+        var(--cloud-white) 40% 60%,
+        var(--qubit-blue) 60% 80%,
+        var(--qubit-dark-blue) 80%
+    );
+    box-shadow:
+        0 0 0 3px var(--ink),
+        0 0 14px 4px rgb(60 188 252 / 0.55);
 }
 
-/* A photon pulse running along the fiber to Peach: the key being shared. A slow loop, off with reduced motion. */
+/*
+ * Photon pulses running along the fiber to Peach: the key being shared. render_map.js sets each one's duration and
+ * its delay, so the pulses ride evenly spaced. A pixel diamond (stepped clip-path) with a halo. Off with reduced
+ * motion.
+ */
 .map-photon {
     position: absolute;
-    top: -4px;
+    top: 50%;
     left: 0;
-    width: 24px;
-    height: 12px;
+    width: 20px;
+    height: 20px;
+    translate: 0 -50%;
     background: var(--cloud-white);
-    box-shadow: 0 0 0 2px var(--qubit-blue);
+    clip-path: polygon(
+        40% 0, 60% 0, 60% 20%, 80% 20%, 80% 40%, 100% 40%, 100% 60%, 80% 60%, 80% 80%, 60% 80%, 60% 100%,
+        40% 100%, 40% 80%, 20% 80%, 20% 60%, 0 60%, 0 40%, 20% 40%, 20% 20%, 40% 20%
+    );
+    filter: drop-shadow(0 0 4px var(--qubit-blue)) drop-shadow(0 0 8px var(--cloud-white));
     animation: photon-run 6s linear infinite;
 }
 
 @keyframes photon-run {
     from { left: 0; }
-    to { left: calc(100% - 24px); }
+    to { left: calc(100% - 20px); }
+}
+
+/* A tower's dish lights up cyan as a pulse goes by; render_map.js times each one to the pulses. */
+.map-tower-beacon {
+    position: absolute;
+    z-index: 1;
+    width: 28px;
+    height: 28px;
+    translate: -50% -50%;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--cloud-white) 0 25%, var(--qubit-blue) 45%, transparent 70%);
+    opacity: 0;
+    pointer-events: none;
+    animation: beacon-flash 2s linear infinite;
+}
+
+@keyframes beacon-flash {
+    0% { opacity: 1; }
+    25% { opacity: 0; }
+    100% { opacity: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .map-photon {
+    .map-photon,
+    .map-tower-beacon {
         display: none;
     }
+}
+
+/*
+ * The QKD sign: a wooden plaque on two posts, SMB3 style. "QKD LINK" in gold, where the link goes in cream below.
+ */
+.map-qkd-sign {
+    position: absolute;
+    z-index: 1;
+    translate: -50% -16%;
+    display: grid;
+    justify-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    white-space: nowrap;
+    background: var(--brick-dark);
+    border: 3px solid var(--brick-orange);
+    box-shadow:
+        0 0 0 3px var(--ink),
+        inset 0 -4px 0 #4c1800,
+        6px 6px 0 3px rgb(0 0 0 / 0.35);
+    pointer-events: none;
+}
+
+/* The two posts the plaque stands on. */
+.map-qkd-sign::before,
+.map-qkd-sign::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    width: 8px;
+    height: 18px;
+    background: var(--brick-orange);
+    border: 3px solid var(--ink);
+    border-top: none;
+}
+
+.map-qkd-sign::before {
+    left: 22%;
+}
+
+.map-qkd-sign::after {
+    right: 22%;
+}
+
+.map-qkd-sign-title {
+    font-size: 18px;
+    color: var(--coin-gold);
+    text-shadow: 3px 3px 0 var(--ink);
+}
+
+.map-qkd-sign-destination {
+    font-size: 11px;
+    color: #fcd8a8;
+    text-shadow: 2px 2px 0 var(--ink);
 }
 
 .map-sign {
@@ -352,6 +447,20 @@
     color: var(--ink);
     background: #fcd8a8;
     border: 3px solid var(--ink);
+}
+
+/* A stop's short name above it: plain pixel text with a black outline, readable on grass and sea. */
+.map-stop-label {
+    position: absolute;
+    z-index: 1;
+    translate: -50% -50%;
+    font-size: 14px;
+    white-space: nowrap;
+    color: var(--cloud-white);
+    text-shadow:
+        -2px -2px 0 var(--ink), 2px -2px 0 var(--ink), -2px 2px 0 var(--ink), 2px 2px 0 var(--ink),
+        0 3px 0 var(--ink);
+    pointer-events: none;
 }
 
 .map-stop {

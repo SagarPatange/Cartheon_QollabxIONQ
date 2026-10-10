@@ -25,6 +25,11 @@ export const MINUS_DETECTOR = "D-";
 // clicks come TWO_CLICK_SHARE times as often as one click, taken out of the tries that would otherwise not click.
 export const TWO_CLICK_SHARE = 0.25;
 
+// How a try ends.
+export const NO_CLICK = "no-click";
+export const ONE_CLICK = "one-click";
+export const TWO_CLICKS = "two-clicks";
+
 // Which tower's memory qubit gives out first when a pair decoheres.
 export const MARIO_SIDE = "mario";
 export const LUIGI_SIDE = "luigi";
@@ -54,6 +59,18 @@ export function createLevel1State() {
 
 
 /**
+ * How much of a photon's light survives the fiber from its tower to the BSM, half the link: 10^(−α·(L/2)/10).
+ *
+ * @param {{attenuationDbPerKm: number, internodeDistanceKm: number}} link
+ * @returns {number} a fraction in (0, 1].
+ */
+export function computePhotonTransmission(link) {
+    const lossPerPhotonDb = link.attenuationDbPerKm * (link.internodeDistanceKm / 2);
+    return 10 ** (-lossPerPhotonDb / DECIBELS_PER_DECADE);
+}
+
+
+/**
  * The chance that one attempt heralds a pair: both photons must cross half the link to the BSM and be detected.
  *
  * Each photon arrives with transmission 10^(−α·(L/2)/10) and is caught with the detector efficiency η, so the chance
@@ -64,9 +81,7 @@ export function createLevel1State() {
  * @returns {number} a probability in [0, 1].
  */
 export function computeHeraldProbability(link) {
-    const lossPerPhotonDb = link.attenuationDbPerKm * (link.internodeDistanceKm / 2);
-    const transmission = 10 ** (-lossPerPhotonDb / DECIBELS_PER_DECADE);
-    const photonArrives = link.detectorEfficiency * transmission;
+    const photonArrives = link.detectorEfficiency * computePhotonTransmission(link);
     return photonArrives * photonArrives;
 }
 
@@ -76,30 +91,28 @@ export function computeHeraldProbability(link) {
  * clicks, anything else no click (p is the herald probability). On one click, D+ or D- clicks (equally likely) and a
  * new Ψ⁺ pair goes into the first free slot. The goal is met (for good) once PAIRS_TO_CLEAR pairs are stored at once.
  *
- * isTwoClickForced makes this try two clicks whatever u is (the story uses it to show the case early). u is drawn
- * either way, so the random sequence stays the same.
+ * forcedOutcome (ONE_CLICK or TWO_CLICKS) makes this try end that way whatever u is; the story uses it to show each
+ * case early on a weak link. u is drawn either way, so a forced try uses the same draws as a natural one.
  *
  * @param {object} state - from createLevel1State or an earlier update.
  * @param {number} nowMs - the game clock when the photons arrive.
  * @param {() => number} nextRandomFloat - uniform draws in [0, 1).
  * @param {number} heraldProbability - from computeHeraldProbability.
- * @param {boolean} [isTwoClickForced=false]
+ * @param {string | null} [forcedOutcome=null] - ONE_CLICK, TWO_CLICKS, or null to let u decide.
  * @returns {object} the new state.
  */
-export function sendPhotons(state, nowMs, nextRandomFloat, heraldProbability, isTwoClickForced = false) {
+export function sendPhotons(state, nowMs, nextRandomFloat, heraldProbability, forcedOutcome = null) {
     const freeSlot = state.slots.indexOf(null);
     if (freeSlot === -1) {
         throw new Error("every memory slot holds a pair; wait for one to decohere first");
     }
     const attemptCount = state.attemptCount + 1;
     const outcomeDraw = nextRandomFloat();
-    const twoClickLimit = heraldProbability * (1 + TWO_CLICK_SHARE);
-    const isTwoClicks = isTwoClickForced || (outcomeDraw >= heraldProbability && outcomeDraw < twoClickLimit);
-    if (isTwoClicks) {
+    const outcome = forcedOutcome ?? classifyOutcome(outcomeDraw, heraldProbability);
+    if (outcome === TWO_CLICKS) {
         return { ...state, attemptCount, lastAttemptSucceeded: false, clickedDetector: null, hadTwoClicks: true };
     }
-    const isSuccess = outcomeDraw < heraldProbability;
-    if (!isSuccess) {
+    if (outcome === NO_CLICK) {
         return { ...state, attemptCount, lastAttemptSucceeded: false, clickedDetector: null, hadTwoClicks: false };
     }
     const clickedDetector = drawFromPair(nextRandomFloat, PLUS_DETECTOR, MINUS_DETECTOR);
@@ -116,6 +129,21 @@ export function sendPhotons(state, nowMs, nextRandomFloat, heraldProbability, is
         nextPairNumber: state.nextPairNumber + 1,
         hasFilledMemory: state.hasFilledMemory || storedPairCount >= PAIRS_TO_CLEAR,
     };
+}
+
+
+/**
+ * How a try ends for the draw u: one click below p, two clicks from p up to p·(1 + TWO_CLICK_SHARE), else no click.
+ */
+function classifyOutcome(outcomeDraw, heraldProbability) {
+    if (outcomeDraw < heraldProbability) {
+        return ONE_CLICK;
+    }
+    const twoClickLimit = heraldProbability * (1 + TWO_CLICK_SHARE);
+    if (outcomeDraw < twoClickLimit) {
+        return TWO_CLICKS;
+    }
+    return NO_CLICK;
 }
 
 

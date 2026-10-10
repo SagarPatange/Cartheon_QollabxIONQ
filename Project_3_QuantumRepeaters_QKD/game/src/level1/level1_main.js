@@ -5,8 +5,10 @@
  * The level opens like a story. A lesson note introduces the memories (3 slots, one Rydberg atom each), then a prompt
  * asks for Space. The first Space freezes the photons just after the atoms emit them, with a lesson on what that
  * means; Space again lets them fly on. The first try with no click, one click and two clicks each get a lesson; if
- * two clicks have not happened by try FORCED_TWO_CLICK_TRY, that try shows them. After the one-click lesson the
- * settings panel opens for a short tour: one tip per setting, pointing at it from beside the panel, Space for next.
+ * two clicks have not happened by try FORCED_TWO_CLICK_TRY, that try shows them, and if no pair has been made by
+ * FORCED_ONE_CLICK_TRY, that try makes one. After the one-click lesson the settings panel opens for a short tour: one
+ * tip per setting, pointing at it from beside the panel, Space for next. The default link cannot hold 3 pairs at
+ * once, so the tour ends on the level's hint: change the settings.
  *
  * Space (or a click on the scene) sends photons; each click at the BSM stores a Bell pair in both towers (3 slots),
  * and Mario and Luigi jump. Pairs decohere after the memory lifetime. The first click and the first decoherence pause
@@ -18,14 +20,17 @@
 
 import {
     CLICK_LESSON, DECOHERENCE_LESSON, EMISSION_LESSON, FIRST_SEND_PROMPT, MEMORY_LESSON, NO_CLICK_LESSON,
-    SETTINGS_TOUR, TWO_CLICK_LESSON, describeClickLesson, describeDecoherenceLesson, describeEmissionLesson,
-    describeMemoryLesson, describeNoClickLesson, describeTwoClickLesson,
+    SETTINGS_HINT_LESSON, SETTINGS_TOUR, TWO_CLICK_LESSON, describeClickLesson, describeDecoherenceLesson,
+    describeEmissionLesson, describeMemoryLesson, describeNoClickLesson, describeSettingsHint, describeTourEnding,
+    describeTwoClickLesson, shouldShowSettingsHint,
 } from "./level1_lessons.js";
 import {
-    MEMORY_SLOT_COUNT, computeHeraldProbability, countPairs, createLevel1State, decohereExpiredPairs, sendPhotons,
+    MEMORY_SLOT_COUNT, ONE_CLICK, TWO_CLICKS, computeHeraldProbability, countPairs, createLevel1State,
+    decohereExpiredPairs, sendPhotons,
 } from "./level1_protocol.js";
 import {
-    LINK_SETTINGS, computeLifetimeMs, computeTryDurationMs, createDefaultSettings, formatSettingValue, toLinkPhysics,
+    LINK_SETTINGS, canFillMemory, computeLifetimeMs, computeTryDurationMs, createDefaultSettings, formatSettingValue,
+    summarizeLinkSettings, toLinkPhysics,
 } from "./level1_settings.js";
 import {
     BSM_NOTE, LOCKED_CONTINUE_TEXT, MARIO_NOTE, READY_CONTINUE_TEXT, buildLevel1Track, playPairJump,
@@ -42,15 +47,15 @@ const CLOCK_TICK_MS = 100;
 // How long a decohered qubit fizzles before its slot shows empty.
 const FIZZLE_MS = 900;
 // A lesson note stays up at least this long (real time) before Space or a click can put it away, so it gets read.
-const LESSON_READ_MS = 3000;
+const LESSON_READ_MS = 1000;
 // The story shows two clicks by this try at the latest (the first try is the frozen emission one).
 const FORCED_TWO_CLICK_TRY = 3;
+// ...and a first Bell pair by this try at the latest: the default link almost never clicks.
+const FORCED_ONE_CLICK_TRY = 5;
 // Room between the tour tip and the settings panel (where its arrow sits), and between the tip and the window edge.
 const TOUR_TIP_GAP_PX = 18;
 const TOUR_TIP_MARGIN_PX = 8;
 const HUD_DIGIT_COUNT = 3;
-const PERCENT = 100;
-const MS_PER_SECOND = 1000;
 // The gear on the Settings button: 13 sprite pixels at this size match the height of the Map button.
 const GEAR_PIXEL_SIZE = 3;
 // Natural size of the scene (styles/level1.css); below it the ground (64 px), above it the goal line and key hints.
@@ -73,7 +78,7 @@ function startLevel1() {
     // isStarted stays false until the goal has typed itself out; until then keys and clicks do nothing.
     const game = {
         isStarted: false, lessonsSeen: new Set(), settings: createDefaultSettings(), isSettingsOpen: false,
-        tourStepIndex: null, isTourLocked: false, hasToured: false,
+        tourStepIndex: null, isTourLocked: false, hasToured: false, lostPairCountAtLastHint: 0,
     };
     buildSettingsRows(elements.settingsRows, LINK_SETTINGS, game.settings, formatSettingValue, (id, value) => {
         game.settings[id] = value;
@@ -150,6 +155,12 @@ function tickClock(game, elements) {
         const side = result.decohered[0].side;
         openLessonOnce(game, elements, DECOHERENCE_LESSON, side, describeDecoherenceLesson(side, lifetimeMs));
     }
+    const lostPairCount = game.state.decoherenceCount;
+    const isHintDue = shouldShowSettingsHint(lostPairCount, game.lostPairCountAtLastHint, canFillMemory(game.settings));
+    if (isHintDue && game.openLesson === null) {
+        game.lostPairCountAtLastHint = lostPairCount;
+        openLesson(game, elements, SETTINGS_HINT_LESSON, BSM_NOTE, describeSettingsHint());
+    }
     renderLevel1(game, elements);
 }
 
@@ -163,6 +174,15 @@ function openLessonOnce(game, elements, lessonId, anchor, text) {
         return;
     }
     game.lessonsSeen.add(lessonId);
+    openLesson(game, elements, lessonId, anchor, text);
+}
+
+
+/**
+ * Pause and show a note over where it happened, locked for LESSON_READ_MS. Used directly for notes that repeat, such
+ * as the settings hint.
+ */
+function openLesson(game, elements, lessonId, anchor, text) {
     game.openLesson = anchor;
     game.openLessonId = lessonId;
     game.isLessonLocked = true;
@@ -315,7 +335,7 @@ function advanceSettingsTour(game, elements) {
         return;
     }
     const nextStepIndex = game.tourStepIndex + 1;
-    if (nextStepIndex < SETTINGS_TOUR.length) {
+    if (nextStepIndex < listTourSteps(game).length) {
         showSettingsTourStep(game, elements, nextStepIndex);
         return;
     }
@@ -335,7 +355,7 @@ function renderSettingsTour(game, elements) {
         highlightSettingRow(elements.settingsRows, null);
         return;
     }
-    const step = SETTINGS_TOUR[game.tourStepIndex];
+    const step = listTourSteps(game)[game.tourStepIndex];
     elements.settingsTourText.textContent = step.text;
     elements.settingsTour.classList.toggle("is-locked", game.isTourLocked);
     elements.settingsTourContinue.textContent = game.isTourLocked ? LOCKED_CONTINUE_TEXT : READY_CONTINUE_TEXT;
@@ -402,10 +422,10 @@ function handleSend(game, elements) {
 
 /**
  * Let the photons fly to the BSM Node, wait one try's length, then store the pair if it clicked: jump for joy, and
- * explain the first click.
+ * explain the first click. The atoms that emitted stay lit blue for the whole flight, whatever the outcome.
  */
 function flyPhotons(game, elements) {
-    game.emittingSlotIndex = null;
+    game.emittingSlotIndex = game.state.slots.indexOf(null);
     elements.scene.linkElement.classList.remove("is-emitting");
     const tryDurationMs = computeTryDurationMs(game.settings);
     elements.scene.linkElement.style.setProperty("--photon-flight-ms", `${tryDurationMs}ms`);
@@ -413,9 +433,10 @@ function flyPhotons(game, elements) {
     setTimeout(() => {
         elements.scene.linkElement.classList.remove("is-sending");
         const heraldProbability = computeHeraldProbability(toLinkPhysics(game.settings));
-        const isTwoClickForced = isTwoClickDue(game);
-        game.state = sendPhotons(game.state, game.clockMs, game.nextRandomFloat, heraldProbability, isTwoClickForced);
+        const forcedOutcome = decideForcedOutcome(game);
+        game.state = sendPhotons(game.state, game.clockMs, game.nextRandomFloat, heraldProbability, forcedOutcome);
         game.isAnimating = false;
+        game.emittingSlotIndex = null;
         if (game.state.lastAttemptSucceeded) {
             playPairJump(elements.scene);
             openLessonOnce(game, elements, CLICK_LESSON, BSM_NOTE, describeClickLesson(game.state.clickedDetector));
@@ -430,12 +451,29 @@ function flyPhotons(game, elements) {
 
 
 /**
- * The story owes the player a two-click try: none has happened yet, and this is try FORCED_TWO_CLICK_TRY.
+ * What the story owes the player on this try, or null: two clicks on try FORCED_TWO_CLICK_TRY if none yet, and a
+ * first pair on try FORCED_ONE_CLICK_TRY if none yet.
  */
-function isTwoClickDue(game) {
-    const hasSeenTwoClicks = game.lessonsSeen.has(TWO_CLICK_LESSON);
+function decideForcedOutcome(game) {
     const tryNumber = game.state.attemptCount + 1;
-    return !hasSeenTwoClicks && tryNumber === FORCED_TWO_CLICK_TRY;
+    const isTwoClickDue = !game.lessonsSeen.has(TWO_CLICK_LESSON) && tryNumber === FORCED_TWO_CLICK_TRY;
+    if (isTwoClickDue) {
+        return TWO_CLICKS;
+    }
+    const isOneClickDue = !game.lessonsSeen.has(CLICK_LESSON) && tryNumber === FORCED_ONE_CLICK_TRY;
+    if (isOneClickDue) {
+        return ONE_CLICK;
+    }
+    return null;
+}
+
+
+/**
+ * The tour's tips: one per setting, then the hint, which follows the settings as the player changes them.
+ */
+function listTourSteps(game) {
+    const endingStep = { settingId: null, text: describeTourEnding(canFillMemory(game.settings)) };
+    return [...SETTINGS_TOUR, endingStep];
 }
 
 
@@ -446,6 +484,7 @@ function resetLevel1(game, elements) {
     Object.assign(game, {
         state: createLevel1State(), nextRandomFloat: createSeededRandom(LEVEL1_SEED), clockMs: 0, fizzles: [],
         isAnimating: false, openLesson: null, openLessonId: null, isLessonLocked: false, emittingSlotIndex: null,
+        lostPairCountAtLastHint: 0,
     });
     elements.scene.linkElement.classList.remove("is-sending", "is-emitting");
     showLessonNote(elements.scene, null);
@@ -465,7 +504,7 @@ function renderLevel1(game, elements) {
     const isShowingMessage = game.openLesson !== null || game.tourStepIndex !== null;
     elements.pauseBadge.hidden = !isPaused(game) || isShowingMessage;
     elements.storyPromptElement.hidden = !canZapAtoms(game);
-    elements.settingsSummary.textContent = describeSettingsEffect(game.settings);
+    renderSettingsSummary(elements.settingsSummary, summarizeLinkSettings(game.settings));
     renderSettingsTour(game, elements);
 }
 
@@ -482,12 +521,22 @@ function canZapAtoms(game) {
 
 
 /**
- * What the current settings add up to, for the panel.
+ * The panel's summary: two numbers side by side (chance per try, time per try), then a verdict line with a ✓ or ✗,
+ * so the answer never rests on colour alone.
  */
-function describeSettingsEffect(settings) {
-    const chancePercent = Math.round(computeHeraldProbability(toLinkPhysics(settings)) * PERCENT);
-    const trySeconds = (computeTryDurationMs(settings) / MS_PER_SECOND).toFixed(1);
-    return `Chance a try makes a pair: ${chancePercent}%. Each try takes ${trySeconds} s.`;
+function renderSettingsSummary(summaryElement, summary) {
+    const verdictText = summary.canFill ? "All 3 slots can fill" : "Pairs die before 3 fill";
+    const verdictIcon = summary.canFill ? "✓" : "✗";
+    summaryElement.classList.toggle("can-fill", summary.canFill);
+    summaryElement.innerHTML =
+        `<div class="summary-stats">` +
+        `<div class="summary-stat"><span class="summary-value">${summary.chancePercent}%</span>` +
+        `<span class="summary-label">pair per try</span></div>` +
+        `<div class="summary-stat"><span class="summary-value">${summary.trySeconds} s</span>` +
+        `<span class="summary-label">per try</span></div>` +
+        `</div>` +
+        `<p class="summary-verdict"><span class="summary-icon" aria-hidden="true">${verdictIcon}</span>` +
+        `${verdictText}</p>`;
 }
 
 

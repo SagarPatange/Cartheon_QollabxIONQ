@@ -1,0 +1,635 @@
+/*
+ * Level 2 (teleportation) additions on top of world.css, towers.css, qkd.css, qubit_tower.css, settings_panel.css
+ * (the cheat sheet's header and close button) and level1.css (the lesson note's look): the page layout with the sky
+ * in normal flow above the scene and the cheat sheet beside the world, the mystery block, the 3 Bell-pair slots, the
+ * Bell-pair arc, the bit pipe, Luigi's fix switches, the word board and the banner. Classes are set by
+ * src/teleport/render_teleport.js and src/teleport/teleport_main.js.
+ *
+ * Positions inside the scene are measured from the ground up, stacked with at least 12 px between boxes:
+ * pipe 28–62, fix switches 82–146, Bell-pair arc 160–216 (label to 244), word board 258–336.
+ */
+
+/* HUD on top, the world and the cheat sheet side by side, the attribution line at the bottom. */
+.teleport-page {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.teleport-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+}
+
+.teleport-page .world {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-width: 0;
+    min-height: 0;
+    padding-top: 16px;
+}
+
+.teleport-footer {
+    padding: 6px 16px;
+    font-size: 9px;
+    text-align: center;
+    color: var(--text-light);
+    background: var(--ink);
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* ---------- The sky: goal, problem, banner, key hints and lesson note, stacked in normal flow ---------- */
+
+/* Not floating over the scene as on the other levels: the scene is zoomed to fit under it, so nothing overlaps. */
+.teleport-page .sky-panel {
+    position: relative;
+    top: auto;
+    left: auto;
+    translate: none;
+    gap: 12px;
+    width: auto;
+    max-width: calc(100% - 32px);
+    margin: 0 auto auto;
+    padding-bottom: 16px;
+}
+
+/* Once the goal has faded it gives its room back to the scene. */
+.teleport-page .sky-status.is-faded {
+    display: none;
+}
+
+.teleport-page .sky-panel > .key-hints {
+    max-width: 100%;
+}
+
+/* The lesson note, in the sky instead of hanging over the towers, so it never covers the scene. */
+.lesson-note.is-sky {
+    position: relative;
+    z-index: auto;
+    bottom: auto;
+    left: auto;
+    translate: none;
+    width: min(680px, 100%);
+    padding: 12px 16px;
+}
+
+.lesson-note.is-sky::after {
+    display: none;
+}
+
+.teleport-banner {
+    margin: 0;
+    padding: 12px 18px;
+    font-size: 16px;
+    text-align: center;
+    border: var(--pixel) solid var(--ink);
+    animation: banner-pop 0.4s ease-out 1;
+}
+
+.teleport-banner.is-win {
+    color: var(--ink);
+    background: var(--coin-gold);
+}
+
+.teleport-banner.is-lose {
+    color: var(--text-light);
+    background: var(--error-red);
+}
+
+/* ---------- The scene ---------- */
+
+.teleport-track {
+    --station-width: 140px;
+    height: 340px;
+    min-width: 940px;
+    padding-top: 0;
+}
+
+/* The towers carry the names, so the plumbers' own name tags would only repeat them. */
+.teleport-track .station-name {
+    display: none;
+}
+
+.teleport-track .qubit-orb {
+    width: 30px;
+    height: 30px;
+    font-size: 13px;
+}
+
+/* Luigi's speech bubble fits over him without reaching his tower. */
+.teleport-track .station-bubble {
+    max-width: 124px;
+    margin-bottom: 18px;
+    font-size: 10px;
+    word-break: normal;
+    white-space: nowrap;
+}
+
+/* A wrong reading: a red frame on top of its ✖. */
+.station-bubble.is-wrong {
+    border-color: var(--error-red);
+}
+
+/* What the open lesson is about glows gold (the note says it in words too). */
+.qubit-tower.is-lesson-focus .qubit-window {
+    box-shadow: 0 0 0 4px var(--coin-gold), 0 0 16px var(--coin-gold);
+}
+
+.teleport-link.is-lesson-focus .bit-pipe {
+    box-shadow: 0 0 0 4px var(--coin-gold), 0 0 16px var(--coin-gold);
+}
+
+.hud-cheat {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-pixel);
+    background: #c4dafc;
+    border: none;
+    box-shadow:
+        inset calc(-1 * var(--pixel)) calc(-1 * var(--pixel)) 0 #8cb0ec,
+        0 0 0 3px var(--ink);
+    cursor: pointer;
+}
+
+.hud-cheat[aria-expanded="true"] {
+    background: var(--cloud-white);
+}
+
+/* ---------- The 3 Bell-pair slots (Level 1's gold is-pair orbs, numbered by pair) ---------- */
+
+/* The pair this teleport uses: a white frame round it in both towers. */
+.qubit-orb.is-active-pair {
+    outline: 3px solid var(--cloud-white);
+    outline-offset: 3px;
+}
+
+/* Luigi's half once Mario has measured: it holds the message, scrambled until the fix. */
+.qubit-orb.is-scrambled {
+    color: var(--text-light);
+    background: #6c3cb4;
+    box-shadow: inset -3px -3px 0 #3c1c74, 0 0 10px #a47cf4;
+}
+
+.qubit-orb.is-measured {
+    background: var(--cloud-white);
+}
+
+/* A fresh pair from Level 1's repeater pops into a used slot. */
+.qubit-orb.is-refilling {
+    animation: orb-refill 0.5s ease-out 1;
+}
+
+@keyframes orb-refill {
+    from { scale: 0.2; }
+}
+
+/* Over each tower while its slot refills; gone by the time the readouts appear in the same place. */
+.refill-tag {
+    position: absolute;
+    z-index: 2;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    translate: -50% 0;
+    width: 120px;
+    padding: 4px 6px;
+    font-size: 8px;
+    line-height: 1.5;
+    text-align: center;
+    text-shadow: none;
+    color: var(--ink);
+    background: var(--cloud-white);
+    border: 2px solid var(--ink);
+    visibility: hidden;
+}
+
+.refill-tag.is-shown {
+    visibility: visible;
+    animation: refill-tag-fade 3s linear forwards;
+}
+
+@keyframes refill-tag-fade {
+    85% { opacity: 1; }
+    to { opacity: 0; visibility: hidden; }
+}
+
+/* ---------- Mario's mystery block (the message qubit), held over his head ---------- */
+
+.mystery-block {
+    position: absolute;
+    z-index: 2;
+    bottom: 84px;
+    left: 50%;
+    translate: -50% 0;
+    display: grid;
+    place-items: center;
+    min-width: 56px;
+    height: 44px;
+    padding: 0 6px;
+    font-size: 14px;
+    color: var(--brick-dark);
+    background: var(--coin-gold);
+    border: 3px solid var(--ink);
+    box-shadow: inset -4px -4px 0 var(--block-orange), inset 3px 3px 0 #fce8a0;
+}
+
+.mystery-block.is-bumped {
+    animation: block-bump 0.3s ease-out 2;
+}
+
+@keyframes block-bump {
+    50% { translate: -50% -10px; }
+}
+
+/* Hit and empty, like a used block in the game: the message has left Mario. */
+.mystery-block.is-used {
+    background: var(--brick-dark);
+    box-shadow: inset -4px -4px 0 #4c1c00;
+}
+
+/* ---------- The link: Bell-pair arc, bit pipe and fix switches ---------- */
+
+.teleport-link {
+    position: relative;
+    flex: 1;
+    align-self: stretch;
+    min-width: 380px;
+}
+
+/* The shared Bell pairs, a dashed gold arc from tower to tower. */
+.pair-arc {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 160px;
+    height: 56px;
+    border: 4px dashed var(--coin-gold);
+    border-bottom: none;
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+}
+
+.pair-arc-label {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    translate: -50% 0;
+    padding: 2px 6px;
+    font-size: 10px;
+    color: var(--ink);
+    white-space: nowrap;
+    background: var(--coin-gold);
+    border: 2px solid var(--ink);
+}
+
+/* A pair is out (used, not yet refilled): the arc dims; its label says how many are left. */
+.pair-arc.is-used {
+    border-color: #f8b80066;
+}
+
+/* A green pipe lying along the ground from Mario's tower to Luigi's: the classical channel. */
+.bit-pipe {
+    position: absolute;
+    left: -8px;
+    right: -8px;
+    bottom: 28px;
+    height: 34px;
+    background: linear-gradient(
+        180deg, var(--pipe-dark-green) 0 18%, var(--pipe-green) 18% 55%, var(--pipe-dark-green) 55%
+    );
+    border: 3px solid var(--ink);
+}
+
+.bit-pipe-label {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 50%;
+    translate: -50% 0;
+    font-size: 9px;
+    white-space: nowrap;
+    text-shadow: 1px 1px 0 var(--ink);
+}
+
+/* The two bits riding the pipe, as a white tag. */
+.pipe-packet {
+    position: absolute;
+    top: 50%;
+    left: 6px;
+    translate: 0 -50%;
+    padding: 4px 6px;
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: var(--ink);
+    background: var(--cloud-white);
+    border: 3px solid var(--ink);
+    visibility: hidden;
+}
+
+.pipe-packet.is-loaded,
+.pipe-packet.is-arrived {
+    visibility: visible;
+}
+
+.pipe-packet.is-flying {
+    animation: packet-ride 1.4s linear forwards;
+}
+
+.pipe-packet.is-arrived {
+    left: calc(100% - 64px);
+}
+
+@keyframes packet-ride {
+    from { left: 6px; }
+    to { left: calc(100% - 64px); }
+}
+
+/* Luigi's fix switches, at his end of the pipe. */
+.fix-panel {
+    position: absolute;
+    z-index: 2;
+    bottom: 82px;
+    right: 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    font-size: 10px;
+    color: var(--ink);
+    text-shadow: none;
+    white-space: nowrap;
+    background: var(--cloud-white);
+    border: 3px solid var(--idle-gray);
+}
+
+/* While Luigi waits for the player's fix: a red frame with a gold halo, and the switches can be flipped. */
+.fix-panel.is-active {
+    border-color: var(--error-red);
+    box-shadow: 0 0 0 3px var(--coin-gold);
+}
+
+.fix-switches {
+    display: flex;
+    gap: 8px;
+}
+
+.fix-switch {
+    padding: 4px 6px;
+    background: #e4e4e4;
+    border: 2px solid var(--ink);
+}
+
+/* ON is said in words and shown by a raised gold switch. */
+.fix-switch.is-on {
+    background: var(--coin-gold);
+    box-shadow: inset -3px -3px 0 var(--coin-dark);
+}
+
+/* ---------- Stage 2-2's word board, over the arc ---------- */
+
+.word-board {
+    position: absolute;
+    z-index: 2;
+    bottom: 258px;
+    left: 50%;
+    translate: -50% 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 12px;
+    color: var(--ink);
+    background: var(--cloud-white);
+    border: 3px solid var(--ink);
+}
+
+.word-board[hidden] {
+    display: none;
+}
+
+.word-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 9px;
+}
+
+.word-owner {
+    width: 46px;
+}
+
+.word-letter-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.word-bit {
+    display: grid;
+    place-items: center;
+    width: 16px;
+    height: 20px;
+    font-size: 10px;
+    border: 2px solid var(--ink);
+}
+
+.word-bit.is-empty {
+    color: var(--idle-gray);
+    border-color: var(--idle-gray);
+}
+
+/* The bit Mario sends next: gold and underlined, so it shows without colour too. */
+.word-bit.is-current {
+    background: var(--coin-gold);
+    text-decoration: underline;
+}
+
+.word-bit.is-wrong {
+    color: var(--text-light);
+    background: var(--error-red);
+    text-decoration: line-through;
+}
+
+.word-letter {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    margin-left: 4px;
+    font-size: 13px;
+}
+
+/* ---------- The cheat sheet: a side panel beside the world, like an IDE's ---------- */
+
+.cheat-sheet {
+    flex-shrink: 0;
+    width: 0;
+    overflow: hidden;
+    color: var(--ink);
+    background: #c4dafc;
+    border-left: 0 solid var(--ink);
+    visibility: hidden;
+    transition: width 300ms ease-out, visibility 0s linear 300ms;
+}
+
+.cheat-sheet.is-open {
+    width: min(360px, 100vw);
+    border-left-width: var(--pixel);
+    visibility: visible;
+    transition: width 300ms ease-out;
+}
+
+/* Fixed width inside, so the text does not reflow while the sheet slides. */
+.cheat-sheet-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: min(356px, 100vw);
+    height: 100%;
+    padding: 16px;
+    overflow-y: auto;
+}
+
+.cheat-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cheat-heading {
+    margin: 0;
+    font-size: 11px;
+}
+
+.cheat-note {
+    margin: 0;
+    font-size: 9px;
+    line-height: 1.8;
+    color: #1c2c4c;
+}
+
+.teleport-circuit {
+    width: 100%;
+    height: auto;
+    font-family: var(--font-pixel);
+    background: var(--cloud-white);
+    border: 3px solid var(--ink);
+}
+
+.circuit-wire-labels text {
+    font-size: 8px;
+    fill: var(--ink);
+}
+
+.circuit-wires line,
+.circuit-control-line {
+    stroke: var(--ink);
+    stroke-width: 2;
+}
+
+.circuit-classical path {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1.5;
+}
+
+.circuit-control {
+    fill: var(--ink);
+}
+
+.circuit-target {
+    fill: var(--cloud-white);
+    stroke: var(--ink);
+    stroke-width: 2;
+}
+
+.circuit-gate rect {
+    fill: var(--coin-gold);
+    stroke: var(--ink);
+    stroke-width: 2;
+}
+
+.circuit-gate text {
+    font-size: 10px;
+    text-anchor: middle;
+    fill: var(--ink);
+}
+
+.circuit-gate.is-fix rect {
+    fill: var(--pipe-green);
+}
+
+.circuit-meter path {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 2;
+}
+
+.circuit-bit-label {
+    font-size: 7px;
+    fill: var(--ink);
+}
+
+/* The part Level 1 already made: the Bell pair. */
+.circuit-section {
+    fill: #c4dafc66;
+    stroke: var(--qubit-dark-blue);
+    stroke-width: 1.5;
+    stroke-dasharray: 4 3;
+}
+
+.circuit-section-label {
+    font-size: 7px;
+    text-anchor: middle;
+    fill: var(--qubit-dark-blue);
+}
+
+.fix-table {
+    width: 100%;
+    font-size: 10px;
+    border-collapse: collapse;
+    background: var(--cloud-white);
+    border: 3px solid var(--ink);
+}
+
+.fix-table th,
+.fix-table td {
+    padding: 6px 8px;
+    text-align: left;
+    border-bottom: 2px solid #8cb0ec;
+}
+
+.fix-table th {
+    font-size: 9px;
+    background: var(--coin-gold);
+}
+
+/* The row for Luigi's bits (tutorial only): marked with an arrow and words, and highlighted. */
+.fix-table tr.is-marked td {
+    background: #fff3c4;
+}
+
+.fix-table-mark {
+    font-size: 8px;
+    color: var(--brick-dark);
+}
+
+/* On a narrow window the sheet floats over the world instead of squeezing it. */
+@media (max-width: 760px) {
+    .cheat-sheet {
+        position: fixed;
+        z-index: 20;
+        top: 0;
+        right: 0;
+        bottom: 0;
+    }
+}

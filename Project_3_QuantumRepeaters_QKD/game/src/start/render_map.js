@@ -28,7 +28,17 @@ const TOWER_PIXEL_SIZE = 4;
 const PATH_THICKNESS_PX = 14;
 // A tower's feet stand this far below its tile's centre, on a small islet drawn there.
 const TOWER_FEET_BELOW_CENTRE_PX = 24;
-const FIBER_THICKNESS_PX = 4;
+const FIBER_THICKNESS_PX = 10;
+// A stop's name sits this far below the stop's centre: just under the hut's door, clear of the path.
+const STOP_LABEL_BELOW_CENTRE_PX = 46;
+// Photon pulses on the QKD fiber: how many ride it at once, evenly spaced, and how long each takes to reach Peach.
+const PHOTON_PULSE_COUNT = 3;
+const PHOTON_RUN_SECONDS = 6;
+// Must match .map-photon's width in start.css.
+const PHOTON_WIDTH_PX = 20;
+// The tower's round dish (rows 3-7, columns 1-5 of TELECOM_TOWER_SPRITE) glows when a pulse passes; its centre.
+const TOWER_DISH_CENTRE_ROW = 5.5;
+const TOWER_DISH_CENTRE_COLUMN = 3.5;
 const BLOCH_PIXEL_SIZE = 4;
 const BIRD_PIXEL_SIZE = 4;
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
@@ -60,6 +70,9 @@ export function buildWorldMap(canvasElement) {
         const stopElement = buildStop(stop);
         canvasElement.append(stopElement);
         stopElements.push(stopElement);
+        if (stop.sign !== undefined) {
+            canvasElement.append(buildStopLabel(stop));
+        }
     }
     const marioElement = buildMapMario();
     canvasElement.append(marioElement);
@@ -160,29 +173,17 @@ function buildBridge(bridge) {
 
 
 /**
- * The far end of Level 3: telecom towers (on small islets out at sea), the QKD fiber strung between them, a sign,
- * Peach and her castle.
+ * The far end of Level 4: telecom towers (on small islets out at sea), the QKD fiber strung between them, a sign,
+ * Peach and her castle. All decoration: the Level 4 stop's own label says where it goes.
  */
 function buildPeachEnd(canvasElement) {
     const centreY = (QKD_LINK.tileY + 0.5) * TILE_SIZE_PX;
     const feetY = centreY + TOWER_FEET_BELOW_CENTRE_PX;
     canvasElement.append(buildQkdFiber(feetY));
     for (const towerTileX of TELECOM_TOWER_TILE_XS) {
-        if (!isOnLand(towerTileX, QKD_LINK.tileY)) {
-            const isletElement = createElement("div", "map-islet");
-            isletElement.style.left = `${(towerTileX + 0.5) * TILE_SIZE_PX}px`;
-            isletElement.style.top = `${feetY}px`;
-            canvasElement.append(isletElement);
-        }
-        const towerElement = drawSprite(TELECOM_TOWER_SPRITE, TOWER_PIXEL_SIZE, "map-tower");
-        towerElement.style.left = `${(towerTileX + 0.5) * TILE_SIZE_PX}px`;
-        towerElement.style.top = `${feetY}px`;
-        canvasElement.append(towerElement);
+        buildTowerAt(canvasElement, towerTileX, feetY);
     }
-    const signElement = createElement("div", "map-sign");
-    signElement.textContent = "QKD link to Peach's castle ▶";
-    const signTileX = Math.round((QKD_LINK.fromTileX + QKD_LINK.toTileX) / 2);
-    canvasElement.append(placeOnTile(signElement, signTileX, QKD_LINK.tileY + 1));
+    canvasElement.append(buildQkdSign());
 
     const castleElement = drawSprite(PEACH_CASTLE_SPRITE, CASTLE_PIXEL_SIZE, "map-castle");
     canvasElement.append(placeOnTile(castleElement, PEACH_CASTLE_TILE.tileX, PEACH_CASTLE_TILE.tileY));
@@ -192,8 +193,58 @@ function buildPeachEnd(canvasElement) {
 
 
 /**
- * The fiber from the tower on Level 3's island to the one on Peach's, at the height of the towers' crossarms. A photon
- * pulse runs along it (CSS) to show the key being shared.
+ * One telecom tower: an islet under it when it stands in the sea, the tower, and a glow on its dish that lights up
+ * each time a photon pulse on the fiber passes it.
+ */
+function buildTowerAt(canvasElement, towerTileX, feetY) {
+    const towerCentreX = (towerTileX + 0.5) * TILE_SIZE_PX;
+    if (!isOnLand(towerTileX, QKD_LINK.tileY)) {
+        const isletElement = createElement("div", "map-islet");
+        isletElement.style.left = `${towerCentreX}px`;
+        isletElement.style.top = `${feetY}px`;
+        canvasElement.append(isletElement);
+    }
+    const towerElement = drawSprite(TELECOM_TOWER_SPRITE, TOWER_PIXEL_SIZE, "map-tower");
+    towerElement.style.left = `${towerCentreX}px`;
+    towerElement.style.top = `${feetY}px`;
+    canvasElement.append(towerElement);
+
+    const spriteWidthPx = TELECOM_TOWER_SPRITE.rows[0].length * TOWER_PIXEL_SIZE;
+    const dishAboveFeetPx = (TELECOM_TOWER_SPRITE.rows.length - TOWER_DISH_CENTRE_ROW) * TOWER_PIXEL_SIZE;
+    const beaconElement = createElement("div", "map-tower-beacon");
+    beaconElement.setAttribute("aria-hidden", "true");
+    beaconElement.style.left = `${towerCentreX - spriteWidthPx / 2 + TOWER_DISH_CENTRE_COLUMN * TOWER_PIXEL_SIZE}px`;
+    beaconElement.style.top = `${feetY - dishAboveFeetPx}px`;
+    const fiberStartX = (QKD_LINK.fromTileX + 0.5) * TILE_SIZE_PX;
+    // One flash per pulse: the pulses are evenly spaced, so the flash repeats every run / pulse count. A negative
+    // delay starts the flashing in step with the pulses already on the fiber when the map opens.
+    const flashPeriodSeconds = PHOTON_RUN_SECONDS / PHOTON_PULSE_COUNT;
+    const arrivalSeconds = findPulseArrivalSeconds(towerCentreX - fiberStartX);
+    beaconElement.style.animationDuration = `${flashPeriodSeconds}s`;
+    beaconElement.style.animationDelay = `${(arrivalSeconds % flashPeriodSeconds) - flashPeriodSeconds}s`;
+    canvasElement.append(beaconElement);
+}
+
+
+/**
+ * When the first photon pulse reaches a point on the fiber. The pulse's left edge runs from 0 to the fiber's length
+ * minus its width in PHOTON_RUN_SECONDS, so its centre reaches distanceAlongPx a little before its edge would.
+ *
+ * @param {number} distanceAlongPx - how far along the fiber, from its start, in map pixels.
+ * @returns {number} seconds after the animation starts.
+ */
+function findPulseArrivalSeconds(distanceAlongPx) {
+    const fiberLengthPx = (QKD_LINK.toTileX - QKD_LINK.fromTileX) * TILE_SIZE_PX;
+    const travelPx = fiberLengthPx - PHOTON_WIDTH_PX;
+    const fraction = (distanceAlongPx - PHOTON_WIDTH_PX / 2) / travelPx;
+    return Math.max(0, fraction) * PHOTON_RUN_SECONDS;
+}
+
+
+/**
+ * The QKD fiber from the tower on Level 4's island to the one on Peach's, at the height of the towers' crossarms: a
+ * thick cable with a bright core. Photon pulses run along it (CSS) to Peach, one after another, to show the key
+ * being shared.
  *
  * @param {number} feetY - where the towers' feet stand, in map pixels.
  */
@@ -201,12 +252,35 @@ function buildQkdFiber(feetY) {
     const towerHeightRows = TELECOM_TOWER_SPRITE.rows.length;
     const crossarmAboveFeetPx = (towerHeightRows - TELECOM_TOWER_CROSSARM_ROW - 0.5) * TOWER_PIXEL_SIZE;
     const fiberElement = createElement("div", "map-fiber");
+    fiberElement.setAttribute("aria-hidden", "true");
     fiberElement.style.left = `${(QKD_LINK.fromTileX + 0.5) * TILE_SIZE_PX}px`;
     fiberElement.style.top = `${feetY - crossarmAboveFeetPx - FIBER_THICKNESS_PX / 2}px`;
     fiberElement.style.width = `${(QKD_LINK.toTileX - QKD_LINK.fromTileX) * TILE_SIZE_PX}px`;
     fiberElement.style.height = `${FIBER_THICKNESS_PX}px`;
-    fiberElement.append(createElement("span", "map-photon"));
+    for (let i = 0; i < PHOTON_PULSE_COUNT; i++) {
+        const photonElement = createElement("span", "map-photon");
+        photonElement.style.animationDuration = `${PHOTON_RUN_SECONDS}s`;
+        // Negative delays put every pulse part-way along the fiber as soon as the map opens.
+        photonElement.style.animationDelay = `${-(i * PHOTON_RUN_SECONDS) / PHOTON_PULSE_COUNT}s`;
+        fiberElement.append(photonElement);
+    }
     return fiberElement;
+}
+
+
+/**
+ * A wooden plaque on two posts under the middle of the fiber: "QKD LINK" big, where it goes underneath.
+ */
+function buildQkdSign() {
+    const signElement = createElement("div", "map-qkd-sign");
+    signElement.setAttribute("aria-hidden", "true");
+    const titleElement = createElement("span", "map-qkd-sign-title");
+    titleElement.textContent = "QKD LINK";
+    const destinationElement = createElement("span", "map-qkd-sign-destination");
+    destinationElement.textContent = "to Peach's castle ▶";
+    signElement.append(titleElement, destinationElement);
+    const signTileX = Math.round((QKD_LINK.fromTileX + QKD_LINK.toTileX) / 2);
+    return placeOnTile(signElement, signTileX, QKD_LINK.tileY + 1);
 }
 
 
@@ -220,11 +294,41 @@ function buildQuantumDecor(canvasElement) {
         decorElement.classList.add(`is-${decor.kind}`);
         canvasElement.append(placeOnTile(decorElement, decor.tileX, decor.tileY));
         if (decor.sign !== undefined) {
-            const signElement = createElement("div", "map-sign");
-            signElement.textContent = decor.sign;
-            canvasElement.append(placeOnTile(signElement, decor.tileX, decor.tileY + 1));
+            canvasElement.append(buildSignBelow(decor.sign, decor));
         }
     }
+}
+
+
+/**
+ * A stop's short name ("BB84", "QEC") in outlined pixel text just below it. Decoration only: the stop button has the full name as its aria-label.
+ *
+ * @param {{sign: string, tileX: number, tileY: number}} stop
+ * @returns {HTMLElement}
+ */
+function buildStopLabel(stop) {
+    const labelElement = createElement("div", "map-stop-label");
+    labelElement.textContent = stop.sign;
+    labelElement.setAttribute("aria-hidden", "true");
+    placeOnTile(labelElement, stop.tileX, stop.tileY);
+    labelElement.style.top = `${(stop.tileY + 0.5) * TILE_SIZE_PX + STOP_LABEL_BELOW_CENTRE_PX}px`;
+    return labelElement;
+}
+
+
+/**
+ * A short name on a sign one tile below a stop or a piece of scenery. Decoration only: the stop itself has the name
+ * as its aria-label.
+ *
+ * @param {string} signText - e.g. "BB84".
+ * @param {{tileX: number, tileY: number}} tile - the tile the sign hangs under.
+ * @returns {HTMLElement}
+ */
+function buildSignBelow(signText, tile) {
+    const signElement = createElement("div", "map-sign");
+    signElement.textContent = signText;
+    signElement.setAttribute("aria-hidden", "true");
+    return placeOnTile(signElement, tile.tileX, tile.tileY + 1);
 }
 
 

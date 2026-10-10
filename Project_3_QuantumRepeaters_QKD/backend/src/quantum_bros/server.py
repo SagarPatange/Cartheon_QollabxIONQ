@@ -1,5 +1,5 @@
-"""HTTP server: POST /api/send runs one Level 3 message and POST /api/logical-pair one Level 2 logical pair through the
-simulator; the pages are served alongside them.
+"""HTTP server: POST /api/send runs one Level 3 message, POST /api/logical-pair one Level 2 logical pair and
+POST /api/teleport the teleportation level's states through the simulator; the pages are served alongside them.
 
 Run from backend/:  .venv/bin/python -m uvicorn quantum_bros.server:app --port 8001
 then open http://localhost:8001. Only the pages, src/ and styles/ are served from the repo root.
@@ -13,15 +13,31 @@ from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
-from quantum_bros.api_models import MAX_SEED, LogicalPairRequest, LogicalPairResponse, SendRequest, SendResponse
+from quantum_bros.api_models import (
+    MAX_SEED,
+    LogicalPairRequest,
+    LogicalPairResponse,
+    SendRequest,
+    SendResponse,
+    TeleportRequest,
+    TeleportResponse,
+)
 from quantum_bros.backends.stim_backend import StimBackend
-from quantum_bros.protocol import logical_link, messaging, steps
+from quantum_bros.protocol import logical_link, messaging, steps, teleport
 from quantum_bros.protocol.network import QuantumNetwork
 from quantum_bros.protocol.noise import make_uniform_noise
 
 # backend/src/quantum_bros/server.py → the repo root is three folders up; game/ there holds all the browser loads.
 GAME_ROOT = Path(__file__).resolve().parents[3] / "game"
-PAGE_NAMES = ["start.html", "level1.html", "hut.html", "level2.html", "qkd.html"]
+PAGE_NAMES = [
+    "start.html",
+    "level1.html",
+    "hut.html",
+    "level2.html",
+    "qkd.html",
+    "teleport.html",
+    "bb84_hut.html",
+]
 
 app = FastAPI(title="Quantum Bros simulator")
 
@@ -88,6 +104,17 @@ def make_logical_pair(request: LogicalPairRequest) -> LogicalPairResponse:
         StimBackend(seed), make_uniform_noise(request.physical_error), random.Random(seed)
     )
     return LogicalPairResponse(**dataclasses.asdict(report), seed=seed, physical_error=request.physical_error)
+
+
+@app.post("/api/teleport")
+def teleport_states(request: TeleportRequest) -> TeleportResponse:
+    """teleport.html: teleport each state and return the Bell bits and Luigi's reading for every possible fix."""
+    seed = request.seed
+    if seed is None:
+        seed = random.randrange(MAX_SEED + 1)
+    results = teleport.run_teleports(StimBackend, request.states, random.Random(seed))
+    teleports = [dataclasses.asdict(result) for result in results]
+    return TeleportResponse(seed=seed, teleports=teleports)
 
 
 def dispatch_message(network: QuantumNetwork, request: SendRequest) -> messaging.MessageResult:

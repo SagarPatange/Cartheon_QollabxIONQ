@@ -1,12 +1,15 @@
-"""POST /api/send, POST /api/logical-pair and the static pages."""
+"""POST /api/send, POST /api/logical-pair, POST /api/teleport and the static pages."""
 
 import pytest
 from fastapi.testclient import TestClient
 
 from quantum_bros.protocol.steps import PHASES
-from quantum_bros.server import app
+from quantum_bros.server import PAGE_NAMES, app
 
 client = TestClient(app)
+
+# Luigi undoes X when x_fix is 1 and Z when z_fix is 1; keys are (z_fix, x_fix).
+RIGHT_FIX_FOR_BELL_BITS = {(0, 0): "none", (0, 1): "x", (1, 0): "z", (1, 1): "zx"}
 
 
 @pytest.mark.parametrize("kind", ["classical", "encrypted", "quantum"])
@@ -78,3 +81,37 @@ def test_the_same_logical_pair_seed_gives_the_same_run_and_bad_settings_get_a_42
 def test_index_page_is_gone_and_styles_are_served():
     assert client.get("/index.html").status_code == 404
     assert client.get("/styles/world.css").status_code == 200
+
+
+def test_a_teleport_run_returns_one_entry_per_state_with_the_right_fix_reading_the_state():
+    body = client.post("/api/teleport", json={"states": ["1", "+", "0", "-"], "seed": 21}).json()
+    assert body["seed"] == 21
+    assert [teleport["state"] for teleport in body["teleports"]] == ["1", "+", "0", "-"]
+    for teleport in body["teleports"]:
+        assert list(teleport["luigi_reads"]) == ["none", "x", "z", "zx"]
+        bell_bits = (teleport["bell_bits"]["z_fix"], teleport["bell_bits"]["x_fix"])
+        right_fix = RIGHT_FIX_FOR_BELL_BITS[bell_bits]
+        assert teleport["luigi_reads"][right_fix] == teleport["state"]
+
+
+def test_the_same_teleport_seed_gives_the_same_response_and_no_seed_still_works():
+    request_body = {"states": ["0", "1", "+", "-", "1"], "seed": 4}
+    assert client.post("/api/teleport", json=request_body).json() == client.post(
+        "/api/teleport", json=request_body
+    ).json()
+    unseeded_response = client.post("/api/teleport", json={"states": ["0"]})
+    assert unseeded_response.status_code == 200
+    assert 0 <= unseeded_response.json()["seed"] <= 2**32 - 1
+
+
+@pytest.mark.parametrize(
+    "request_body",
+    [{"states": ["2"]}, {"states": []}, {"states": ["0"] * 17}, {"states": ["0"], "seed": -1}, {}],
+)
+def test_a_bad_teleport_request_gets_a_422(request_body):
+    assert client.post("/api/teleport", json=request_body).status_code == 422
+
+
+def test_the_new_level_pages_are_listed():
+    assert "teleport.html" in PAGE_NAMES
+    assert "bb84_hut.html" in PAGE_NAMES

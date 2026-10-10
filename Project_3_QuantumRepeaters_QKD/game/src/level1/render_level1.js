@@ -10,6 +10,7 @@ import { MEMORY_LESSON } from "./level1_lessons.js";
 import {
     MEMORY_SLOT_COUNT, MINUS_DETECTOR, PLUS_DETECTOR, countPairs, findLifeLeft, isRoundCleared,
 } from "./level1_protocol.js";
+import { computeArrivalBrightness, findDetectorWear, findLinkWidthFraction } from "./level1_settings.js";
 import { buildBsmLink, showDetectorClicks } from "../bsm_link.js";
 import { createElement } from "../page_helpers.js";
 import { LUIGI_SPRITE, MARIO_SPRITE } from "../pixel_sprites.js";
@@ -41,13 +42,15 @@ export function buildLevel1Track(trackElement) {
     const mario = buildQubitTower("Mario", [memoryStack]);
     const luigi = buildQubitTower("Luigi", [memoryStack]);
     const linkElement = buildBsmLink();
+    const distanceElement = createElement("span", "link-distance");
+    linkElement.append(distanceElement);
     const clearBannerElement = createElement("div", "round-clear-banner");
     clearBannerElement.textContent = "ROUND CLEAR!";
     trackElement.append(
         marioStation, mario.towerElement, linkElement, luigi.towerElement, luigiStation, clearBannerElement,
     );
     return {
-        marioStation, luigiStation, linkElement, clearBannerElement,
+        marioStation, luigiStation, linkElement, distanceElement, clearBannerElement,
         towerElements: [mario.towerElement, luigi.towerElement],
         memoryOrbs: { mario: mario.stacks.memory, luigi: luigi.stacks.memory },
         notes: {
@@ -87,8 +90,38 @@ export function showLessonNote(scene, anchor, text) {
         if (isShown) {
             noteElement.querySelector(".lesson-text").textContent = text;
             showNoteLocked(noteElement, true);
+            keepTowerNoteClearOfBsm(scene, noteElement);
         }
     }
+}
+
+
+/**
+ * A tower's note hangs toward the middle of the screen, but on a short link that runs it into the BSM Node's label
+ * and lamps. Then it hangs outward instead, where the pulled-in towers leave room.
+ */
+function keepTowerNoteClearOfBsm(scene, noteElement) {
+    noteElement.classList.remove("is-outward");
+    if (noteElement.classList.contains("is-bsm")) {
+        return;
+    }
+    const bsmParts = scene.linkElement.querySelectorAll(".bsm-label, .detector-panel");
+    for (const partElement of bsmParts) {
+        if (doBoxesOverlap(noteElement.getBoundingClientRect(), partElement.getBoundingClientRect())) {
+            noteElement.classList.add("is-outward");
+            return;
+        }
+    }
+}
+
+
+/**
+ * Do two screen rectangles overlap?
+ */
+function doBoxesOverlap(firstBox, secondBox) {
+    const overlapsAcross = firstBox.left < secondBox.right && secondBox.left < firstBox.right;
+    const overlapsDown = firstBox.top < secondBox.bottom && secondBox.top < firstBox.bottom;
+    return overlapsAcross && overlapsDown;
 }
 
 
@@ -120,7 +153,7 @@ function showNoteLocked(noteElement, isLocked) {
  * round-clear banner.
  *
  * @param {object} scene - from buildLevel1Track.
- * @param {{state: object, clockMs: number, lifetimeMs: number, openLessonId: string | null,
+ * @param {{state: object, clockMs: number, lifetimeMs: number, openLessonId: string | null, settings: object,
  *          emittingSlotIndex: number | null, fizzles: {side: string, slotIndex: number, untilMs: number}[]}} game
  */
 export function renderLevel1Scene(scene, game) {
@@ -137,6 +170,31 @@ export function renderLevel1Scene(scene, game) {
         towerElement.classList.toggle("is-introducing-memory", isMeetingMemories);
     }
     scene.clearBannerElement.classList.toggle("is-visible", isRoundCleared(state));
+    renderLinkSettings(scene, game.settings);
+}
+
+
+/**
+ * Show the link settings in the scene: the fiber spans more of the screen the longer it is, photons fade on the way
+ * by as much light as the fiber loses, and the detectors look worn (cracked, like a Minecraft anvil) when they are
+ * inefficient. CSS reads --link-fraction and --arrival-brightness (styles/level1.css).
+ */
+function renderLinkSettings(scene, settings) {
+    const linkElement = scene.linkElement;
+    const distanceKm = settings.internodeDistanceKm;
+    linkElement.style.setProperty("--link-fraction", findLinkWidthFraction(distanceKm).toFixed(3));
+    linkElement.style.setProperty("--arrival-brightness", computeArrivalBrightness(settings).toFixed(3));
+    scene.distanceElement.textContent = `◀ ${distanceKm} km ▶`;
+    const efficiencyPercent = settings.detectorEfficiencyPercent;
+    const wear = findDetectorWear(efficiencyPercent);
+    for (const lampElement of linkElement.querySelectorAll(".detector-lamp")) {
+        lampElement.classList.toggle("wear-chipped", wear === "chipped");
+        lampElement.classList.toggle("wear-damaged", wear === "damaged");
+    }
+    const panelElement = linkElement.querySelector(".detector-panel");
+    panelElement.setAttribute("role", "img");
+    panelElement.setAttribute("aria-label", `Detectors D+ and D−, ${efficiencyPercent}% efficient: ${wear}`);
+    panelElement.title = `Detector efficiency ${efficiencyPercent}%: ${wear}`;
 }
 
 

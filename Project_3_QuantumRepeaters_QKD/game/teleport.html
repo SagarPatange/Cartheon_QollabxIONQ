@@ -1,0 +1,149 @@
+<!doctype html>
+<!--
+  Level 2: quantum teleportation. Mario teleports a qubit to Luigi with the Bell pair they share (Stage 2-1, a
+  tutorial), then the word "HI", bit by bit (Stage 2-2). The backend simulates every teleport (POST /api/teleport);
+  the page plays back what it computed. Run `npm run backend` and open it from the map.
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Level 2</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+    <link rel="stylesheet" href="styles/world.css">
+    <link rel="stylesheet" href="styles/towers.css">
+    <link rel="stylesheet" href="styles/qkd.css">
+    <link rel="stylesheet" href="styles/qubit_tower.css">
+    <link rel="stylesheet" href="styles/settings_panel.css">
+    <link rel="stylesheet" href="styles/level1.css">
+    <link rel="stylesheet" href="styles/teleport.css">
+    <script type="module" src="src/teleport/teleport_main.js"></script>
+</head>
+<body class="teleport-page">
+    <header id="hud" class="hud">
+        <div class="hud-item"><span class="hud-label">TRIES</span><span id="hud-tries">000</span></div>
+        <div class="hud-item"><span class="hud-label">WORLD</span><span>1-2</span></div>
+        <div class="hud-item"><span class="hud-label">STAGE</span><span id="hud-stage">2-1</span></div>
+        <div class="hud-item"><span class="hud-label">LUIGI'S WORD</span><span id="hud-word">--</span></div>
+        <div class="hud-item"><span class="hud-label">SEED</span><span id="hud-seed">--</span></div>
+        <button id="cheat-button" class="hud-link hud-cheat" type="button" aria-controls="cheat-sheet"
+                aria-expanded="false" title="Cheat sheet (C)">Cheat sheet <span class="keycap">C</span></button>
+        <a class="hud-link" href="start.html#map-teleport">◀ Map</a>
+    </header>
+
+    <div class="teleport-body">
+        <main id="world" class="world">
+            <h1 class="visually-hidden">Level 2: quantum teleportation</h1>
+            <div class="cloud cloud-one"></div>
+            <div class="cloud cloud-two"></div>
+            <div class="hill hill-left"></div>
+            <div class="hill hill-right"></div>
+            <div id="sky-panel" class="sky-panel">
+                <p id="status-banner" class="sky-status" aria-live="polite">Teleport Mario's qubit to Luigi!</p>
+                <p id="problem-line" class="sky-status is-problem" role="alert" hidden></p>
+                <p id="teleport-banner" class="teleport-banner" role="status" hidden></p>
+                <p id="key-hints" class="key-hints" aria-live="polite"></p>
+                <div id="lesson-note" class="lesson-note is-sky" role="status" hidden>
+                    <p class="lesson-text"></p>
+                    <p class="lesson-continue"></p>
+                </div>
+            </div>
+            <p id="scene-summary" class="visually-hidden" aria-live="polite"></p>
+            <div id="track-scroller" class="track-scroller">
+                <div id="track" class="track qkd-track teleport-track"
+                     aria-label="Mario's tower, the Bell pair and pipe to Luigi's tower"></div>
+            </div>
+            <div class="ground"></div>
+        </main>
+
+        <aside id="cheat-sheet" class="cheat-sheet" aria-labelledby="cheat-sheet-title">
+            <div class="cheat-sheet-inner">
+                <div class="link-settings-header">
+                    <h2 id="cheat-sheet-title" class="link-settings-title">Cheat sheet</h2>
+                    <button id="cheat-close" class="link-settings-close" type="button"
+                            aria-label="Close cheat sheet" title="Close (C or Esc)">×</button>
+                </div>
+
+                <section class="cheat-section">
+                    <h3 class="cheat-heading">The circuit</h3>
+                    <svg class="teleport-circuit" viewBox="-14 -2 328 168" role="img"
+                         aria-labelledby="circuit-title circuit-description">
+                        <title id="circuit-title">Teleportation circuit</title>
+                        <desc id="circuit-description">Three qubits: Mario's message, Mario's half of the Bell pair,
+                            Luigi's half. The Bell pair is made with H on Mario's half and a CNOT to Luigi's. Mario's
+                            Bell measurement is a CNOT from the message to his half, then H on the message; measuring
+                            the message gives z_fix and measuring his half gives x_fix. Luigi applies X if x_fix is 1,
+                            then Z if z_fix is 1.</desc>
+                        <g class="circuit-wire-labels">
+                            <text x="0" y="34">msg</text>
+                            <text x="0" y="78">Mario</text>
+                            <text x="0" y="122">Luigi</text>
+                        </g>
+                        <g class="circuit-wires">
+                            <line x1="44" y1="30" x2="188" y2="30"/>
+                            <line x1="44" y1="74" x2="188" y2="74"/>
+                            <line x1="44" y1="118" x2="296" y2="118"/>
+                        </g>
+                        <g class="circuit-classical">
+                            <path d="M206 28 H262 V104 M206 32 H258 V104"/>
+                            <path d="M206 72 H230 V104 M206 76 H226 V104"/>
+                        </g>
+                        <rect class="circuit-section" x="48" y="56" width="62" height="78"/>
+                        <text class="circuit-section-label" x="79" y="150">Level 1</text>
+                        <g class="circuit-gate">
+                            <rect x="54" y="62" width="22" height="24"/>
+                            <text x="65" y="79">H</text>
+                        </g>
+                        <line class="circuit-control-line" x1="94" y1="74" x2="94" y2="118"/>
+                        <circle class="circuit-control" cx="94" cy="74" r="4"/>
+                        <circle class="circuit-target" cx="94" cy="118" r="8"/>
+                        <line class="circuit-control-line" x1="86" y1="118" x2="102" y2="118"/>
+                        <line class="circuit-control-line" x1="128" y1="30" x2="128" y2="74"/>
+                        <circle class="circuit-control" cx="128" cy="30" r="4"/>
+                        <circle class="circuit-target" cx="128" cy="74" r="8"/>
+                        <line class="circuit-control-line" x1="120" y1="74" x2="136" y2="74"/>
+                        <g class="circuit-gate">
+                            <rect x="146" y="18" width="22" height="24"/>
+                            <text x="157" y="35">H</text>
+                        </g>
+                        <g class="circuit-gate circuit-meter">
+                            <rect x="182" y="18" width="24" height="24"/>
+                            <path d="M186 36 Q194 24 202 36 M194 36 L200 24"/>
+                            <rect x="182" y="62" width="24" height="24"/>
+                            <path d="M186 80 Q194 68 202 80 M194 80 L200 68"/>
+                        </g>
+                        <text class="circuit-bit-label" x="214" y="22">z_fix</text>
+                        <text class="circuit-bit-label" x="210" y="66">x_fix</text>
+                        <g class="circuit-gate is-fix">
+                            <rect x="216" y="106" width="24" height="24"/>
+                            <text x="228" y="123">X</text>
+                            <rect x="248" y="106" width="24" height="24"/>
+                            <text x="260" y="123">Z</text>
+                        </g>
+                    </svg>
+                    <p class="cheat-note">Mario measures → 2 bits → Luigi fixes.</p>
+                </section>
+
+                <section class="cheat-section">
+                    <h3 class="cheat-heading">The fix</h3>
+                    <table class="fix-table">
+                        <caption class="visually-hidden">Luigi's fix for each pair of bits</caption>
+                        <thead><tr><th scope="col">Bits</th><th scope="col">Fix</th></tr></thead>
+                        <tbody id="fix-table-body"></tbody>
+                    </table>
+                    <p class="cheat-note">0/1 bits: only X matters.</p>
+                </section>
+
+                <section class="cheat-section">
+                    <h3 class="cheat-heading">The letter code</h3>
+                    <p class="cheat-note">A=00000 … Z=11001<br><strong>HI = 00111 01000</strong></p>
+                </section>
+
+            </div>
+        </aside>
+    </div>
+
+    <footer class="teleport-footer">This effort is supported by Qollab &amp; IonQ.</footer>
+</body>
+</html>

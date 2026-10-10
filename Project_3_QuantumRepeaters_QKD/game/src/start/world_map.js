@@ -13,7 +13,11 @@ export const MAP_HEIGHT_TILES = 9;
 export const MIN_MAP_ZOOM = 0.5;
 
 // In walking order. kind picks the look: "start" square, numbered "level" panel, or the mushroom "hut". id names the
-// stop in the map's address (start.html#map-<id>), so each page's "◀ Map" button brings Mario back to its stop.
+// stop in the map's address (start.html#map-<id>), so each page's "◀ Map" button brings Mario back to its stop. Ids
+// stay put when stops are renumbered (Level 3 keeps the id "level2", Level 4 "level3"), so old Map links still work.
+// sign, when given, is a short name written above the stop, so the two look-alike huts can be told apart.
+// branchFrom, when given, puts the stop on a short spur off the stop with that id instead of on the main path: the
+// main path runs through every other stop in order, and the spur leads from that stop to this one and back.
 export const MAP_STOPS = [
     {
         kind: "start",
@@ -22,7 +26,7 @@ export const MAP_STOPS = [
         description: "Back to the title screen.",
         href: "start.html",
         id: "start",
-        tileX: 3,
+        tileX: 2,
         tileY: 6,
     },
     {
@@ -32,12 +36,35 @@ export const MAP_STOPS = [
         description: "Mario and Luigi with a BSM between them. Hold 3 Bell pairs at once before they decohere.",
         href: "level1.html",
         id: "level1",
-        tileX: 7,
+        tileX: 5,
         tileY: 6,
+    },
+    {
+        kind: "level",
+        label: "2",
+        title: "Level 2: Teleportation",
+        description: "Teleport a qubit to Luigi with your Bell pair, then teleport him a whole message, bit by bit.",
+        href: "teleport.html",
+        id: "teleport",
+        tileX: 5,
+        tileY: 3,
     },
     {
         kind: "hut",
         label: "",
+        sign: "BB84",
+        title: "Toad's BB84 hut",
+        description: "Not a level: Toad teaches BB84, sharing a secret key with qubits that show any eavesdropper.",
+        href: "bb84_hut.html",
+        id: "bb84-hut",
+        branchFrom: "teleport",
+        tileX: 3,
+        tileY: 3,
+    },
+    {
+        kind: "hut",
+        label: "",
+        sign: "QEC",
         title: "Toad's QEC hut",
         description: "Not a level: Toad teaches how error-correcting codes protect fragile qubits.",
         href: "hut.html",
@@ -47,8 +74,8 @@ export const MAP_STOPS = [
     },
     {
         kind: "level",
-        label: "2",
-        title: "Level 2: A logical Bell pair with Luigi",
+        label: "3",
+        title: "Level 3: A logical Bell pair with Luigi",
         description: "Herald 7 Bell pairs, encode two Steane blocks, and link them into one logical pair.",
         href: "level2.html",
         id: "level2",
@@ -57,8 +84,8 @@ export const MAP_STOPS = [
     },
     {
         kind: "level",
-        label: "3",
-        title: "Level 3: A secret message for Peach",
+        label: "4",
+        title: "Level 4: A secret message for Peach",
         description: "Share a quantum key and send Princess Peach a message across a very long repeater chain.",
         href: "qkd.html",
         id: "level3",
@@ -67,7 +94,8 @@ export const MAP_STOPS = [
     },
 ];
 
-export const FIRST_STOP_INDEX = 1;
+// Where Mario stands when the map opens without naming a stop: the START square.
+export const FIRST_STOP_INDEX = 0;
 
 // The map's address: "#map" alone, or "#map-<stop id>" to put Mario on that stop.
 const MAP_HASH = "#map";
@@ -91,7 +119,7 @@ export const BRIDGES = [
     { fromTileX: 9, toTileX: 11, tileY: 3 },
 ];
 
-// Level 3 is long: past stop 3 there is no road over the sea, only a QKD fiber strung across telecom towers (the
+// Level 4 is long: past its stop there is no road over the sea, only a QKD fiber strung across telecom towers (the
 // repeaters) to Peach's island. The end towers stand on land; the ones between stand on small islets in the sea.
 export const QKD_LINK = { fromTileX: 14, toTileX: 34, tileY: 6 };
 export const TELECOM_TOWER_TILE_XS = [14, 18, 22, 26, 30, 34];
@@ -102,7 +130,7 @@ const PEACH_LAND_ROADS = [
 export const PEACH_CASTLE_TILE = { tileX: 36, tileY: 5 };
 
 export const BUSH_TILES = [
-    { tileX: 2, tileY: 4 }, { tileX: 4, tileY: 4 }, { tileX: 5, tileY: 5 }, { tileX: 1, tileY: 7 },
+    { tileX: 2, tileY: 4 }, { tileX: 1, tileY: 5 }, { tileX: 6, tileY: 5 }, { tileX: 1, tileY: 7 },
     { tileX: 3, tileY: 7 }, { tileX: 11, tileY: 4 }, { tileX: 35, tileY: 7 },
 ];
 export const PIPE_TILES = [{ tileX: 8, tileY: 7 }, { tileX: 14, tileY: 7 }];
@@ -112,8 +140,8 @@ export const PIPE_TILES = [{ tileX: 8, tileY: 7 }, { tileX: 14, tileY: 7 }];
 // a short name shown on a sign just below. Pieces sit at hand-picked, uneven spots (between whole tiles) so the
 // islands look like countryside, not a grid.
 export const QUANTUM_DECOR = [
-    { kind: "ion-trap", tileX: 2.2, tileY: 2.4 },
-    { kind: "infinite-well", tileX: 4.8, tileY: 2.2 },
+    { kind: "ion-trap", tileX: 1.6, tileY: 2.4 },
+    { kind: "infinite-well", tileX: 3.4, tileY: 5 },
     { kind: "schrodinger-cat", tileX: 13.4, tileY: 2.3 },
     { kind: "nv-center", tileX: 13.3, tileY: 3.6 },
     { kind: "electric-nessie", tileX: 23.5, tileY: 3 },
@@ -172,7 +200,75 @@ export function isEnterKey(key) {
 
 
 /**
- * The neighbouring stop in the given direction, or the current stop when the path does not go that way.
+ * The stops on the main path, in walking order: every stop that is not on a spur.
+ *
+ * @returns {number[]} indices into MAP_STOPS.
+ */
+export function listMainPathIndices() {
+    const mainPathIndices = [];
+    for (let i = 0; i < MAP_STOPS.length; i++) {
+        if (MAP_STOPS[i].branchFrom === undefined) {
+            mainPathIndices.push(i);
+        }
+    }
+    return mainPathIndices;
+}
+
+
+/**
+ * Every pair of stops joined by a straight piece of path: neighbours on the main path, then each spur.
+ *
+ * @returns {number[][]} pairs of indices into MAP_STOPS, [from, to].
+ */
+export function listStopLinks() {
+    const links = [];
+    const mainPathIndices = listMainPathIndices();
+    for (let i = 1; i < mainPathIndices.length; i++) {
+        links.push([mainPathIndices[i - 1], mainPathIndices[i]]);
+    }
+    for (let i = 0; i < MAP_STOPS.length; i++) {
+        const branchFromId = MAP_STOPS[i].branchFrom;
+        if (branchFromId !== undefined) {
+            links.push([findStopIndexById(branchFromId), i]);
+        }
+    }
+    return links;
+}
+
+
+/**
+ * The stops joined to this one by a piece of path.
+ *
+ * @param {number} stopIndex - index into MAP_STOPS.
+ * @returns {number[]} indices into MAP_STOPS.
+ */
+function listLinkedStops(stopIndex) {
+    const linkedIndices = [];
+    for (const [firstIndex, secondIndex] of listStopLinks()) {
+        if (firstIndex === stopIndex) {
+            linkedIndices.push(secondIndex);
+        } else if (secondIndex === stopIndex) {
+            linkedIndices.push(firstIndex);
+        }
+    }
+    return linkedIndices;
+}
+
+
+/**
+ * The index of the stop with this id; fails loudly on a misspelled branchFrom.
+ */
+function findStopIndexById(stopId) {
+    const stopIndex = MAP_STOPS.findIndex((stop) => stop.id === stopId);
+    if (stopIndex === -1) {
+        throw new Error(`no map stop has the id "${stopId}"`);
+    }
+    return stopIndex;
+}
+
+
+/**
+ * The linked stop in the given direction, or the current stop when the path does not go that way.
  *
  * @param {number} currentIndex - index into MAP_STOPS.
  * @param {{x: number, y: number}} direction - one step left, right, up or down.
@@ -180,11 +276,8 @@ export function isEnterKey(key) {
  */
 export function findStopInDirection(currentIndex, direction) {
     const currentStop = MAP_STOPS[currentIndex];
-    for (const neighbourIndex of [currentIndex - 1, currentIndex + 1]) {
+    for (const neighbourIndex of listLinkedStops(currentIndex)) {
         const neighbourStop = MAP_STOPS[neighbourIndex];
-        if (neighbourStop === undefined) {
-            continue;
-        }
         const stepX = Math.sign(neighbourStop.tileX - currentStop.tileX);
         const stepY = Math.sign(neighbourStop.tileY - currentStop.tileY);
         if (stepX === direction.x && stepY === direction.y) {
@@ -196,15 +289,46 @@ export function findStopInDirection(currentIndex, direction) {
 
 
 /**
- * The straight path pieces between neighbouring stops, plus the land roads at each end of the QKD fiber.
+ * The stops Mario passes through, in order, to walk along the path from one stop to another, as in SMB3: never
+ * straight across the map. The path is a tree (a main path with spurs), so there is one route; a breadth-first
+ * search finds it.
+ *
+ * @param {number} fromIndex - the stop he stands on, index into MAP_STOPS.
+ * @param {number} toIndex - the stop he walks to.
+ * @returns {number[]} indices from the first stop after fromIndex up to toIndex; empty when they are the same.
+ */
+export function findRouteBetweenStops(fromIndex, toIndex) {
+    const previousIndexByStop = new Map([[fromIndex, null]]);
+    const stopsToVisit = [fromIndex];
+    while (stopsToVisit.length > 0) {
+        const stopIndex = stopsToVisit.shift();
+        for (const neighbourIndex of listLinkedStops(stopIndex)) {
+            if (!previousIndexByStop.has(neighbourIndex)) {
+                previousIndexByStop.set(neighbourIndex, stopIndex);
+                stopsToVisit.push(neighbourIndex);
+            }
+        }
+    }
+    const route = [];
+    let stopIndex = toIndex;
+    while (stopIndex !== fromIndex) {
+        route.unshift(stopIndex);
+        stopIndex = previousIndexByStop.get(stopIndex);
+    }
+    return route;
+}
+
+
+/**
+ * The straight path pieces between linked stops, plus the land roads at each end of the QKD fiber.
  *
  * @returns {{fromTileX: number, fromTileY: number, toTileX: number, toTileY: number}[]}
  */
 export function listPathSegments() {
     const segments = [];
-    for (let i = 1; i < MAP_STOPS.length; i++) {
-        const previousStop = MAP_STOPS[i - 1];
-        const stop = MAP_STOPS[i];
+    for (const [firstIndex, secondIndex] of listStopLinks()) {
+        const previousStop = MAP_STOPS[firstIndex];
+        const stop = MAP_STOPS[secondIndex];
         segments.push({
             fromTileX: previousStop.tileX, fromTileY: previousStop.tileY, toTileX: stop.tileX, toTileY: stop.tileY,
         });
@@ -296,7 +420,7 @@ export function isMapHash(hash) {
 
 
 /**
- * Which stop Mario stands on when the map opens at this address: the one it names, or Level 1.
+ * Which stop Mario stands on when the map opens at this address: the one it names, or START.
  *
  * @param {string} hash - window.location.hash, e.g. "#map-level2".
  * @returns {number} index into MAP_STOPS.

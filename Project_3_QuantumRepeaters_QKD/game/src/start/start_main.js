@@ -7,8 +7,8 @@
 
 import { buildWorldMap, placeOnTile } from "./render_map.js";
 import {
-    MAP_STOPS, buildMapHash, findMapDirection, findMapZoom, findStopInDirection, findStopIndexFromHash, isEnterKey,
-    isMapHash, planWalk,
+    MAP_STOPS, buildMapHash, findMapDirection, findMapZoom, findRouteBetweenStops, findStopInDirection,
+    findStopIndexFromHash, isEnterKey, isMapHash, planWalk,
 } from "./world_map.js";
 import { buildStatusBarIcons, renderStatusBar } from "./render_status_bar.js";
 import { findElementsById } from "../page_helpers.js";
@@ -21,10 +21,11 @@ function startStartPage() {
     Object.assign(elements, buildWorldMap(elements.mapElement));
     buildStatusBarIcons(elements);
 
-    // walkTimer ends the current walk animation; null while Mario stands still.
+    // walkTimer ends the current walk animation; null while Mario stands still. routeTimer starts the next leg of a
+    // walk along several stops (a click on a far stop); null when no such walk is under way.
     // A level's "◀ Map" button opens start.html#map-<stop id>, so Mario starts on the stop he came back from.
     const startStopIndex = findStopIndexFromHash(window.location.hash);
-    const game = { isOnMap: false, stopIndex: startStopIndex, facing: "right", walkTimer: null };
+    const game = { isOnMap: false, stopIndex: startStopIndex, facing: "right", walkTimer: null, routeTimer: null };
     listenForInput(game, elements);
 
     if (isMapHash(window.location.hash)) {
@@ -103,6 +104,10 @@ function handleKey(game, elements, keyEvent) {
         }
         return;
     }
+    // While Mario walks a clicked route, keys wait for him to arrive, so he never cuts off the path.
+    if (game.routeTimer !== null) {
+        return;
+    }
     const direction = findMapDirection(keyEvent.key);
     if (direction !== null) {
         keyEvent.preventDefault();
@@ -117,24 +122,59 @@ function handleKey(game, elements, keyEvent) {
 
 
 /**
- * A click walks Mario to a stop; a click on the stop he already stands on enters it.
+ * A click walks Mario along the path to a stop; a click on the stop he already stands on enters it. Clicks while he
+ * is still walking a route are ignored.
  */
 function handleStopClick(game, elements, stopIndex) {
+    if (game.routeTimer !== null) {
+        return;
+    }
     if (game.stopIndex === stopIndex) {
         enterStop(game);
         return;
     }
-    walkToStop(game, elements, stopIndex);
+    walkAlongRoute(game, elements, stopIndex);
+}
+
+
+/**
+ * Walk Mario stop to stop along the drawn path to a far stop, one straight leg at a time, as in SMB3. With reduced
+ * motion there is no walk to watch, so he simply arrives, as on a one-stop walk.
+ */
+function walkAlongRoute(game, elements, targetIndex) {
+    const isReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (isReducedMotion) {
+        walkToStop(game, elements, targetIndex);
+        return;
+    }
+    walkRemainingLegs(game, elements, findRouteBetweenStops(game.stopIndex, targetIndex));
+}
+
+
+/**
+ * Walk the first leg of the route, then the rest once he gets there.
+ *
+ * @param {number[]} remainingStops - the stops still to reach, in order (indices into MAP_STOPS).
+ */
+function walkRemainingLegs(game, elements, remainingStops) {
+    if (remainingStops.length === 0) {
+        game.routeTimer = null;
+        return;
+    }
+    const legMs = walkToStop(game, elements, remainingStops[0]);
+    game.routeTimer = window.setTimeout(() => walkRemainingLegs(game, elements, remainingStops.slice(1)), legMs);
 }
 
 
 /**
  * Walk Mario from his stop to a neighbouring one: face the way he goes, step his legs for the length of the walk,
  * then stand still. With reduced motion the CSS skips the animation and he simply arrives.
+ *
+ * @returns {number} how long the walk takes, in ms (0 when he is already there).
  */
 function walkToStop(game, elements, stopIndex) {
     if (stopIndex === game.stopIndex) {
-        return;
+        return 0;
     }
     const walk = planWalk(MAP_STOPS[game.stopIndex], MAP_STOPS[stopIndex], game.facing);
     game.stopIndex = stopIndex;
@@ -150,6 +190,7 @@ function walkToStop(game, elements, stopIndex) {
         game.walkTimer = null;
     }, walk.durationMs);
     renderMap(game, elements);
+    return walk.durationMs;
 }
 
 

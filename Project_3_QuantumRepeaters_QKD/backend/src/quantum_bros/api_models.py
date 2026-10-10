@@ -1,5 +1,5 @@
-"""Request and response shapes for POST /api/send (Level 3) and POST /api/logical-pair (Level 2). Pydantic rejects a
-bad request with a 422 before any simulation."""
+"""Request and response shapes for POST /api/send (Level 3), POST /api/logical-pair (Level 2) and POST /api/teleport
+(teleport.html). Pydantic rejects a bad request with a 422 before any simulation."""
 
 from typing import Literal
 
@@ -7,6 +7,9 @@ from pydantic import BaseModel, Field
 
 from quantum_bros.protocol.messaging import MAX_MESSAGE_BYTES
 from quantum_bros.protocol.noise import MAX_PHYSICAL_ERROR
+
+# The teleport challenge sends "HI" as 10 bits; 16 leaves room without letting one request run long.
+MAX_TELEPORT_STATES = 16
 
 # Seeds go into Stim and random.Random; keep them in the range both accept and JSON carries exactly.
 MAX_SEED = 2**32 - 1
@@ -86,3 +89,41 @@ class LogicalPairResponse(BaseModel):
     bob_check: LogicalCheckModel
     seed: int
     physical_error: float
+
+
+class TeleportRequest(BaseModel):
+    """teleport.html: the states Mario teleports to Luigi, in order. No seed means the server picks one."""
+
+    states: list[Literal["0", "1", "+", "-"]] = Field(min_length=1, max_length=MAX_TELEPORT_STATES)
+    seed: int | None = Field(default=None, ge=0, le=MAX_SEED)
+
+
+class BellBitsModel(BaseModel):
+    """Mario's Bell-measurement bits: z_fix says Luigi needs Z, x_fix says he needs X."""
+
+    z_fix: int
+    x_fix: int
+
+
+class LuigiReadsModel(BaseModel):
+    """What Luigi reads after each possible fix ("none", "x", "z", "zx"), in the sent state's basis."""
+
+    none: str
+    x: str
+    z: str
+    zx: str
+
+
+class TeleportModel(BaseModel):
+    """One teleported state: the bits Mario sends and Luigi's answer for every fix the player could pick."""
+
+    state: str
+    bell_bits: BellBitsModel
+    luigi_reads: LuigiReadsModel
+
+
+class TeleportResponse(BaseModel):
+    """Every teleport in request order, plus the seed so the run can be repeated."""
+
+    seed: int
+    teleports: list[TeleportModel]
