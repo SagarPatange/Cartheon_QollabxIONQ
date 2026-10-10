@@ -1,0 +1,151 @@
+driver_id,hire_date,termination_date,license_state,home_terminal,employment_status,cdl_class,years_experience
+DRV00001,2014-10-31,,WA,Denver,Active,A,3
+DRV00002,2020-10-02,,GA,Columbus,Active,A,20
+DRV00003,2021-09-21,,NC,Salt Lake City,Active,A,19
+DRV00004,2013-09-08,,WA,Denver,Active,A,19
+DRV00005,2018-12-02,,AZ,Chicago,Active,A,12
+DRV00006,2019-04-04,,NC,Portland,Active,A,23
+DRV00007,2019-07-02,2021-05-17,PA,Miami,Terminated,A,5
+DRV00008,2020-06-09,2021-01-23,CO,Philadelphia,Terminated,A,15
+DRV00009,2013-09-29,,FL,Los Angeles,Active,A,13
+DRV00010,2020-11-08,,WA,Minneapolis,Active,A,23
+DRV00011,2014-06-01,,FL,Dallas,Active,A,15
+DRV00012,2013-09-12,,MO,Nashville,Active,A,25
+DRV00013,2015-11-21,,WI,Philadelphia,Active,A,3
+DRV00014,2021-01-10,,FL,Salt Lake City,Active,A,11
+DRV00015,2015-05-20,,OH,Salt Lake City,Active,A,21
+DRV00016,2017-04-09,,GA,Kansas City,Active,A,11
+DRV00017,2021-08-24,,IN,Atlanta,Active,A,13
+DRV00018,2021-09-01,,PA,Chicago,Active,A,5
+DRV00019,2020-12-14,,TX,Seattle,Active,A,20
+DRV00020,2019-07-21,,TX,Houston,Active,A,18
+DRV00021,2019-05-25,2021-05-23,OK,New York,Terminated,A,8
+DRV00022,2016-05-03,,NV,Memphis,Active,A,6
+DRV00023,2015-04-03,,NC,Philadelphia,Active,A,23
+DRV00024,2021-09-15,,OH,Dallas,Active,A,17
+DRV00025,2015-09-17,,NE,Omaha,Active,A,9
+DRV00026,2019-10-10,,TX,Columbus,Active,A,5
+DRV00027,2013-12-22,2015-03-16,WI,Philadelphia,Terminated,A,13
+DRV00028,2014-09-19,,NC,Memphis,Active,A,19
+DRV00029,2014-02-20,,UT,Philadelphia,Active,A,13
+DRV00030,2015-11-22,,WI,Houston,Active,A,5
+DRV00031,2017-04-19,2019-07-18,NC,Seattle,Terminated,A,10
+DRV00032,2019-07-14,,MN,Omaha,Active,A,20
+DRV00033,2016-12-19,,GA,New York,Active,A,9
+DRV00034,2015-05-25,,TX,Kansas City,Active,A,15
+DRV00035,2018-11-19,,MI,Atlanta,Active,A,19
+DRV00036,2012-12-04,,TX,Miami,Active,A,21
+DRV00037,2012-04-03,,OR,New York,Active,A,21
+DRV00038,2021-12-06,,WI,New York,Active,A,23
+DRV00039,2013-06-29,,TX,Columbus,Active,A,22
+DRV00040,2012-12-19,2014-05-14,MI,Miami,Terminated,A,19
+DRV00041,2020-03-19,,TN,Phoenix,Active,A,2
+DRV00042,2014-03-05,2015-09-07,TN,Los Angeles,Terminated,A,21
+DRV00043,2017-04-06,,CO,Nashville,Active,A,23
+DRV00044,2018-03-10,,NC,Atlanta,Active,A,24
+DRV00045,2018-11-20,,OH,New York,Active,A,10
+DRV00046,2020-04-05,2022-05-05,IN,Atlanta,Terminated,A,2
+DRV00047,2019-08-04,,CO,Denver,Active,A,7
+DRV00048,2013-06-10,2015-04-18,NV,Houston,Terminated,A,10
+DRV00049,2018-03-25,,OK,Memphis,Active,A,24
+DRV00050,2020-11-09,,OH,Seattle,Active,A,11
+DRV00051,2020-12-18,,WA,Atlanta,Active,A,12
+DRV00052,2017-09-28,2020-01-31,CO,Phoenix,Terminated,A,13
+DRV00053,2020-12-01,,WI,Miami,Active,A,2
+DRV00054,2017-12-23,,MN,Chicago,Active,A,7
+DRV00055,2012-07-01,,FL,New York,Active,A,6
+DRV00056,2018-02-23,,MI,Oklahoma City,Active,A,20
+DRV00057,2015-03-27,,FL,Las Vegas,Active,A,23
+DRV00058,2019-01-14,,TX,Indianapolis,Active,A,14
+DRV00059,2012-12-14,,CA,Los Angeles,Active,A,4
+DRV00060,2021-07-08,,OK,Oklahoma City,Active,A,6
+DRV00061,2013-10-27,,PA,Dallas,Active,A,25
+DRV00062,2016-11-07,,WA,Charlotte,Active,A,22
+DRV00063,2015-12-28,,CA,Minneapolis,Active,A,2
+DRV00064,2020-08-08,,OK,Omaha,Active,A,4
+DRV00065,2017-10-04,,OH,Denver,Active,A,25
+DRV00066,2021-02-13,,NE,Indianapolis,Active,A,18
+DRV00067,2015-10-24,2016-12-07,WI,Memphis,Terminated,A,8
+DRV00068,2018-09-19,2019-04-08,AZ,Los Angeles,Terminated,A,14
+DRV00069,2012-09-13,,PA,Minneapolis,Active,A,15
+DRV00070,2014-12-15,,PA,Indianapolis,Active,A,16
+DRV00071,2015-01-25,,OK,Houston,Active,A,12
+DRV00072,2012-01-28,2014-05-03,NC,Kansas City,Terminated,A,7
+DRV00073,2012-05-04,2013-01-08,FL,Chicago,Terminated,A,13
+DRV00074,2017-12-12,,OK,Oklahoma City,Active,A,11
+DRV00075,2015-07-13,,TN,Nashville,Active,A,25
+DRV00076,2019-11-06,2021-01-02,NE,Indianapolis,Terminated,A,12
+DRV00077,2014-02-07,,IN,Detroit,Active,A,20
+DRV00078,2021-03-23,,MO,Minneapolis,Active,A,21
+DRV00079,2021-06-28,,MI,Salt Lake City,Active,A,4
+DRV00080,2014-08-03,,CA,Atlanta,Active,A,3
+DRV00081,2019-06-13,,PA,Chicago,Active,A,6
+DRV00082,2013-05-02,,MI,Charlotte,Active,A,7
+DRV00083,2018-10-04,,TX,Portland,Active,A,21
+DRV00084,2021-02-09,,CO,Las Vegas,Active,A,3
+DRV00085,2012-05-30,,AZ,Nashville,Active,A,23
+DRV00086,2019-05-24,2021-09-24,MI,Los Angeles,Terminated,A,4
+DRV00087,2012-04-14,,GA,Charlotte,Active,A,10
+DRV00088,2020-11-14,,WI,Milwaukee,Active,A,16
+DRV00089,2017-09-28,,OH,Minneapolis,Active,A,23
+DRV00090,2018-11-20,,NY,Dallas,Active,A,15
+DRV00091,2016-12-01,,FL,Dallas,Active,A,17
+DRV00092,2014-11-16,,IL,Seattle,Active,A,21
+DRV00093,2012-08-25,2014-04-09,IL,Kansas City,Terminated,A,16
+DRV00094,2017-11-29,,OH,New York,Active,A,15
+DRV00095,2020-03-06,,MI,Dallas,Active,A,10
+DRV00096,2017-11-07,2018-11-18,WI,New York,Terminated,A,8
+DRV00097,2018-01-07,,NY,Miami,Active,A,18
+DRV00098,2019-08-27,,UT,Kansas City,Active,A,5
+DRV00099,2014-06-27,,NE,Salt Lake City,Active,A,13
+DRV00100,2019-01-04,,NC,Memphis,Active,A,15
+DRV00101,2014-02-18,,CA,Columbus,Active,A,5
+DRV00102,2014-05-04,,GA,Milwaukee,Active,A,11
+DRV00103,2014-09-26,,TN,Seattle,Active,A,23
+DRV00104,2021-03-15,,MI,Portland,Active,A,23
+DRV00105,2015-03-04,,NC,Kansas City,Active,A,20
+DRV00106,2014-11-19,2016-11-21,NC,Indianapolis,Terminated,A,17
+DRV00107,2020-02-01,,MN,Detroit,Active,A,18
+DRV00108,2016-01-06,,WA,Minneapolis,Active,A,23
+DRV00109,2013-10-29,,AZ,Indianapolis,Active,A,11
+DRV00110,2019-04-05,,IL,Kansas City,Active,A,3
+DRV00111,2020-03-03,,FL,Las Vegas,Active,A,9
+DRV00112,2016-10-26,,NC,Los Angeles,Active,A,14
+DRV00113,2017-09-30,,CA,Milwaukee,Active,A,21
+DRV00114,2018-12-23,,TX,Los Angeles,Active,A,3
+DRV00115,2014-10-29,2016-05-19,OR,Salt Lake City,Terminated,A,2
+DRV00116,2014-04-15,2015-11-15,NC,Salt Lake City,Terminated,A,8
+DRV00117,2015-10-04,,TX,Omaha,Active,A,11
+DRV00118,2019-07-17,,TN,Columbus,Active,A,8
+DRV00119,2014-04-29,,UT,Oklahoma City,Active,A,6
+DRV00120,2018-05-14,,TN,Philadelphia,Active,A,10
+DRV00121,2012-07-20,,IL,Las Vegas,Active,A,11
+DRV00122,2013-05-21,,NY,Minneapolis,Active,A,12
+DRV00123,2013-04-20,,NY,Houston,Active,A,5
+DRV00124,2021-05-17,,TN,Las Vegas,Active,A,2
+DRV00125,2019-06-08,,MI,Seattle,Active,A,17
+DRV00126,2012-10-14,,TX,Minneapolis,Active,A,25
+DRV00127,2021-08-23,,TX,Portland,Active,A,15
+DRV00128,2012-12-22,,CA,Las Vegas,Active,A,7
+DRV00129,2018-06-19,,OH,Oklahoma City,Active,A,6
+DRV00130,2017-07-03,,NE,Los Angeles,Active,A,14
+DRV00131,2019-01-01,2021-02-17,NV,Seattle,Terminated,A,19
+DRV00132,2021-04-05,,MO,Las Vegas,Active,A,24
+DRV00133,2019-08-21,,MO,Seattle,Active,A,9
+DRV00134,2015-08-23,,MO,Nashville,Active,A,18
+DRV00135,2012-03-05,2014-02-03,TX,Miami,Terminated,A,19
+DRV00136,2013-12-14,2014-12-19,NE,Denver,Terminated,A,23
+DRV00137,2018-06-23,2019-02-27,IN,New York,Terminated,A,13
+DRV00138,2019-08-15,,OR,Nashville,Active,A,4
+DRV00139,2014-08-27,,MN,Charlotte,Active,A,14
+DRV00140,2016-05-28,2018-06-30,MN,Dallas,Terminated,A,25
+DRV00141,2017-07-26,,MI,Dallas,Active,A,3
+DRV00142,2012-01-31,,TN,Dallas,Active,A,15
+DRV00143,2014-10-17,,NV,Dallas,Active,A,2
+DRV00144,2016-11-09,,MI,Las Vegas,Active,A,16
+DRV00145,2020-05-26,,TN,Los Angeles,Active,A,4
+DRV00146,2019-01-13,,MO,Oklahoma City,Active,A,12
+DRV00147,2020-06-09,,IL,Oklahoma City,Active,A,20
+DRV00148,2019-03-28,,MO,Denver,Active,A,15
+DRV00149,2013-08-25,,OK,New York,Active,A,20
+DRV00150,2015-09-16,,CA,Columbus,Active,A,14

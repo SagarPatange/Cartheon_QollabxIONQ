@@ -1,0 +1,10 @@
+
+# Third-party papers that are not MIT-licensed (kept locally, cited in each project README)
+**/docs/references/*.pdf
+
+# Python environments
+.venv*/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.DS_Store

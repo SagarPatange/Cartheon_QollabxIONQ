@@ -7,6 +7,15 @@ dist/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
+.ipynb_checkpoints/
+.coverage
+htmlcov/
+
+# AI-agent working files (superpowers specs/plans, Claude, gstack)
+docs/superpowers/
+.superpowers/
+.claude/
+.gstack/
 
 # Node
 node_modules/

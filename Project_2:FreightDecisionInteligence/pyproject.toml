@@ -1,0 +1,19 @@
+[project]
+name = "freight-decision-intelligence"
+version = "0.1.0"
+description = "Truckload dispatch simulator comparing classical and quantum dispatch policies"
+requires-python = ">=3.11"
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.6"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["--import-mode=importlib"]
+pythonpath = ["tools"]

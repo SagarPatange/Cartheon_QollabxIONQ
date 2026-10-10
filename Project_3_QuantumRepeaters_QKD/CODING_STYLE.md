@@ -16,13 +16,13 @@ disagree, this document picks one and says so.
 **A name says what the thing is.** Someone should understand a line without scrolling up to find out what a
 variable holds. *(UChicago, CMU, Stanford, MIT, Cornell)*
 
-- **Variables are nouns:** `first_dispatch_of_load`, `pairs_still_needed`, `total_road_km`.
-- **Functions are verbs:** `read_events`, `find_stops`, `compute_detention_charge`. *(UChicago: "function names
+- **Variables are nouns:** `pairs_still_needed`, `alice_data_bits`, `heralding_attempts`.
+- **Functions are verbs:** `encode_logical_plus`, `measure_block`, `compute_syndrome`. *(UChicago: "function names
   performing actions should include a verb")*
-- **No single letters**, except `i`/`j` for a loop index and `x`/`y` for coordinates. *(CMU)* Not `e` for an event,
-  `d` for a folder, `r` for a row, `sb`/`db` for blocks.
-- **Units go in the name** when a number has one: `drive_minutes`, `revenue_cents`, `distance_km`.
-- **Booleans read as yes/no questions:** `is_hazmat`, `has_driver`, `never_arrived`.
+- **No single letters**, except `i`/`j` for a loop index and `x`/`y` for coordinates. *(CMU)* Not `q` for a qubit,
+  `m` for a measurement, `r` for a result, `b1`/`b2` for blocks.
+- **Units go in the name** when a number has one: `fiber_length_km`, `run_time_ms`, `error_rate_percent`.
+- **Booleans read as yes/no questions:** `is_tapped`, `has_errors`, `was_corrected`.
 - **Don't reuse a name for something else** later in the same function. One purpose per variable. *(MIT)*
 - **Never shadow a built-in** (`list`, `dict`, `id`, `type`, `sum`, `min`). *(CMU)*
 - Python casing (PEP 8): `snake_case` for variables and functions, `CamelCase` for classes, `ALL_CAPS` for
@@ -36,12 +36,12 @@ variable holds. *(UChicago, CMU, Stanford, MIT, Cornell)*
   doing several jobs; give each job its own function. When you change a long function, split it.
 - **Top-down:** a long task reads like a recipe that calls named steps.
   ```python
-  def build_week(week_start):
-      loads = read_loads(week_start)
-      drivers = read_driver_roster(week_start)
-      gps_stops = match_gps_to_stops(loads, week_start)
-      events = make_events(loads, drivers, gps_stops)
-      write_events(events, week_start)
+  def build_logical_link(backend, noise, rng):
+      herald_attempts = herald_all_pairs(backend, noise, rng)
+      encode_logical_plus(backend, ALICE_DATA, noise)
+      encode_logical_zero(backend, BOB_DATA, noise)
+      teleport_transversal_cnot(backend, ALICE_DATA, BOB_DATA, noise)
+      return herald_attempts
   ```
 - **Inputs come in as parameters, results go out as return values.** No global variables (constants are fine).
   Don't `print` a result another function needs; return it. *(MIT, CMU)*
@@ -53,7 +53,7 @@ variable holds. *(UChicago, CMU, Stanford, MIT, Cornell)*
 **Each line does one thing, and intermediate results get a name.** *(UW "one statement per line", Stanford)*
 
 - **Plain `for` loops over clever one-liners.** A comprehension is fine when it is short and does one thing
-  (`[stop["site"] for stop in stops]`). Once it filters *and* transforms, or loops twice, write the loop.
+  (`[pair[0] for pair in bell_pairs]`). Once it filters *and* transforms, or loops twice, write the loop.
 - **No nested comprehensions**, no comprehension inside a `sorted()` inside a `for`.
 - **No `a; b; c`** on one line.
 - **No `x and y or z`** for choosing a value. Use `if`/`else`.
@@ -61,63 +61,38 @@ variable holds. *(UChicago, CMU, Stanford, MIT, Cornell)*
 - **Add up floats with `sum()`, not a `+=` loop.** Since Python 3.12, `sum()` adds floats with extra precision, so a
   loop gives slightly different digits (10570.84 vs 10570.839999999995). Build a named list, then `sum()` it.
   Counting whole numbers with a loop is fine.
-- **Keep random draws in the same order.** Drive and stop times, offers and test problems are random draws from a
-  seeded generator: rewriting code that calls it must call it the same number of times, in the same order, under the
-  same conditions, or every result changes.
+- **Keep random draws in the same order.** Measurement outcomes, noise and heralding attempts are random draws from
+  a seeded generator: rewriting code that calls it must call it the same number of times, in the same order, under
+  the same conditions, or every result changes.
 
-### Example: `pipeline/build/fill_trips.py`
-
-Before:
-```python
-dispatch: dict[str, dict] = {}
-for e in sorted((e for e in events if e["event"] == "dispatch" and e.get("truck")), key=lambda e: e["time"]):
-    dispatch.setdefault(e["load"], e)   # the trip's first dispatch: its truck, driver and PCS leg
-```
-
-After:
-```python
-# A trip's first dispatch tells us its truck, driver and PCS leg.
-dispatches_with_a_truck = []
-for event in events:
-    if event["event"] == "dispatch" and event.get("truck"):
-        dispatches_with_a_truck.append(event)
-dispatches_with_a_truck.sort(key=lambda event: event["time"])
-
-first_dispatch_of_load: dict[str, dict] = {}
-for event in dispatches_with_a_truck:
-    load_id = event["load"]
-    if load_id not in first_dispatch_of_load:
-        first_dispatch_of_load[load_id] = event
-```
-
-### Example: `pipeline/build/road_matrix.py`
+### Example
 
 Before:
 ```python
-todo = [(a, b) for a, _ in sb for b, _ in db if a != b and (a, b) not in have]
+todo = [(a, b) for a, _ in left for b, _ in right if a != b and (a, b) not in done]
 ```
 
 After:
 ```python
 pairs_still_needed = []
-for origin_site, _ in origin_block:
-    for destination_site, _ in destination_block:
-        is_same_site = origin_site == destination_site
-        is_already_fetched = (origin_site, destination_site) in pairs_already_fetched
-        if not is_same_site and not is_already_fetched:
-            pairs_still_needed.append((origin_site, destination_site))
+for left_qubit, _ in left_block:
+    for right_qubit, _ in right_block:
+        is_same_qubit = left_qubit == right_qubit
+        is_already_paired = (left_qubit, right_qubit) in pairs_already_made
+        if not is_same_qubit and not is_already_paired:
+            pairs_still_needed.append((left_qubit, right_qubit))
 ```
 
 ## 4. Conditions
 
 - **Give a complicated condition a name**, then test the name. *(UW "boolean zen")*
   ```python
-  started_before_week = move["left"] < 0
-  never_arrived = move["arrived"] <= move["left"]
-  if started_before_week or never_arrived:
-      continue
+  is_rejected_by_check = check_bits != [0, 0]
+  is_out_of_attempts = attempt_number == max_attempts
+  if is_rejected_by_check and is_out_of_attempts:
+      raise EncodingFailedError(...)
   ```
-- **Test booleans directly:** `if is_hazmat:`, not `if is_hazmat == True:`. *(UChicago, UW)*
+- **Test booleans directly:** `if is_tapped:`, not `if is_tapped == True:`. *(UChicago, UW)*
 - **Return early** for the cases you skip, so the main logic is not buried three `if`s deep.
 - **No special cases** when the general logic already handles them. *(MIT)*
 
@@ -130,43 +105,40 @@ for origin_site, _ in origin_block:
 - **Every function has a docstring:** what it does, what each input is, what it returns. *(UChicago: "All
   functions must have a docstring that contains a description of the purpose of the function, the expected input
   arguments, the expected output values")* One line is enough when the name and inputs make the rest obvious.
-- **Comment the reasons:** a business rule, a data quirk, where a number came from, why the obvious approach was
-  wrong.
+- **Comment the reasons:** a physics rule, a paper's equation, where a number came from, why the obvious approach
+  was wrong.
   ```python
-  # PCS fills pickup = entry + 24 h when the dispatcher left it blank, so a gap of exactly whole days is not real.
+  # Transversal H is not a logical H for the repetition code, so |+̄⟩ is prepared directly as a GHZ state.
   ```
 - **Don't translate code into English:** `count += 1  # add one to count` helps nobody. *(MIT)*
-- **Cite data for every modeling claim:** the file, the column and the count (repo rule, see `README.md`).
+- **Cite a source for every physics or modeling claim:** the paper and equation or figure (see `README.md`).
 - **No commented-out code and no dead code.** Git remembers it. *(CMU)*
 
 ## 6. Numbers and constants
 
 **No magic numbers.** A number whose meaning isn't obvious gets a named constant. *(UChicago, CMU, MIT, UW)*
 
-- Business numbers a person might change (rates, caps, hours) live in `config/constants.yaml` or
-  `config/offices/*.yaml`, read through `common/constants.py`.
+- Settings a person might change (error rates, shot counts, limits) live in one constants file or module per
+  project, read from one place.
 - Fixed facts live as `ALL_CAPS` constants at the top of the file that uses them, with a comment saying where the
-  number comes from: `SHIFT_CAP_MIN = 20 * 60  # longest real shift; log-in chains beyond this are separate shifts`.
+  number comes from: `QUBITS_PER_BLOCK = 3  # 3-qubit repetition code`.
 - Plainly obvious numbers are fine inline: `0`, `1`, `-1`, `2`, `60` minutes in an hour. *(CMU lists 0, 1, -1, 2, 10)*
-- Time is integer minutes and money is integer cents (repo rule).
 
 ## 7. Don't repeat yourself
 
 **The same logic in two places means the same bug in two places.** *(MIT "DRY", CMU, UW)*
 
 - Copy-pasted code becomes one function.
-- Numbered variables (`stop0`, `stop1`, `stop2`) become a list and a loop. *(CMU)*
-- The same small helper written in several files becomes one shared helper in `common/`. Example: reading and
-  writing CSVs is `common/csv_files.py` (`read_csv`, `read_gzip_csv`, `write_csv`), used by 20 modules in `src/`;
-  don't write another reader.
+- Numbered variables (`qubit0`, `qubit1`, `qubit2`) become a list and a loop. *(CMU)*
+- The same small helper written in several files becomes one shared helper; don't write another one.
 
 ## 8. Fail fast
 
 **A problem should show up where it happens, not three steps later.** *(MIT)*
 
-- Check inputs at the start of a function and raise a clear error: `raise ValueError(f"week {week} has no
-  events.csv; run week_events first")`.
-- A missing or misspelled setting fails when the program starts, never silently (`common/constants.py` does this).
+- Check inputs at the start of a function and raise a clear error:
+  `raise ValueError(f"tap_fraction must be between 0 and 1, got {tap_fraction}")`.
+- A missing or misspelled setting fails when the program starts, never silently.
 - Don't swallow errors with a bare `except:` or `except Exception: pass`.
 
 ## 9. Writing a new function: the Design Recipe
@@ -184,20 +156,19 @@ comes out readable because it was designed before it was typed.
 
 - **PEP 8**, checked by `ruff check src tests`. Indent 4 spaces, imports at the top, two blank lines
   between functions.
-- **Lines up to 120 characters.** *(Decision: UChicago, CMU and PEP 8 say 79 to 80. This repo has always used 120
-  and keeps it, because changing it would reflow every file. Shorter is still better.)*
-- Imports name the actual file a thing lives in (`from freightsim.model.state.state import State`).
-- **No `__init__.py` files.** Folders import as plain namespace packages; each folder has a `README.md` listing its
-  files instead.
+- **Lines up to 120 characters.** *(Decision: UChicago, CMU and PEP 8 say 79 to 80. This repo uses 120, because
+  docstrings that explain physics read better on fewer lines. Shorter is still better.)*
+- Imports name the actual file a thing lives in (`from quantum_bros.protocol.qre_cec import QubitLayout`).
+- **No `__init__.py` files.** Folders import as plain namespace packages.
 - One file, one topic. A file over about 400 lines usually holds several topics.
 
 ## 11. Tests
 
 - **Every function that can be tested has a test** (CMU): small, hand-made input, known answer.
 - Tests live in `tests/`, in the same folders as the code they test.
-- A test name says what should happen: `test_a_driver_offered_every_day_covers_every_real_shift`.
+- A test name says what should happen: `test_majority_vote_corrects_one_flipped_bit`.
 - **Changing how code reads must not change what it does:** before and after a cleanup, all tests pass and a
-  simulation run gives identical output.
+  seeded run gives identical output.
 
 ---
 

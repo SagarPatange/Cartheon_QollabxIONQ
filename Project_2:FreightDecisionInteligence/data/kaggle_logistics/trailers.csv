@@ -1,0 +1,181 @@
+trailer_id,trailer_number,trailer_type,length_feet,model_year,acquisition_date,status,current_location
+TRL00001,4290,Refrigerated,53,2016,2018-05-11,Active,Kansas City
+TRL00002,8848,Dry Van,53,2018,2018-11-24,Active,Kansas City
+TRL00003,6147,Dry Van,53,2022,2019-01-28,Active,Milwaukee
+TRL00004,3910,Dry Van,53,2024,2018-08-27,Active,New York
+TRL00005,7524,Dry Van,53,2016,2019-11-22,Active,Las Vegas
+TRL00006,6228,Refrigerated,53,2023,2020-04-27,Active,Los Angeles
+TRL00007,5775,Dry Van,53,2015,2016-03-15,Active,Indianapolis
+TRL00008,9044,Refrigerated,53,2020,2019-04-23,Active,Oklahoma City
+TRL00009,4971,Dry Van,53,2020,2021-05-14,Active,Kansas City
+TRL00010,6339,Refrigerated,53,2017,2015-04-11,Active,Los Angeles
+TRL00011,7161,Dry Van,53,2021,2017-06-21,Active,Detroit
+TRL00012,5592,Refrigerated,53,2024,2018-06-02,Active,Los Angeles
+TRL00013,7437,Refrigerated,53,2021,2020-06-07,Active,Los Angeles
+TRL00014,6980,Dry Van,53,2020,2021-09-19,Active,Charlotte
+TRL00015,2865,Dry Van,53,2023,2016-06-04,Active,Philadelphia
+TRL00016,4273,Refrigerated,53,2017,2018-09-09,Active,Kansas City
+TRL00017,9939,Refrigerated,53,2022,2019-02-04,Active,Philadelphia
+TRL00018,3947,Dry Van,53,2016,2017-04-23,Active,Omaha
+TRL00019,1440,Refrigerated,53,2015,2017-06-19,Active,Miami
+TRL00020,8563,Dry Van,53,2024,2017-08-25,Active,Indianapolis
+TRL00021,4434,Refrigerated,53,2016,2021-08-10,Active,Philadelphia
+TRL00022,8183,Dry Van,53,2015,2015-06-19,Active,Denver
+TRL00023,5773,Dry Van,53,2019,2015-08-03,Active,Milwaukee
+TRL00024,2133,Refrigerated,53,2018,2019-11-16,Active,Las Vegas
+TRL00025,7703,Dry Van,53,2015,2018-02-26,Active,Detroit
+TRL00026,9180,Refrigerated,53,2015,2019-07-06,Active,Phoenix
+TRL00027,3280,Refrigerated,53,2021,2016-01-04,Active,Chicago
+TRL00028,5961,Refrigerated,53,2023,2016-09-01,Active,Columbus
+TRL00029,4965,Dry Van,53,2019,2017-12-25,Active,Charlotte
+TRL00030,5139,Refrigerated,53,2023,2016-04-25,Active,Philadelphia
+TRL00031,3525,Dry Van,53,2021,2018-08-21,Active,Milwaukee
+TRL00032,7932,Dry Van,53,2021,2020-02-05,Active,Charlotte
+TRL00033,7176,Dry Van,53,2021,2015-09-29,Active,Seattle
+TRL00034,2211,Refrigerated,53,2016,2019-12-22,Active,Houston
+TRL00035,8357,Refrigerated,53,2023,2018-09-16,Active,Atlanta
+TRL00036,8851,Dry Van,53,2023,2020-11-28,Active,Atlanta
+TRL00037,7566,Dry Van,53,2024,2016-09-21,Active,Nashville
+TRL00038,9755,Dry Van,53,2017,2020-07-26,Active,Dallas
+TRL00039,9300,Dry Van,53,2019,2019-02-07,Active,Los Angeles
+TRL00040,7853,Dry Van,53,2016,2015-09-26,Active,Memphis
+TRL00041,9907,Refrigerated,53,2019,2019-12-14,Active,Nashville
+TRL00042,1602,Refrigerated,53,2016,2018-03-29,Active,Charlotte
+TRL00043,6890,Dry Van,53,2023,2021-01-01,Active,New York
+TRL00044,9796,Refrigerated,53,2018,2019-07-06,Active,Dallas
+TRL00045,2392,Refrigerated,53,2017,2018-01-07,Active,Omaha
+TRL00046,2791,Refrigerated,53,2023,2019-07-02,Active,Indianapolis
+TRL00047,5067,Refrigerated,53,2020,2018-07-24,Active,Dallas
+TRL00048,6816,Dry Van,53,2021,2017-04-15,Active,Oklahoma City
+TRL00049,3725,Dry Van,53,2024,2018-04-15,Active,Oklahoma City
+TRL00050,1725,Refrigerated,53,2016,2017-11-01,Active,Los Angeles
+TRL00051,7547,Dry Van,53,2019,2019-01-30,Active,Miami
+TRL00052,6432,Refrigerated,53,2021,2015-06-09,Active,Salt Lake City
+TRL00053,8052,Dry Van,53,2018,2018-09-15,Active,Houston
+TRL00054,2735,Dry Van,53,2015,2016-10-20,Active,Minneapolis
+TRL00055,1172,Dry Van,53,2018,2020-09-06,Active,Detroit
+TRL00056,2615,Dry Van,53,2016,2016-09-22,Active,Miami
+TRL00057,5239,Refrigerated,53,2021,2021-05-27,Active,Minneapolis
+TRL00058,4637,Dry Van,53,2016,2015-06-17,Active,Chicago
+TRL00059,9366,Refrigerated,53,2022,2015-07-01,Active,Los Angeles
+TRL00060,9499,Refrigerated,53,2024,2015-01-16,Active,Phoenix
+TRL00061,4621,Dry Van,53,2024,2021-03-16,Active,Chicago
+TRL00062,8303,Refrigerated,53,2015,2016-09-15,Active,Detroit
+TRL00063,7129,Refrigerated,53,2019,2019-10-28,Active,Denver
+TRL00064,7408,Refrigerated,53,2017,2016-05-23,Active,Nashville
+TRL00065,8586,Refrigerated,53,2016,2020-08-29,Active,Seattle
+TRL00066,9199,Dry Van,53,2015,2017-09-21,Active,Las Vegas
+TRL00067,3469,Dry Van,53,2017,2016-01-23,Active,Oklahoma City
+TRL00068,6651,Refrigerated,53,2015,2018-08-28,Active,Los Angeles
+TRL00069,1402,Refrigerated,53,2017,2017-05-15,Active,Los Angeles
+TRL00070,8909,Refrigerated,53,2022,2021-05-25,Active,Omaha
+TRL00071,2712,Refrigerated,53,2020,2020-04-24,Active,Chicago
+TRL00072,5840,Refrigerated,53,2023,2020-06-18,Active,Atlanta
+TRL00073,7815,Refrigerated,53,2023,2019-10-04,Active,New York
+TRL00074,2406,Dry Van,53,2019,2018-02-28,Active,Nashville
+TRL00075,2901,Dry Van,53,2017,2017-05-31,Active,Salt Lake City
+TRL00076,3321,Refrigerated,53,2020,2015-08-14,Active,Phoenix
+TRL00077,6707,Refrigerated,53,2017,2016-11-14,Active,Seattle
+TRL00078,6110,Dry Van,53,2019,2020-05-25,Active,Denver
+TRL00079,6620,Refrigerated,53,2016,2018-06-16,Active,Minneapolis
+TRL00080,8460,Dry Van,53,2015,2019-12-25,Active,Kansas City
+TRL00081,4389,Refrigerated,53,2020,2021-02-04,Active,Miami
+TRL00082,9537,Dry Van,53,2021,2016-07-14,Active,Oklahoma City
+TRL00083,8912,Refrigerated,53,2019,2018-04-10,Active,Dallas
+TRL00084,6706,Refrigerated,53,2023,2020-01-08,Active,Denver
+TRL00085,8801,Refrigerated,53,2016,2018-06-28,Active,Seattle
+TRL00086,2599,Refrigerated,53,2019,2021-05-09,Active,Phoenix
+TRL00087,8178,Refrigerated,53,2024,2021-12-13,Active,Los Angeles
+TRL00088,8412,Dry Van,53,2016,2016-12-07,Active,Portland
+TRL00089,6225,Refrigerated,53,2022,2018-12-08,Active,Portland
+TRL00090,2100,Refrigerated,53,2022,2019-08-28,Active,Minneapolis
+TRL00091,5919,Dry Van,53,2023,2020-02-11,Active,Miami
+TRL00092,1732,Dry Van,53,2020,2015-07-17,Active,Portland
+TRL00093,2885,Dry Van,53,2015,2020-03-24,Active,Milwaukee
+TRL00094,1370,Refrigerated,53,2022,2016-07-06,Active,Charlotte
+TRL00095,6620,Dry Van,53,2024,2021-01-06,Active,Las Vegas
+TRL00096,2791,Dry Van,53,2017,2020-07-20,Active,Salt Lake City
+TRL00097,3692,Dry Van,53,2020,2015-02-11,Active,Phoenix
+TRL00098,4996,Refrigerated,53,2017,2017-02-20,Active,Los Angeles
+TRL00099,9454,Refrigerated,53,2019,2017-03-10,Active,New York
+TRL00100,3858,Dry Van,53,2016,2017-06-24,Active,Milwaukee
+TRL00101,3623,Refrigerated,53,2024,2017-03-11,Active,Oklahoma City
+TRL00102,6422,Dry Van,53,2016,2016-08-25,Active,Chicago
+TRL00103,7985,Dry Van,53,2018,2017-09-14,Active,Phoenix
+TRL00104,8570,Refrigerated,53,2023,2021-12-13,Active,Los Angeles
+TRL00105,4798,Dry Van,53,2015,2021-07-31,Active,Las Vegas
+TRL00106,7636,Refrigerated,53,2015,2016-01-07,Active,Memphis
+TRL00107,4022,Dry Van,53,2015,2019-10-08,Active,Charlotte
+TRL00108,4053,Refrigerated,53,2018,2017-10-26,Active,Memphis
+TRL00109,8080,Refrigerated,53,2015,2021-11-05,Active,Nashville
+TRL00110,7481,Dry Van,53,2022,2018-05-23,Active,Minneapolis
+TRL00111,1478,Refrigerated,53,2020,2016-01-18,Active,Phoenix
+TRL00112,4232,Dry Van,53,2021,2019-11-13,Active,Kansas City
+TRL00113,8365,Dry Van,53,2017,2021-10-20,Active,Portland
+TRL00114,8037,Refrigerated,53,2017,2021-12-16,Active,Omaha
+TRL00115,7370,Refrigerated,53,2015,2019-03-19,Active,Denver
+TRL00116,1072,Dry Van,53,2023,2019-06-20,Active,Kansas City
+TRL00117,4519,Refrigerated,53,2021,2018-02-21,Active,Atlanta
+TRL00118,4371,Dry Van,53,2018,2018-07-03,Active,Nashville
+TRL00119,5560,Dry Van,53,2020,2020-07-22,Active,Oklahoma City
+TRL00120,2025,Dry Van,53,2018,2020-11-07,Active,New York
+TRL00121,2667,Dry Van,53,2021,2017-09-13,Active,Charlotte
+TRL00122,9796,Refrigerated,53,2020,2016-05-11,Active,Charlotte
+TRL00123,4063,Dry Van,53,2019,2015-05-27,Active,Los Angeles
+TRL00124,6993,Dry Van,53,2016,2018-07-28,Active,Las Vegas
+TRL00125,6340,Dry Van,53,2024,2020-02-17,Active,Minneapolis
+TRL00126,4228,Refrigerated,53,2020,2021-04-09,Active,Chicago
+TRL00127,8496,Dry Van,53,2016,2021-06-28,Active,Dallas
+TRL00128,2867,Dry Van,53,2023,2018-08-29,Active,Miami
+TRL00129,5298,Refrigerated,53,2015,2018-09-28,Active,Salt Lake City
+TRL00130,9019,Dry Van,53,2017,2016-11-21,Active,Seattle
+TRL00131,9646,Refrigerated,53,2018,2016-03-02,Active,Atlanta
+TRL00132,6134,Dry Van,53,2023,2015-04-26,Active,Milwaukee
+TRL00133,7367,Refrigerated,53,2015,2016-02-16,Active,Nashville
+TRL00134,7431,Dry Van,53,2021,2018-03-20,Active,Indianapolis
+TRL00135,2871,Dry Van,53,2016,2017-02-20,Active,Omaha
+TRL00136,6700,Refrigerated,53,2022,2020-07-02,Active,Oklahoma City
+TRL00137,6766,Dry Van,53,2019,2018-02-28,Active,Memphis
+TRL00138,8501,Dry Van,53,2019,2016-07-04,Active,Oklahoma City
+TRL00139,3826,Dry Van,53,2020,2017-12-22,Active,Memphis
+TRL00140,5873,Refrigerated,53,2016,2019-11-22,Active,Houston
+TRL00141,2388,Refrigerated,53,2023,2020-02-26,Active,Nashville
+TRL00142,3194,Refrigerated,53,2022,2017-06-24,Active,Seattle
+TRL00143,6131,Dry Van,53,2015,2021-10-15,Active,Indianapolis
+TRL00144,2931,Refrigerated,53,2020,2019-06-11,Active,Indianapolis
+TRL00145,4908,Dry Van,53,2018,2019-06-28,Active,Milwaukee
+TRL00146,6003,Dry Van,53,2019,2020-07-13,Active,Milwaukee
+TRL00147,2916,Dry Van,53,2024,2019-08-20,Active,Kansas City
+TRL00148,3999,Dry Van,53,2019,2021-10-04,Active,Los Angeles
+TRL00149,7116,Dry Van,53,2024,2015-05-23,Active,Las Vegas
+TRL00150,3316,Refrigerated,53,2018,2016-05-06,Active,Nashville
+TRL00151,9369,Refrigerated,53,2022,2020-02-09,Active,Oklahoma City
+TRL00152,7364,Dry Van,53,2020,2020-08-15,Active,Houston
+TRL00153,7852,Dry Van,53,2024,2017-11-22,Active,Charlotte
+TRL00154,3258,Refrigerated,53,2022,2021-08-01,Active,Denver
+TRL00155,7286,Refrigerated,53,2018,2017-10-18,Active,Nashville
+TRL00156,7931,Dry Van,53,2023,2019-02-19,Active,Nashville
+TRL00157,4043,Dry Van,53,2018,2016-01-03,Active,Salt Lake City
+TRL00158,8973,Dry Van,53,2017,2015-01-06,Active,Portland
+TRL00159,9804,Dry Van,53,2015,2021-06-16,Active,New York
+TRL00160,3838,Dry Van,53,2021,2015-05-06,Active,Columbus
+TRL00161,3733,Refrigerated,53,2015,2021-06-19,Active,Kansas City
+TRL00162,9022,Refrigerated,53,2018,2020-10-16,Active,Chicago
+TRL00163,5732,Refrigerated,53,2023,2021-10-13,Active,Atlanta
+TRL00164,3298,Refrigerated,53,2020,2021-06-18,Active,Salt Lake City
+TRL00165,4065,Dry Van,53,2015,2020-09-14,Active,Phoenix
+TRL00166,6154,Dry Van,53,2020,2017-04-30,Active,Indianapolis
+TRL00167,8389,Refrigerated,53,2015,2017-01-08,Active,Charlotte
+TRL00168,1878,Dry Van,53,2021,2017-09-27,Active,Charlotte
+TRL00169,6882,Dry Van,53,2019,2020-08-13,Active,Phoenix
+TRL00170,1157,Refrigerated,53,2016,2015-11-13,Active,Dallas
+TRL00171,8939,Dry Van,53,2018,2019-03-03,Active,Omaha
+TRL00172,3236,Refrigerated,53,2023,2016-09-06,Active,Charlotte
+TRL00173,4196,Dry Van,53,2018,2020-04-14,Active,Seattle
+TRL00174,7290,Dry Van,53,2021,2019-09-13,Active,Houston
+TRL00175,9281,Refrigerated,53,2022,2021-11-24,Active,Seattle
+TRL00176,9109,Refrigerated,53,2015,2018-08-17,Active,Miami
+TRL00177,7703,Dry Van,53,2017,2017-04-14,Active,Chicago
+TRL00178,9056,Dry Van,53,2019,2020-11-14,Active,Indianapolis
+TRL00179,7809,Refrigerated,53,2016,2016-03-02,Active,Houston
+TRL00180,8272,Refrigerated,53,2015,2018-12-23,Active,Columbus
