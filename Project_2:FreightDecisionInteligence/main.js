@@ -4,7 +4,8 @@
  * every decision.
  */
 
-import { loadCities, loadLanes, loadRoutePaths, runSimulation } from "./src/data_source.js";
+import { CompareView } from "./src/compare_view.js";
+import { compareObjectives, loadCities, loadLanes, loadRoutePaths, runSimulation } from "./src/data_source.js";
 import { PanelView } from "./src/panel_view.js";
 import { advanceTime } from "./src/playback.js";
 import { metricsUntil } from "./src/run_metrics.js";
@@ -35,6 +36,8 @@ const elements = {
 };
 
 const playback = { replay: null, minute: 0, isPlaying: false, lastFrameMs: null };
+// Comparisons already run, by "start date|seed": changing only the policy or objective needs no new comparison.
+const comparisons = new Map();
 
 async function start() {
     const [cities, lanes, routePaths] = await Promise.all([loadCities(), loadLanes(), loadRoutePaths()]);
@@ -46,6 +49,7 @@ async function start() {
         mapView: new UsMapView(document.getElementById("map"), cities, lanes, routePaths),
         panelView: new PanelView(document),
         timelineView: new TimelineView(document),
+        compareView: new CompareView(document),
         routePaths,
         cityPoints,
     };
@@ -126,10 +130,28 @@ async function simulateWeek(views) {
         elements.status.textContent = "";
         render(views);
         setPlaying(!window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+        showComparison(views, replay);
     } catch (error) {
         elements.status.textContent = `Could not simulate: ${error.message}`;
     } finally {
         elements.simulateButton.disabled = false;
+    }
+}
+
+/** The objectives side by side for the replay's week and seed, running the comparison only once per week. */
+async function showComparison(views, replay) {
+    const key = `${replay.start_date}|${replay.seed}`;
+    const weekText = elements.weekSelect.selectedOptions[0]?.text ?? replay.start_date;
+    try {
+        if (!comparisons.has(key)) {
+            views.compareView.showLoading(weekText);
+            comparisons.set(key, await compareObjectives(replay.start_date, replay.seed));
+        }
+        if (playback.replay === replay) {
+            views.compareView.show(comparisons.get(key), replay.policy, replay.objective, weekText);
+        }
+    } catch (error) {
+        views.compareView.showError(error.message);
     }
 }
 

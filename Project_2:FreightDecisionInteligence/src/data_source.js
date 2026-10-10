@@ -28,6 +28,12 @@ export function loadRoutePaths() {
     return fetchJson("data/osm_routes/lane_routes.json");
 }
 
+/** The same week and seed under greedy and every objective: {start_date, seed, runs: [...]}. */
+export function compareObjectives(startDate, seed) {
+    const query = new URLSearchParams({ start: startDate, seed: String(seed) });
+    return fetchJson(`/api/compare?${query}`);
+}
+
 /**
  * Simulate seven days from startDate with a policy, an objective (used by the MILP policy) and a seed; returns the
  * replay (see freight_sim/replay.py).

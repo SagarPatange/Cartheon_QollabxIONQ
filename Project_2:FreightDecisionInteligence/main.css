@@ -471,6 +471,138 @@ input[type="date"] {
 }
 
 
+/* Why these decisions: the rule, then outcomes (bold, with totals) and their reasons (indented, muted). */
+
+.why-rule {
+    margin-bottom: var(--space-2);
+    color: var(--color-secondary);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.why-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+}
+
+.why-table th,
+.why-table td {
+    padding: 3px 0;
+    font-size: 12px;
+    line-height: 1.4;
+    vertical-align: top;
+}
+
+.why-table th {
+    font-weight: 400;
+    text-align: left;
+}
+
+.why-table td {
+    padding-left: var(--space-3);
+    text-align: right;
+}
+
+.why-outcome th,
+.why-outcome td {
+    padding-top: var(--space-2);
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.why-reason th {
+    padding-left: var(--space-3);
+    color: var(--color-muted);
+}
+
+.why-reason td {
+    color: var(--color-secondary);
+}
+
+/* Compare objectives: a card like the timeline, one row per run, the best value in each column bold. */
+
+.compare {
+    margin: 40px var(--space-5) 0;
+    padding: var(--space-4) var(--space-5) var(--space-5);
+    border: 1px solid var(--color-line);
+    border-radius: 16px;
+    background: var(--color-surface);
+}
+
+.compare-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-3);
+}
+
+.compare-header h2 {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.compare-header .note {
+    margin-top: 0;
+}
+
+.compare-scroll {
+    overflow-x: auto;
+}
+
+.compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.compare-table th,
+.compare-table td {
+    padding: var(--space-2) var(--space-3);
+    border-top: 1px solid var(--color-line);
+    font-size: 13px;
+    text-align: right;
+}
+
+.compare-table th:first-child {
+    padding-left: 0;
+    text-align: left;
+}
+
+.compare-table thead th {
+    border-top: none;
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.compare-table tbody th {
+    color: var(--color-secondary);
+    font-weight: 400;
+}
+
+.compare-table td {
+    color: var(--color-muted);
+}
+
+.compare-table td.is-best {
+    color: var(--color-text);
+    font-weight: 700;
+}
+
+/* The run on the map: a purple bar at the start of its row, like the trucks. */
+.compare-table tr.is-current th {
+    box-shadow: inset 3px 0 0 var(--color-truck);
+    padding-left: var(--space-3);
+    color: var(--color-text);
+    font-weight: 600;
+}
+
 /* Timeline */
 
 .layout {

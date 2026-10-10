@@ -43,7 +43,12 @@ the chosen **objective** (`objectives.py`; greedy ignores it):
 
 On the week of 2022-03-07 (seed 1): greedy covers 243 loads for $171k profit; max profit 177 loads, $211k; customer
 satisfaction 266 loads, $140k; low cost 157 loads, $214k with 3.3 % empty miles; max revenue $717k revenue but
-$110k profit; balanced 174 loads, $210k. SciPy is bundled on Qollab; OR-Tools is not. Design and defaults:
+$110k profit; balanced 174 loads, $210k.
+
+The page explains the run two ways. **Why these decisions** (side panel) states the rule the run follows and counts
+every load decided so far by outcome (accepted, still held, declined, expired) and reason, as of the replay's
+clock. **Compare objectives** runs the same week and seed under greedy and every objective
+(`GET /api/compare?start=…&seed=…`) and marks the best value in each column. SciPy is bundled on Qollab; OR-Tools is not. Design and defaults:
 `docs/superpowers/specs/2026-10-10-dispatch-simulator-design.md`.
 
 ## Rebuild the data
