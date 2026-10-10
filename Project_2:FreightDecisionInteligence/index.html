@@ -112,6 +112,31 @@
         </div>
         <p id="why-rule" class="why-rule"></p>
         <div id="why-groups" class="why-groups"></div>
+
+        <div class="epoch" aria-labelledby="epoch-heading">
+            <div class="epoch-header">
+                <h3 id="epoch-heading">Decision by decision</h3>
+                <div class="epoch-nav">
+                    <button id="epoch-prev" class="epoch-step" type="button" aria-label="Previous decision">‹</button>
+                    <span id="epoch-title" class="epoch-title"></span>
+                    <button id="epoch-next" class="epoch-step" type="button" aria-label="Next decision">›</button>
+                </div>
+            </div>
+            <p id="epoch-summary" class="epoch-summary"></p>
+            <div class="epoch-scroll">
+                <table class="epoch-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Load</th>
+                            <th scope="col">Decision</th>
+                            <th scope="col">Why</th>
+                            <th scope="col">Trucks weighed</th>
+                        </tr>
+                    </thead>
+                    <tbody id="epoch-rows"></tbody>
+                </table>
+            </div>
+        </div>
     </section>
 
     <section class="compare" aria-labelledby="compare-title">

@@ -58,3 +58,21 @@ def test_every_decision_comes_with_a_reason_a_dispatcher_can_read():
     assert decision.reasons["taken"] == "Accepted: T1 is the nearest free dry van (in Dallas, 0 empty mi)"
     assert decision.reasons["late"] == "Declined: pickup was 3.0 h ago, past the 2 h grace"
     assert decision.reasons["held"] == "Held: no free dry van can reach Houston in time"
+
+
+def test_greedy_records_the_nearest_trucks_it_weighed_and_picks_the_first():
+    from freight_sim.network import RoadNetwork
+    from freight_sim.policies.greedy import greedy_nearest_truck
+    from freight_sim.scenario import Load
+    from freight_sim.state import DecisionState, TruckView
+
+    network = RoadNetwork(["Dallas, TX", "Memphis, TN", "Houston, TX"],
+                          [[0, 450, 250], [450, 0, 690], [250, 690, 0]], average_mph=50)
+    load = Load("L1", "Dallas, TX", "Memphis, TN", "D", 2000.0, 20 * 60, 33 * 60, 0)
+    trucks = [TruckView("far", "Memphis, TN", "D"), TruckView("near", "Houston, TX", "D"),
+              TruckView("here", "Dallas, TX", "D")]
+    state = DecisionState(minute=9 * 60, open_loads=[load], free_trucks=trucks, network=network)
+    details = greedy_nearest_truck(state).details["L1"]
+    assert details["reachable"] == 3
+    assert [option["truck_id"] for option in details["options"]] == ["here", "near", "far"]
+    assert [option["chosen"] for option in details["options"]] == [True, False, False]

@@ -127,6 +127,7 @@ def build_replay(scenario, result: Result, settings: Settings, start_date: str, 
         "out_of_service": scenario.out_of_service,
         "trips": trips,
         "events": result.events,
+        "epochs": result.epochs,
         "daily": result.daily,
         "summary": result.summary,
     }

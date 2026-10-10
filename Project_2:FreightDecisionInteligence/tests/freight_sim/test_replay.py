@@ -91,3 +91,16 @@ def test_comparing_objectives_runs_greedy_and_every_objective_on_the_same_week()
     assert by_objective["cost"]["empty_mile_share"] == min(row["empty_mile_share"] for row in rows)
     assert by_objective["revenue"]["revenue"] == max(row["revenue"] for row in rows if row["policy"] == "milp")
     json.dumps(rows)
+
+
+def test_the_replay_has_every_decision_epoch_with_each_open_load_and_its_reason():
+    epochs = make_replay()["epochs"]
+    first = epochs[0]
+    assert first["minute"] == 9 * HOUR
+    assert first["open_loads"] == 1
+    assert first["free_trucks"] == 1
+    decision = first["decisions"][0]
+    assert decision["load_id"] == "L1"
+    assert decision["kind"] == "accept"
+    assert decision["truck_id"] == "T1"
+    assert decision["reason"] == "Accepted: first free truck"

@@ -68,6 +68,8 @@ class Result:
     expired_load_ids: list[str] = field(default_factory=list)
     decision_seconds: list[float] = field(default_factory=list)
     events: list[dict] = field(default_factory=list)
+    # One record per decision epoch: what the policy saw and what it decided for each open load, and why.
+    epochs: list[dict] = field(default_factory=list)
     daily: list[dict] = field(default_factory=list)
     summary: dict = field(default_factory=dict)
 
@@ -128,8 +130,10 @@ def decide(minute, open_loads, trucks, last_hold_reason, scenario, policy, setti
     state = DecisionState(minute=minute, open_loads=visible_loads, free_trucks=free_trucks, network=scenario.network)
     started = time.perf_counter()
     decision = policy(state)
-    result.decision_seconds.append(time.perf_counter() - started)
+    decision_seconds = time.perf_counter() - started
+    result.decision_seconds.append(decision_seconds)
     check_decision(decision, open_loads, trucks)
+    result.epochs.append(epoch_record(state, decision, decision_seconds))
 
     for load_id in sorted(decision.decline):
         load = open_loads.pop(load_id)
@@ -149,6 +153,40 @@ def decide(minute, open_loads, trucks, last_hold_reason, scenario, policy, setti
         result.events.extend(trip_events(trip))
     log_holds(minute, open_loads, decision, last_hold_reason, result)
     return new_trips
+
+
+def epoch_record(state: DecisionState, decision: Decision, decision_seconds: float) -> dict:
+    """One decision epoch for the page: the time, how many loads and trucks the policy saw, how long it took, and
+    for every open load the decision (accept, decline or hold), the truck, the reason and the options weighed."""
+    decisions = []
+    for load in state.open_loads:
+        if load.load_id in decision.accept:
+            kind = "accept"
+        elif load.load_id in decision.decline:
+            kind = "decline"
+        else:
+            kind = "hold"
+        details = decision.details.get(load.load_id, {})
+        decisions.append({
+            "load_id": load.load_id,
+            "origin": load.origin,
+            "destination": load.destination,
+            "equipment": load.equipment,
+            "revenue": load.revenue,
+            "pickup": load.pickup_minute,
+            "kind": kind,
+            "truck_id": decision.accept.get(load.load_id),
+            "reason": decision.reasons.get(load.load_id, kind.capitalize()),
+            "reachable": details.get("reachable"),
+            "options": details.get("options", []),
+        })
+    return {
+        "minute": state.minute,
+        "open_loads": len(state.open_loads),
+        "free_trucks": len(state.free_trucks),
+        "decision_ms": 1000 * decision_seconds,
+        "decisions": decisions,
+    }
 
 
 def expire_stale_loads(minute, open_loads, settings, result) -> None:

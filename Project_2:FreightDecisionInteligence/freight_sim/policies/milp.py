@@ -21,7 +21,7 @@ import numpy as np
 from scipy.optimize import Bounds, LinearConstraint, milp
 
 from freight_sim.clock import MINUTES_PER_HOUR
-from freight_sim.policies.greedy import EQUIPMENT_NAMES, PICKUP_GRACE_MINUTES, past_grace_reason
+from freight_sim.policies.greedy import EQUIPMENT_NAMES, OPTIONS_SHOWN, PICKUP_GRACE_MINUTES, past_grace_reason
 from freight_sim.policies.objectives import OBJECTIVES, Objective, PairFacts
 from freight_sim.scenario import Load
 from freight_sim.simulator import Settings
@@ -76,7 +76,7 @@ def assign_by_objective(state: DecisionState, objective: Objective) -> Decision:
             decline.add(load.load_id)
             reasons[load.load_id] = decline_reason
 
-    candidates, reachable_load_ids = find_candidate_pairs(state, loads_to_assign, objective)
+    candidates, reachable_counts = find_candidate_pairs(state, loads_to_assign, objective)
     chosen_pairs = solve_assignment(candidates, len(loads_to_assign), len(state.free_trucks))
     accept = {}
     for pair in chosen_pairs:
@@ -85,8 +85,41 @@ def assign_by_objective(state: DecisionState, objective: Objective) -> Decision:
         accept[load.load_id] = truck.truck_id
         reasons[load.load_id] = accept_reason(truck, pair)
 
+    reachable_load_ids = {loads_to_assign[index].load_id for index, count in reachable_counts.items() if count}
     reasons.update(hold_reasons(loads_to_assign, accept, candidates, reachable_load_ids, objective))
-    return Decision(accept=accept, decline=decline, reasons=reasons)
+    details = describe_options(state, loads_to_assign, candidates, chosen_pairs, reachable_counts)
+    return Decision(accept=accept, decline=decline, reasons=reasons, details=details)
+
+
+def describe_options(state: DecisionState, loads: list[Load], candidates: list[CandidatePair],
+                     chosen_pairs: list[CandidatePair], reachable_counts: dict[int, int]) -> dict[str, dict]:
+    """The decision details for each load: how many trucks could reach it, and its best-scoring few options. The
+    chosen option is always shown; any other option whose truck went to a different load says which one."""
+    chosen_load_by_truck = {}
+    for pair in chosen_pairs:
+        chosen_load_by_truck[pair.truck_index] = pair.load_index
+    candidates_by_load: dict[int, list[CandidatePair]] = {}
+    for pair in candidates:
+        candidates_by_load.setdefault(pair.load_index, []).append(pair)
+
+    details = {}
+    for load_index, load in enumerate(loads):
+        ranked = sorted(candidates_by_load.get(load_index, []), key=lambda pair: -pair.score)
+        shown = ranked[:OPTIONS_SHOWN]
+        chosen = [pair for pair in ranked if chosen_load_by_truck.get(pair.truck_index) == load_index]
+        if chosen and chosen[0] not in shown:
+            shown = shown[:OPTIONS_SHOWN - 1] + chosen
+        options = []
+        for pair in shown:
+            truck = state.free_trucks[pair.truck_index]
+            taken_by_index = chosen_load_by_truck.get(pair.truck_index)
+            option = {"truck_id": truck.truck_id, "city": truck.city, "empty_miles": pair.empty_miles,
+                      "margin": pair.margin, "score": pair.score, "chosen": taken_by_index == load_index}
+            if taken_by_index is not None and taken_by_index != load_index:
+                option["taken_by"] = loads[taken_by_index].load_id
+            options.append(option)
+        details[load.load_id] = {"reachable": reachable_counts.get(load_index, 0), "options": options}
+    return details
 
 
 def accept_reason(truck: TruckView, pair: CandidatePair) -> str:
@@ -131,11 +164,11 @@ def hold_reasons(loads: list[Load], accept: dict[str, str], candidates: list[Can
 
 
 def find_candidate_pairs(state: DecisionState, loads: list[Load],
-                         objective: Objective) -> tuple[list[CandidatePair], set[str]]:
-    """Every load–truck pair that can be on time and that the objective scores, and the IDs of loads some free truck
-    can reach in time (scored or not)."""
+                         objective: Objective) -> tuple[list[CandidatePair], dict[int, int]]:
+    """Every load–truck pair that can be on time and that the objective scores, and for each load (by index) how
+    many free trucks can reach it in time (scored or not)."""
     candidates = []
-    reachable_load_ids = set()
+    reachable_counts = {}
     network = state.network
     for load_index, load in enumerate(loads):
         latest_pickup_minute = load.pickup_minute + PICKUP_GRACE_MINUTES
@@ -147,7 +180,7 @@ def find_candidate_pairs(state: DecisionState, loads: list[Load],
             is_too_late = arrival_minute > latest_pickup_minute
             if is_too_late:
                 continue
-            reachable_load_ids.add(load.load_id)
+            reachable_counts[load_index] = reachable_counts.get(load_index, 0) + 1
             empty_miles = network.miles(truck.city, load.origin)
             loading_start_minute = max(arrival_minute, load.pickup_minute)
             loaded_hours = network.truck_hours(load.origin, load.destination)
@@ -162,7 +195,7 @@ def find_candidate_pairs(state: DecisionState, loads: list[Load],
             score = objective.score(facts)
             if score is not None:
                 candidates.append(CandidatePair(load_index, truck_index, empty_miles, facts.margin, score))
-    return candidates, reachable_load_ids
+    return candidates, reachable_counts
 
 
 def solve_assignment(candidates: list[CandidatePair], load_count: int, truck_count: int) -> list[CandidatePair]:

@@ -20,6 +20,7 @@ error-correcting code, carry it across a chain of repeaters, and turn it into a 
 5. [Level 2: A logical Bell pair](#level-2-a-logical-bell-pair)
 6. [Level 3: A secret key across a repeater chain](#level-3-a-secret-key-across-a-repeater-chain)
 7. [References](#references)
+8. [Disclosures](#disclosures)
 
 ---
 
@@ -347,3 +348,42 @@ time, and then causes an error half the time, so she adds about **25 %** errors 
 
 Figures 1–4 are reproduced from [1]. Mario, Luigi, Peach and Toad belong to Nintendo; this is a non-commercial fan
 project, and its pixel art is drawn from scratch in code. Font: Press Start 2P by CodeMan38 (SIL Open Font License).
+
+---
+
+## Disclosures
+
+This effort is supported by Qollab & IonQ.
+
+**Starting points, from before the build window opened (Oct 9, 2026, 19:00 ET):**
+
+- **Quantum-Repeater-Encoding** (S. Patange *et al.*,
+  [github.com/SagarPatange/Quantum-Repeater-Encoding](https://github.com/SagarPatange/Quantum-Repeater-Encoding)):
+  our earlier SeQUeNCe-based [10] simulation of QRE-CEC, the code behind [1]. It was the starting point for the
+  protocol the game plays: heralded Bell pairs, Steane encoding, the teleported CNOT and encoded swapping.
+- **Our paper [1]** (arXiv:2605.06928, `docs/paper.pdf`): the physics the levels teach. Figures 1–4 are reproduced
+  from it.
+- **Mario-QNext**, a first prototype of this game made on Oct 8, 2026 and copied into this repo on Oct 9 at about
+  21:10 ET. It already had the Stim backend (Barrett–Kok heralding, the Steane code, the logical link, the QRE-CEC
+  chain, BBM92 key distillation and the FastAPI server) with its tests, the title screen and world map, Level 1, the
+  logical Bell pair level (now Level 3), the secret message level (now Level 4), and a one-page Toad's hut.
+
+**Built during the hackathon (Oct 9–11, 2026):**
+
+- Level 2: Teleportation (`game/teleport.html`, `game/src/teleport/`, `backend/src/quantum_bros/protocol/teleport.py`).
+- Toad's BB84 hut, and Toad's QEC hut rebuilt as 8 illustrated panels: the 3-qubit code, [[n,k,d]], the Steane code
+  and its encoder, fault tolerance and flag qubits.
+- The world map's branch with both huts, Level 1 polish, and faster heralding in Level 3.
+- The Qiskit notebooks `QRECEC_3QubitRepetition.ipynb` and `QRECEC_5QubitRepetition.ipynb`: QRE-CEC with 3- and
+  5-qubit repetition codes, runnable on Qollab's simulators.
+
+**Papers:** references [1]–[13] above. Toad's QEC hut also cites A. M. Steane, *Proc. R. Soc. A* **452**, 2551
+(1996); M. A. Nielsen and I. L. Chuang, *Quantum Computation and Quantum Information*, ch. 10; and R. Chao and
+B. W. Reichardt, *Phys. Rev. Lett.* **121**, 050502 (2018).
+
+**Libraries:** Stim 1.16.0 (Apache-2.0), FastAPI (MIT), Uvicorn (BSD-3-Clause), Qiskit and Qiskit Aer
+(Apache-2.0; Aer only as the notebooks' local fallback), pytest (MIT), Ruff (MIT), HTTPX (BSD-3-Clause). The game
+itself uses no JavaScript libraries. Font: Press Start 2P (SIL Open Font License), from Google Fonts.
+
+**AI tools:** Claude Code (Anthropic) was used to write code, tests and documentation, and to check page layouts in
+the browser.

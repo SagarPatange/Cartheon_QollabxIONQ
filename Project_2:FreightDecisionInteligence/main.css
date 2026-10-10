@@ -677,6 +677,143 @@ input[type="date"] {
     background: linear-gradient(to right, var(--color-truck) var(--share), var(--color-line) var(--share));
 }
 
+/* Decision by decision: one decision epoch at a time, inside the Why card. */
+
+.epoch {
+    margin-top: 28px;
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-line);
+}
+
+.epoch-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.epoch-header h3 {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.epoch-nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.epoch-title {
+    font-size: 14px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.epoch-step {
+    width: 36px;
+    min-height: 36px;
+    padding: 0;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.epoch-step:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.epoch-summary {
+    margin: var(--space-2) 0 var(--space-3);
+    color: var(--color-muted);
+    font-size: 13px;
+}
+
+.epoch-scroll {
+    max-height: 520px;
+    overflow: auto;
+    border-top: 1px solid var(--color-line);
+}
+
+.epoch-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.epoch-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: var(--space-2) var(--space-3) var(--space-2) 0;
+    background: var(--color-surface);
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-align: left;
+    text-transform: uppercase;
+}
+
+.epoch-table tbody th,
+.epoch-table tbody td {
+    padding: var(--space-3) var(--space-3) var(--space-3) 0;
+    border-top: 1px solid var(--color-line);
+    font-size: 13px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.epoch-lane {
+    display: block;
+    color: var(--color-text);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.epoch-facts {
+    display: block;
+    margin-top: 2px;
+    color: var(--color-muted);
+    font-size: 12px;
+    font-weight: 400;
+    white-space: nowrap;
+}
+
+.epoch-reason {
+    min-width: 260px;
+    color: var(--color-secondary);
+}
+
+.epoch-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-width: 320px;
+}
+
+.epoch-reach {
+    flex-basis: 100%;
+    color: var(--color-muted);
+    font-size: 12px;
+}
+
+.epoch-option {
+    padding: 3px 10px;
+    border: 1px solid var(--color-faint);
+    border-radius: 999px;
+    color: var(--color-muted);
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+/* The truck the policy picked: lit in the trucks' purple. */
+.epoch-option.is-chosen {
+    border-color: var(--color-truck);
+    background: color-mix(in srgb, var(--color-truck) 22%, transparent);
+    color: var(--color-text);
+    font-weight: 600;
+}
+
 /* Compare objectives: a card like the timeline, one row per run, the best value in each column bold. */
 
 .compare {

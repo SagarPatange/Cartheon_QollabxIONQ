@@ -61,10 +61,19 @@ python tools/build_lane_routes.py                                              #
 
 ## Disclosures
 
-- Loads, lanes, fleet: "Logistics Operations Database" by yogape on Kaggle, synthetic, MIT.
+**Prior work:** none. All code was written during the build window (first code commit Oct 10, 2026).
+
+**Open data used:**
+
+- **Loads, lanes, rates, facilities and fleet:** the "Logistics Operations Database" by yogape on Kaggle, a synthetic
+  dataset of a US truckload carrier, MIT license (copy in `data/kaggle_logistics/LICENSE`; driver names, license
+  numbers and birth dates removed on import).
   https://www.kaggle.com/datasets/yogape/logistics-operations-database
-- City coordinates: US Census Bureau 2023 Gazetteer of places, public domain.
-- Road paths and distances (`data/osm_routes/`, **ODbL, not MIT**) and map tiles: © OpenStreetMap contributors, routed with
-  the OSRM demo server. See `data/osm_routes/NOTICE.md`.
-- Map library: Leaflet 1.9.4 (BSD-2-Clause), loaded from the jsDelivr CDN.
-- AI tools: Claude Code was used to research datasets, write code and draft documentation.
+- **City coordinates:** US Census Bureau 2023 Gazetteer of places, public domain.
+- **Road paths and drive distances** (`data/osm_routes/`, **ODbL, not MIT**) and the map tiles: © OpenStreetMap
+  contributors, routed with the public OSRM demo server. See `data/osm_routes/NOTICE.md`.
+
+**Libraries:** SciPy 1.14.1 (BSD-3-Clause) for the MILP policy (HiGHS solver), Leaflet 1.9.4 (BSD-2-Clause) from
+the jsDelivr CDN for the map, and pytest and Ruff (MIT) for tests and linting.
+
+**AI tools:** Claude Code (Anthropic) was used to research datasets, write code and tests, and draft documentation.

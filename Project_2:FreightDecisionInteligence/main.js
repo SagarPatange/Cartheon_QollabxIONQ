@@ -5,6 +5,7 @@
  */
 
 import { CompareView } from "./src/compare_view.js";
+import { EpochView } from "./src/epoch_view.js";
 import { compareObjectives, loadCities, loadLanes, loadRoutePaths, runSimulation } from "./src/data_source.js";
 import { PanelView } from "./src/panel_view.js";
 import { advanceTime } from "./src/playback.js";
@@ -52,10 +53,17 @@ async function start() {
         timelineView: new TimelineView(document),
         compareView: new CompareView(document),
         whyView: new WhyView(document),
+        epochView: new EpochView(document),
         routePaths,
         cityPoints,
     };
     views.timelineView.onFilterChange = () => render(views);
+    // Stepping to another decision pauses the replay and moves the map and clock to that moment.
+    views.epochView.onStep = (minute) => {
+        setPlaying(false);
+        playback.minute = minute;
+        render(views);
+    };
     fillMonthChoices();
     keepRunControlsOnOneRow();
     connectControls(views);
@@ -198,6 +206,7 @@ function render(views) {
     const fleetCounts = countFleet(positions, replay.out_of_service.length);
     views.panelView.update(replay, playback.minute, metricsUntil(replay, playback.minute), fleetCounts);
     views.whyView.update(replay, playback.minute);
+    views.epochView.update(replay, playback.minute);
     views.timelineView.update(replay, playback.minute);
     elements.timeSlider.value = String(Math.floor(playback.minute));
 }

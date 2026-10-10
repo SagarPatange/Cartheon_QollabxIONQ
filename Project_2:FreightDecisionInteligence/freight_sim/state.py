@@ -33,8 +33,14 @@ class DecisionState:
 @dataclass(frozen=True)
 class Decision:
     """xₜ: loads to accept (load ID → truck ID) and loads to decline. Open loads in neither are held. `reasons` holds
-    a short sentence per load explaining the choice, shown to the user in the event timeline."""
+    a short sentence per load explaining the choice, shown to the user in the event timeline; `details` holds the
+    options behind it."""
 
     accept: dict[str, str]
     decline: set[str]
     reasons: dict[str, str] = field(default_factory=dict)
+    # The logic behind each load's choice, for the page's decision-by-decision view: load ID →
+    # {"reachable": free trucks with the right trailer that can make the pickup in time,
+    #  "options": the best few of them as the policy ranked them, each {"truck_id", "city", "empty_miles", and for
+    #  the optimizer "margin", "score", "taken_by" (the load it went to instead, if any)}, "chosen" on the one picked}.
+    details: dict[str, dict] = field(default_factory=dict)

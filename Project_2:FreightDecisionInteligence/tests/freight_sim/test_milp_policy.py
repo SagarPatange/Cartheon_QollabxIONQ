@@ -70,3 +70,23 @@ def test_every_decision_comes_with_a_reason_a_dispatcher_can_read():
 def test_no_open_loads_or_no_free_trucks_is_fine():
     assert milp_max_profit(make_state([], [TruckView("T1", "Dallas, TX", "D")])).accept == {}
     assert milp_max_profit(make_state([make_load("L1")], [])).accept == {}
+
+
+def test_each_load_records_the_options_the_optimizer_weighed():
+    # Greedy-style trap from the first test: the optimizer gives the Houston truck to the Houston load, so for the
+    # Dallas load that truck is an option it did not take, and the details say where it went instead.
+    loads = [make_load("dallas", pickup_hour=20), make_load("houston", pickup_hour=40, origin="Houston, TX")]
+    trucks = [TruckView("A", "Houston, TX", "D"), TruckView("B", "Memphis, TN", "D")]
+    details = milp_max_profit(make_state(loads, trucks)).details
+    assert details["dallas"]["reachable"] == 2
+    dallas_options = {option["truck_id"]: option for option in details["dallas"]["options"]}
+    assert dallas_options["B"]["chosen"] is True
+    assert dallas_options["A"]["chosen"] is False
+    assert dallas_options["A"]["taken_by"] == "houston"
+    assert dallas_options["A"]["score"] > dallas_options["B"]["score"]
+
+
+def test_a_held_load_records_that_no_truck_could_reach_it():
+    loads = [make_load("far", pickup_hour=11, origin="Houston, TX")]
+    details = milp_max_profit(make_state(loads, [TruckView("T1", "Memphis, TN", "D")])).details
+    assert details["far"] == {"reachable": 0, "options": []}
