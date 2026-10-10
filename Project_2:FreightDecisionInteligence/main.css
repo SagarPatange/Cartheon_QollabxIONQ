@@ -162,6 +162,117 @@ select {
     font-size: 14px;
 }
 
+/* Customizable dropdowns where the browser supports them (Chrome 135+): the open list is a dark rounded card that
+   fades in under its pill, options are rounded rows that light up purple like the trucks, the chosen one carries a
+   purple dot, and the chevron flips while open. Other browsers keep the native list above. */
+@supports (appearance: base-select) {
+    .run-controls select,
+    .run-controls select::picker(select) {
+        appearance: base-select;
+    }
+
+    .run-controls select {
+        display: inline-flex;
+        align-items: center;
+        gap: 14px;
+        padding-right: 18px;
+        background-image: none;
+    }
+
+    .run-controls select:open {
+        border-color: var(--color-truck);
+        background: color-mix(in srgb, var(--color-truck) 10%, var(--color-background));
+    }
+
+    .run-controls select:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    .run-controls select::picker-icon {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-right: 2px solid var(--color-muted);
+        border-bottom: 2px solid var(--color-muted);
+        rotate: 45deg;
+        translate: 0 -2px;
+        transition: rotate 180ms ease, translate 180ms ease;
+    }
+
+    .run-controls select:open::picker-icon {
+        rotate: 225deg;
+        translate: 0 2px;
+        border-color: var(--color-text);
+    }
+
+    .run-controls select::picker(select) {
+        min-width: anchor-size(width);
+        max-height: 340px;
+        margin-top: 8px;
+        padding: 6px;
+        overflow-y: auto;
+        border: 1px solid var(--color-faint);
+        border-radius: 16px;
+        background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+        backdrop-filter: blur(14px);
+        box-shadow: 0 18px 48px rgb(0 0 0 / 0.55), 0 0 0 1px rgb(255 255 255 / 0.03) inset;
+        opacity: 1;
+        translate: 0 0;
+        transition: opacity 160ms ease, translate 160ms ease, overlay 160ms allow-discrete,
+            display 160ms allow-discrete;
+    }
+
+    @starting-style {
+        .run-controls select::picker(select):popover-open {
+            opacity: 0;
+            translate: 0 -6px;
+        }
+    }
+
+    .run-controls option {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        color: var(--color-secondary);
+        font-size: 15px;
+        white-space: nowrap;
+        cursor: pointer;
+        transition: background-color 100ms ease, color 100ms ease;
+    }
+
+    .run-controls option:hover,
+    .run-controls option:focus-visible {
+        outline: none;
+        background: color-mix(in srgb, var(--color-truck) 20%, transparent);
+        color: var(--color-text);
+    }
+
+    .run-controls option:checked {
+        color: var(--color-text);
+        font-weight: 600;
+    }
+
+    /* The chosen option's mark: a purple dot at the end of the row instead of a tick at the start. */
+    .run-controls option::checkmark {
+        content: "";
+        order: 1;
+        width: 8px;
+        height: 8px;
+        margin-left: auto;
+        border-radius: 50%;
+        background: var(--color-truck);
+        box-shadow: 0 0 10px var(--color-truck);
+    }
+
+    .run-controls option:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+}
+
 .seed-input {
     width: 84px;
 }
@@ -471,54 +582,99 @@ input[type="date"] {
 }
 
 
-/* Why these decisions: the rule, then outcomes (bold, with totals) and their reasons (indented, muted). */
+/* Why these decisions: a card like Compare objectives. The rule on top, then one column per outcome with its
+   total, and each reason with a thin purple bar for its share of that outcome. */
 
-.why-rule {
-    margin-bottom: var(--space-2);
-    color: var(--color-secondary);
-    font-size: 12px;
-    line-height: 1.5;
+.why {
+    margin: 40px var(--space-5) 0;
+    padding: var(--space-4) var(--space-5) var(--space-5);
+    border: 1px solid var(--color-line);
+    border-radius: 16px;
+    background: var(--color-surface);
 }
 
-.why-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-variant-numeric: tabular-nums;
+.section-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-3);
 }
 
-.why-table th,
-.why-table td {
-    padding: 3px 0;
-    font-size: 12px;
-    line-height: 1.4;
-    vertical-align: top;
-}
-
-.why-table th {
-    font-weight: 400;
-    text-align: left;
-}
-
-.why-table td {
-    padding-left: var(--space-3);
-    text-align: right;
-}
-
-.why-outcome th,
-.why-outcome td {
-    padding-top: var(--space-2);
-    color: var(--color-text);
-    font-size: 13px;
+.section-header h2 {
+    font-size: 16px;
     font-weight: 600;
 }
 
-.why-reason th {
-    padding-left: var(--space-3);
+.section-header .note {
+    margin-top: 0;
+}
+
+.why-rule {
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--color-line);
+    color: var(--color-secondary);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.why-groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--space-4) 32px;
+}
+
+.why-group-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: var(--space-2);
+}
+
+.why-group-header h3 {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.why-total {
+    font-size: 22px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.why-reasons {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.why-reasons li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px var(--space-3);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.why-reason-text {
     color: var(--color-muted);
 }
 
-.why-reason td {
+.why-reason-count {
     color: var(--color-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
+/* The share of this outcome: a track the width of the column, filled to --share in the trucks' purple. */
+.why-bar {
+    grid-column: 1 / -1;
+    height: 4px;
+    border-radius: 999px;
+    background: linear-gradient(to right, var(--color-truck) var(--share), var(--color-line) var(--share));
 }
 
 /* Compare objectives: a card like the timeline, one row per run, the best value in each column bold. */
@@ -529,23 +685,6 @@ input[type="date"] {
     border: 1px solid var(--color-line);
     border-radius: 16px;
     background: var(--color-surface);
-}
-
-.compare-header {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: var(--space-3) var(--space-4);
-    margin-bottom: var(--space-3);
-}
-
-.compare-header h2 {
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.compare-header .note {
-    margin-top: 0;
 }
 
 .compare-scroll {
@@ -595,11 +734,15 @@ input[type="date"] {
     font-weight: 700;
 }
 
-/* The run on the map: a purple bar at the start of its row, like the trucks. */
-.compare-table tr.is-current th {
-    box-shadow: inset 3px 0 0 var(--color-truck);
-    padding-left: var(--space-3);
+/* The run on the map: its whole row lit in the trucks' purple. */
+.compare-table tr.is-current th,
+.compare-table tr.is-current td {
+    background: color-mix(in srgb, var(--color-truck) 22%, transparent);
     color: var(--color-text);
+}
+
+/* The run name stays in line with the other rows' names. */
+.compare-table tr.is-current th {
     font-weight: 600;
 }
 

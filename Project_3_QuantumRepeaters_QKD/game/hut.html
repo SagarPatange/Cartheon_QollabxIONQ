@@ -1,7 +1,8 @@
 <!doctype html>
 <!--
-  Toad's QEC hut: not a level, a place on the world map where Mario learns basic quantum error correction.
-  Front end only. Open it from the world map (start.html#map).
+  Toad's QEC hut: not a level, a place on the world map where Mario learns quantum error correction, from the
+  3-qubit code to the Steane code, fault tolerance and flag qubits, before Level 3. Front end only. Open it from the
+  world map (start.html#map).
 -->
 <html lang="en">
 <head>
@@ -12,23 +13,45 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
     <link rel="stylesheet" href="styles/world.css">
     <link rel="stylesheet" href="styles/hut.css">
+    <link rel="stylesheet" href="styles/qec_hut.css">
     <script type="module" src="src/hut/hut_main.js"></script>
 </head>
 <body class="hut-page">
     <header class="hud">
-        <div class="hud-item"><span class="hud-label">TOAD'S HUT</span><span>QEC</span></div>
+        <div class="hud-item"><span class="hud-label">TOAD'S HUT · QEC</span></div>
         <a class="hud-link" href="start.html#map-hut">◀ Map</a>
     </header>
 
     <main class="hut-room">
-        <div id="toad" class="toad"></div>
-        <div class="toad-speech">
-            <p>Welcome, Mario! Qubits are fragile: a stray bump can flip |0⟩ into |1⟩. You can't just copy a qubit
-                to keep a backup, but you <em>can</em> spread one logical qubit over several physical ones.</p>
-            <p>Here is the simplest code: |0̄⟩ = |000⟩ and |1̄⟩ = |111⟩. Two parity checks compare neighbours without
-                ever reading the logical bit, so they spot a flip without destroying the superposition.</p>
+        <div class="hut-toad-column">
+            <div id="toad" class="toad" role="img" aria-label="Toad"></div>
+            <p class="hut-toad-name">Toad</p>
         </div>
+        <section class="toad-speech" aria-labelledby="page-title">
+            <h1 id="page-title" class="hut-page-title">Toad's QEC hut</h1>
+            <div class="hut-panel" aria-live="polite">
+                <h2 id="panel-heading" class="hut-panel-heading">Why QEC?</h2>
+                <div id="panel-lines" class="hut-panel-lines"></div>
+            </div>
+            <div id="panel-picture" class="hut-picture"></div>
+            <div class="hut-controls">
+                <nav class="hut-paging" aria-label="Panels">
+                    <button id="previous-button" class="pixel-button is-secondary" type="button">◀ Back</button>
+                    <span id="panel-counter" class="hut-counter">1 / 8</span>
+                    <button id="next-button" class="pixel-button" type="button">Next ▶</button>
+                </nav>
+                <p class="hut-keys">Space, Enter or Right arrow: next panel. Left arrow: back.</p>
+            </div>
+        </section>
     </main>
 
+    <footer class="hut-footer">
+        <p class="hut-sources">
+            <span id="panel-source"></span>
+            <a id="qec-wikipedia-link" target="_blank" rel="noopener">QEC on Wikipedia (new tab)</a>
+            <a id="steane-wikipedia-link" target="_blank" rel="noopener">Steane code on Wikipedia (new tab)</a>
+            <span class="hut-attribution">This effort is supported by Qollab &amp; IonQ.</span>
+        </p>
+    </footer>
 </body>
 </html>

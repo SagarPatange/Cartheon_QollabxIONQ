@@ -19,6 +19,15 @@ test("a picture too tall or too wide shrinks by the tighter of the two", () => {
 });
 
 
+test("a picture is only enlarged when the caller allows it, and then no further than allowed", () => {
+    const smallPicture = { widthPx: 100, heightPx: 100 };
+    const bigBox = { widthPx: 400, heightPx: 300 };
+    assert.equal(findPictureScale(smallPicture, bigBox), 1);
+    assert.equal(findPictureScale(smallPicture, bigBox, 1.8), 1.8);
+    assert.equal(findPictureScale(smallPicture, { widthPx: 150, heightPx: 300 }, 1.8), 1.5);
+});
+
+
 test("a tiny or hidden box never shrinks the picture below the readable minimum", () => {
     assert.equal(findPictureScale({ widthPx: 400, heightPx: 400 }, { widthPx: 0, heightPx: 0 }), MIN_PICTURE_SCALE);
     assert.equal(findPictureScale({ widthPx: 0, heightPx: 0 }, { widthPx: 100, heightPx: 100 }), 1);

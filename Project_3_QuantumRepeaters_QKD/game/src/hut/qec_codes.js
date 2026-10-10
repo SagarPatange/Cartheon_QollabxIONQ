@@ -8,7 +8,8 @@
  * B. W. Reichardt, Phys. Rev. Lett. 121, 050502 (2018) for flag qubits.
  *
  * Circuits are {wires, columns}: wires is a list of {id, label, start}, columns a list of gate lists, left to right.
- * A gate is {gate: "h", wire}, {gate: "cnot", control, target} or {gate: "measure", wire, basis}.
+ * A gate is {gate: "h", wire}, {gate: "cnot", control, target} or {gate: "measure", wire, basis?} (basis "X" or "Z";
+ * none means Z).
  */
 
 // N&C §10.1.1: checks Z1Z2 and Z2Z3 of the 3-qubit bit-flip code, as 1-based qubit positions.
@@ -310,14 +311,14 @@ export function buildCheckCircuit(hasFlag) {
         wires.push({ id: findDataWireId(position), label: findDataWireId(position), start: "" });
         dataCnots.push([{ gate: "cnot", control: ANCILLA_WIRE, target: findDataWireId(position) }]);
     }
-    wires.push({ id: ANCILLA_WIRE, label: "anc", start: "|+⟩", endLabel: "X" });
-    const measureColumn = [{ gate: "measure", wire: ANCILLA_WIRE }];
+    wires.push({ id: ANCILLA_WIRE, label: "anc", start: "|+⟩" });
+    const measureColumn = [{ gate: "measure", wire: ANCILLA_WIRE, basis: "X" }];
     if (!hasFlag) {
         return { wires, columns: [...dataCnots, measureColumn] };
     }
-    wires.push({ id: FLAG_WIRE, label: "flag", start: "|0⟩", endLabel: "Z" });
+    wires.push({ id: FLAG_WIRE, label: "flag", start: "|0⟩" });
     const flagCnot = [{ gate: "cnot", control: ANCILLA_WIRE, target: FLAG_WIRE }];
-    measureColumn.push({ gate: "measure", wire: FLAG_WIRE });
+    measureColumn.push({ gate: "measure", wire: FLAG_WIRE, basis: "Z" });
     const columns = [dataCnots[0], flagCnot, dataCnots[1], dataCnots[2], flagCnot, dataCnots[3], measureColumn];
     return { wires, columns };
 }

@@ -13,6 +13,7 @@ import { TimelineView } from "./src/timeline_view.js";
 import { truckPositions } from "./src/truck_motion.js";
 import { fitRowToContainer } from "./src/fit_one_row.js";
 import { UsMapView } from "./src/us_map_view.js";
+import { WhyView } from "./src/why_view.js";
 import { WEEKS_PER_MONTH, listMonths, weekLabel, weekStartFor } from "./src/week_picker.js";
 
 const MINUTES_PER_DAY = 24 * 60;
@@ -50,6 +51,7 @@ async function start() {
         panelView: new PanelView(document),
         timelineView: new TimelineView(document),
         compareView: new CompareView(document),
+        whyView: new WhyView(document),
         routePaths,
         cityPoints,
     };
@@ -151,7 +153,10 @@ async function showComparison(views, replay) {
             views.compareView.show(comparisons.get(key), replay.policy, replay.objective, weekText);
         }
     } catch (error) {
-        views.compareView.showError(error.message);
+        // A server started before /api/compare existed answers 404: say how to fix it.
+        const isOldServer = error.message.includes("HTTP 404");
+        const message = isOldServer ? "the server is running older code; restart it (npm run serve)" : error.message;
+        views.compareView.showError(message);
     }
 }
 
@@ -192,6 +197,7 @@ function render(views) {
     views.mapView.showTrucks(positions, replay.out_of_service, views.cityPoints);
     const fleetCounts = countFleet(positions, replay.out_of_service.length);
     views.panelView.update(replay, playback.minute, metricsUntil(replay, playback.minute), fleetCounts);
+    views.whyView.update(replay, playback.minute);
     views.timelineView.update(replay, playback.minute);
     elements.timeSlider.value = String(Math.floor(playback.minute));
 }

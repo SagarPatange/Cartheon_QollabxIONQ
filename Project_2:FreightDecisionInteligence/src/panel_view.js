@@ -1,9 +1,7 @@
 /**
- * The side panel: simulated date and time, the numbers being optimised so far this week, the fleet right now, and
- * why the dispatcher made its decisions (the rule it follows, and every load so far by outcome and reason).
+ * The side panel: simulated date and time, the numbers being optimised so far this week, and the fleet right now.
  */
 
-import { summarizeDecisions } from "./decision_reasons.js";
 import { formatDay, formatMoney, simulationClock } from "./format.js";
 
 export class PanelView {
@@ -27,36 +25,7 @@ export class PanelView {
         this.find("fleet-empty").textContent = String(fleetCounts.empty);
         this.find("fleet-parked").textContent = String(fleetCounts.parked);
         this.find("fleet-out").textContent = String(fleetCounts.outOfService);
-        this.showReasons(replay, minute);
     }
-
-    /** The run's rule, then each outcome with its total and the reasons behind it, most common first. */
-    showReasons(replay, minute) {
-        this.find("why-rule").textContent = `${replay.rule.label}: ${replay.rule.description}`;
-        const rows = [];
-        for (const outcome of summarizeDecisions(replay.events, minute)) {
-            rows.push(buildReasonRow(outcome.title, outcome.total, "why-outcome"));
-            for (const entry of outcome.reasons) {
-                rows.push(buildReasonRow(entry.reason, entry.count, "why-reason"));
-            }
-        }
-        if (rows.length === 0) {
-            rows.push(buildReasonRow("No loads decided yet", "", "why-reason"));
-        }
-        this.find("why-rows").replaceChildren(...rows);
-    }
-}
-
-function buildReasonRow(text, count, className) {
-    const row = document.createElement("tr");
-    row.className = className;
-    const textCell = document.createElement("th");
-    textCell.scope = "row";
-    textCell.textContent = text;
-    const countCell = document.createElement("td");
-    countCell.textContent = String(count);
-    row.append(textCell, countCell);
-    return row;
 }
 
 function formatPercent(fraction) {

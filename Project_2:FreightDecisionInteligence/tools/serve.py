@@ -25,6 +25,12 @@ COMPARE_PATH = "/api/compare"
 
 
 class DispatchRequestHandler(SimpleHTTPRequestHandler):
+    def end_headers(self) -> None:
+        # A development server: the browser must never keep an old copy of the page's files, or a page and a server
+        # from different versions meet (as on 2026-10-10, "Cannot read properties of undefined").
+        self.send_header("Cache-Control", "no-store")
+        super().end_headers()
+
     def do_GET(self) -> None:
         url = urlsplit(self.path)
         if url.path not in (SIMULATE_PATH, COMPARE_PATH):

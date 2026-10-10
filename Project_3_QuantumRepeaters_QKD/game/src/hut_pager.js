@@ -19,8 +19,10 @@ const TOAD_PIXEL_SIZE = 8;
  *
  * @param {{heading: string, lines: string[], picture: string}[]} panels - the hut's panels, in order.
  * @param {(pictureName: string) => Element} buildPanelPicture - draws one panel's picture.
+ * @param {{maxPictureScale?: number}} [options] - how much a picture may be enlarged to fill its box (1, the
+ *     default, never enlarges; findPictureScale).
  */
-export function startHutPager(panels, buildPanelPicture) {
+export function startHutPager(panels, buildPanelPicture, options = {}) {
     const elements = findElementsById({
         toadElement: "toad",
         headingElement: "panel-heading",
@@ -31,13 +33,13 @@ export function startHutPager(panels, buildPanelPicture) {
         pictureElement: "panel-picture",
     });
     elements.toadElement.append(drawSprite(TOAD_SPRITE, TOAD_PIXEL_SIZE, "toad-sprite"));
-    const hut = { panels, buildPanelPicture, panelIndex: 0 };
+    const hut = { panels, buildPanelPicture, panelIndex: 0, maxPictureScale: options.maxPictureScale ?? 1 };
     elements.previousButton.addEventListener("click", () => pageTo(hut, elements, "previous"));
     elements.nextButton.addEventListener("click", () => pageTo(hut, elements, "next"));
     document.addEventListener("keydown", (event) => handleKey(hut, elements, event));
-    window.addEventListener("resize", () => fitPictureToBox(elements.pictureElement));
+    window.addEventListener("resize", () => fitPictureToBox(elements.pictureElement, hut.maxPictureScale));
     // The pixel font loads after the first layout and changes the picture's size, so fit it again then.
-    document.fonts.ready.then(() => fitPictureToBox(elements.pictureElement));
+    document.fonts.ready.then(() => fitPictureToBox(elements.pictureElement, hut.maxPictureScale));
     renderPanel(hut, elements);
 }
 
@@ -83,7 +85,7 @@ function renderPanel(hut, elements) {
     }
     elements.linesElement.replaceChildren(...lineElements);
     elements.pictureElement.replaceChildren(hut.buildPanelPicture(panel.picture));
-    fitPictureToBox(elements.pictureElement);
+    fitPictureToBox(elements.pictureElement, hut.maxPictureScale);
     elements.counterElement.textContent = describePanelPosition(hut.panelIndex, hut.panels.length);
     const isFirstPanel = hut.panelIndex === 0;
     const isLastPanel = hut.panelIndex === hut.panels.length - 1;
@@ -97,8 +99,9 @@ function renderPanel(hut, elements) {
  * Shrink the picture (CSS zoom) to the room its box has, so the whole panel fits the window without scrolling.
  *
  * @param {HTMLElement} pictureElement - the #panel-picture box, holding one picture.
+ * @param {number} maxPictureScale - the most the picture may be enlarged.
  */
-function fitPictureToBox(pictureElement) {
+function fitPictureToBox(pictureElement, maxPictureScale) {
     const contentElement = pictureElement.firstElementChild;
     contentElement.style.zoom = "1";
     const boxStyle = window.getComputedStyle(pictureElement);
@@ -109,7 +112,7 @@ function fitPictureToBox(pictureElement) {
         heightPx: pictureElement.clientHeight - paddingYPx,
     };
     const contentSize = { widthPx: contentElement.scrollWidth, heightPx: contentElement.scrollHeight };
-    contentElement.style.zoom = String(findPictureScale(contentSize, boxSize));
+    contentElement.style.zoom = String(findPictureScale(contentSize, boxSize, maxPictureScale));
 }
 
 

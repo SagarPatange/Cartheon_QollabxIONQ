@@ -1,0 +1,287 @@
+/*
+ * Toad's QEC hut on top of world.css and hut.css: the pictures of the QEC panels (circuits, tables, the Steane
+ * diagram). The page layout, controls and footer are shared with the BB84 hut and live in hut.css.
+ */
+
+/* ---------- Circuits (circuit_picture.js) ---------- */
+
+.qec-circuit {
+    display: block;
+    font-family: var(--font-pixel);
+    font-size: 12px;
+}
+
+.qec-circuit text {
+    fill: var(--ink);
+}
+
+.qec-wire {
+    stroke: var(--ink);
+    stroke-width: 2;
+}
+
+/* A wire segment an X fault has spread to: red and thick, and the wire ends in an "X!" note as well. */
+.qec-wire.is-faulty {
+    stroke: var(--error-red);
+    stroke-width: 6;
+}
+
+.qec-wire-start {
+    font-family: system-ui, sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.qec-gate rect {
+    fill: var(--coin-gold);
+    stroke: var(--ink);
+    stroke-width: 2;
+}
+
+.qec-gate.is-measure rect {
+    fill: var(--cloud-white);
+}
+
+.qec-cnot line,
+.qec-cnot-plus {
+    stroke: var(--ink);
+    stroke-width: 2;
+}
+
+.qec-cnot circle {
+    fill: var(--ink);
+}
+
+.qec-cnot circle.qec-cnot-target {
+    fill: var(--qubit-blue);
+    stroke: var(--ink);
+    stroke-width: 2;
+}
+
+.qec-fault rect {
+    fill: var(--error-red);
+    stroke: var(--ink);
+    stroke-width: 2;
+}
+
+.qec-circuit .qec-fault text {
+    fill: var(--cloud-white);
+}
+
+.qec-circuit .qec-fault text.qec-fault-word,
+.qec-circuit .qec-end-note {
+    fill: var(--error-red);
+    font-size: 11px;
+}
+
+.qec-column-group rect {
+    fill: var(--cloud-white);
+    stroke: var(--idle-gray);
+    stroke-width: 2;
+    stroke-dasharray: 4 4;
+}
+
+.qec-circuit .qec-column-label {
+    font-size: 10px;
+}
+
+/* ---------- Layouts ---------- */
+
+.qec-side-by-side {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+}
+
+.qec-stack {
+    display: grid;
+    justify-items: center;
+    gap: 14px;
+}
+
+/* Captions and names never wrap: a line that wraps once the hut zooms the picture makes it taller than measured. */
+.toad-speech .qec-caption {
+    font-size: 18px;
+    white-space: nowrap;
+    text-align: center;
+}
+
+/* ---------- Tables ---------- */
+
+.qec-table {
+    border-collapse: separate;
+    border-spacing: 4px;
+    font-size: 16px;
+}
+
+.qec-table caption {
+    padding-bottom: 12px;
+    font-size: 14px;
+}
+
+.qec-table th,
+.qec-table td {
+    height: 44px;
+    padding: 2px 16px;
+    text-align: center;
+    white-space: nowrap;
+    background: var(--cloud-white);
+    border: 2px solid var(--ink);
+}
+
+.qec-table th {
+    font-size: 13px;
+    background: var(--coin-gold);
+}
+
+.qec-table.is-wide {
+    font-size: 18px;
+}
+
+.qec-table.is-wide td {
+    height: 56px;
+    padding: 2px 24px;
+}
+
+/* ---------- Why QEC: two cards ---------- */
+
+.qec-cards {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+}
+
+.qec-card {
+    display: grid;
+    justify-items: center;
+    gap: 20px;
+    padding: 20px 32px;
+    background: var(--cloud-white);
+    border: 3px solid var(--ink);
+}
+
+.toad-speech .qec-card-title {
+    font-size: 20px;
+}
+
+.qec-card-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.qec-tile-stack {
+    display: grid;
+    gap: 8px;
+}
+
+/* A qubit: a cyan tile like the photons in the BB84 hut. */
+.qec-tile {
+    display: grid;
+    place-items: center;
+    min-width: 52px;
+    padding: 10px 14px;
+    font-family: system-ui, sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    background: var(--qubit-blue);
+    border: 2px solid var(--ink);
+}
+
+.qec-arrow {
+    font-family: system-ui, sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+/* The verdict carries ✓ or ✗ as well as its colour. The pixel font draws them tiny, so a system font is used. */
+.toad-speech .qec-verdict {
+    padding: 8px 14px;
+    font-family: system-ui, sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    border: 2px solid var(--ink);
+}
+
+.qec-verdict.is-allowed {
+    background: var(--pipe-green);
+}
+
+.qec-verdict.is-forbidden {
+    color: var(--cloud-white);
+    background: var(--error-red);
+}
+
+/* ---------- The Steane diagram ---------- */
+
+.qec-steane-diagram {
+    display: block;
+    font-family: var(--font-pixel);
+}
+
+.qec-check-circle {
+    fill-opacity: 0.35;
+    stroke: var(--ink);
+    stroke-width: 3;
+}
+
+.qec-check-circle.is-check-1 {
+    fill: var(--coin-gold);
+}
+
+.qec-check-circle.is-check-2 {
+    fill: var(--qubit-blue);
+}
+
+.qec-check-circle.is-check-3 {
+    fill: var(--pipe-green);
+}
+
+.qec-check-label {
+    font-size: 12px;
+    fill: var(--ink);
+}
+
+.qec-qubit-dot circle {
+    fill: var(--cloud-white);
+    stroke: var(--ink);
+    stroke-width: 3;
+}
+
+.qec-qubit-dot text {
+    font-size: 11px;
+    fill: var(--ink);
+}
+
+/* ---------- To the game: two blocks joined by Bell pairs ---------- */
+
+.qec-blocks {
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+}
+
+.qec-block-row {
+    display: grid;
+    grid-template-columns: 170px repeat(7, 52px);
+    align-items: center;
+    justify-items: center;
+    gap: 10px;
+}
+
+.qec-block-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-self: start;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+/* A heralded Bell pair: a dashed pink link between the two blocks' matching qubits. */
+.qec-bell-link {
+    width: 0;
+    height: 28px;
+    border-left: 4px dashed #e40058;
+}

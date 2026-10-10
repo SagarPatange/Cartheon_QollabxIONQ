@@ -102,18 +102,20 @@
                     <div><dd id="fleet-out">0</dd><dt><span class="swatch swatch-out"></span>Out</dt></div>
                 </dl>
             </section>
-            <section class="panel-section">
-                <h2>Why these decisions</h2>
-                <p id="why-rule" class="why-rule"></p>
-                <table class="why-table" aria-label="Loads decided so far, by outcome and reason">
-                    <tbody id="why-rows"></tbody>
-                </table>
-            </section>
         </aside>
     </main>
 
+    <section class="why" aria-labelledby="why-title">
+        <div class="section-header">
+            <h2 id="why-title">Why these decisions</h2>
+            <span id="why-note" class="note"></span>
+        </div>
+        <p id="why-rule" class="why-rule"></p>
+        <div id="why-groups" class="why-groups"></div>
+    </section>
+
     <section class="compare" aria-labelledby="compare-title">
-        <div class="compare-header">
+        <div class="section-header">
             <h2 id="compare-title">Compare objectives</h2>
             <span id="compare-note" class="note"></span>
         </div>
