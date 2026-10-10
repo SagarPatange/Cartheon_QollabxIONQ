@@ -1,11 +1,11 @@
 /**
- * Tests for src/bb84_hut/fit_picture.js: shrinking a picture to fit its box.
+ * Tests for src/fit_picture.js: shrinking a picture to fit its box.
  */
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { MIN_PICTURE_SCALE, findPictureScale } from "../../src/bb84_hut/fit_picture.js";
+import { MIN_PICTURE_SCALE, findPictureScale } from "../../src/fit_picture.js";
 
 
 test("a picture that already fits keeps its size", () => {

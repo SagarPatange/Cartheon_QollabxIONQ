@@ -1,92 +1,7 @@
 /*
- * Toad's BB84 hut on top of world.css and hut.css. The page is exactly one window tall: the HUD, the room (big Toad
- * on the left, his speech filling the rest), and a short footer with the sources. Inside the speech the picture
- * takes whatever height is left; bb84_hut_main.js shrinks it to fit, so Back / Next always stay in sight.
+ * Toad's BB84 hut on top of world.css and hut.css: the pictures of the BB84 panels. The page layout, controls and
+ * footer are shared with the QEC hut and live in hut.css.
  */
-
-.bb84-page {
-    display: grid;
-    grid-template-rows: auto minmax(0, 1fr) auto;
-    height: 100vh;
-    height: 100dvh;
-    min-height: 0;
-}
-
-/* Toad's column, then the speech. The cap stripe from hut.css runs along the top. */
-.bb84-room {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr);
-    align-items: stretch;
-    gap: clamp(16px, 2vw, 32px);
-    min-height: 0;
-    padding: 44px clamp(16px, 2vw, 32px) 12px;
-}
-
-.bb84-toad-column {
-    display: grid;
-    justify-items: center;
-    align-content: start;
-    gap: 12px;
-    padding-top: 12px;
-}
-
-.bb84-toad-name {
-    margin: 0;
-    font-size: 14px;
-    color: var(--ink);
-}
-
-/* The speech: panel words, the picture (the flexible row), then the controls. */
-.toad-speech.bb84-speech {
-    display: grid;
-    grid-template-rows: auto minmax(0, 1fr) auto;
-    gap: clamp(10px, 1.8vh, 18px);
-    min-width: 0;
-    min-height: 0;
-    max-width: none;
-    margin: 0;
-    padding: clamp(12px, 2vh, 24px) clamp(16px, 2.4vw, 36px);
-    line-height: 1.7;
-}
-
-.bb84-speech p {
-    margin: 0;
-}
-
-/* The page's title is in the HUD already; the heading stays for screen readers, out of sight. */
-.bb84-page-title {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-}
-
-.bb84-panel-heading {
-    margin: 0 0 clamp(8px, 1.4vh, 16px);
-    font-size: clamp(16px, 2.8vh, 26px);
-    line-height: 1.4;
-    color: var(--ink);
-}
-
-.bb84-panel-lines {
-    display: grid;
-    gap: clamp(10px, 1.4vh, 14px);
-    font-size: clamp(12px, 1.9vh, 16px);
-}
-
-/* The picture's box: a pale sky panel framed like a block, the picture centred in it. */
-.bb84-picture {
-    display: grid;
-    place-items: center;
-    min-height: 0;
-    padding: clamp(10px, 1.6vh, 20px);
-    overflow: hidden;
-    background: #dff4fc;
-    border: var(--pixel) solid var(--ink);
-}
 
 /* ---------- Pictures ---------- */
 
@@ -105,7 +20,7 @@
     border: 3px solid var(--ink);
 }
 
-.bb84-speech .bb84-basis-title {
+.toad-speech .bb84-basis-title {
     font-size: 16px;
 }
 
@@ -201,7 +116,7 @@
     gap: 24px;
 }
 
-.bb84-speech .bb84-sample-title {
+.toad-speech .bb84-sample-title {
     margin-bottom: 12px;
     font-size: 14px;
 }
@@ -245,101 +160,10 @@
     box-shadow: inset 0 0 0 3px var(--brick-orange);
 }
 
-.bb84-speech .bb84-trophy-line {
+.toad-speech .bb84-trophy-line {
     font-size: 14px;
 }
 
-.bb84-speech .bb84-trophy-line:first-child {
+.toad-speech .bb84-trophy-line:first-child {
     font-size: 18px;
-}
-
-/* ---------- Controls ---------- */
-
-/* Back / Next with the counter between them, and the key hint beside them (under them when it wraps). */
-.bb84-controls {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 10px 40px;
-}
-
-.bb84-paging {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-}
-
-.bb84-paging .pixel-button {
-    min-width: 130px;
-    padding: clamp(8px, 1.4vh, 14px) 18px;
-    font-size: 14px;
-}
-
-.bb84-counter {
-    min-width: 72px;
-    font-size: 16px;
-    text-align: center;
-}
-
-.bb84-speech .pixel-button:focus-visible,
-.bb84-sources a:focus-visible {
-    outline: 3px solid var(--qubit-dark-blue);
-    outline-offset: 4px;
-}
-
-.bb84-speech .bb84-keys {
-    font-size: 11px;
-    color: #333333;
-}
-
-/* ---------- Footer ---------- */
-
-/* Sources and the attribution line in one row, wrapping if they must. */
-.bb84-footer {
-    display: grid;
-    gap: 10px;
-    padding: 10px clamp(16px, 2vw, 32px) 12px;
-    font-size: 10px;
-    line-height: 1.7;
-    color: var(--ink);
-    background: var(--hut-wall);
-    border-top: 3px dashed var(--brick-dark);
-}
-
-.bb84-footer p {
-    margin: 0;
-}
-
-.bb84-sources {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px 24px;
-    color: #444444;
-}
-
-.bb84-sources a {
-    color: var(--qubit-dark-blue);
-}
-
-.bb84-attribution {
-    color: var(--ink);
-}
-
-/* A phone-sized window: stack Toad over the speech and let the page scroll. */
-@media (max-width: 760px) {
-    .bb84-page {
-        height: auto;
-    }
-
-    .bb84-room {
-        grid-template-columns: minmax(0, 1fr);
-        grid-template-rows: auto;
-    }
-
-    .bb84-toad-column {
-        grid-template-columns: auto auto;
-        align-items: center;
-        justify-content: start;
-    }
 }

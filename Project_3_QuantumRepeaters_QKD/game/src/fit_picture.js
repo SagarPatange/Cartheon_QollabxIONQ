@@ -1,6 +1,6 @@
 /**
  * How much to shrink a panel's picture so it fits the space left for it, so every panel fits the window without
- * scrolling. Pure; bb84_hut_main.js measures the sizes and applies the scale.
+ * scrolling. Pure; hut_pager.js measures the sizes and applies the scale (both of Toad's huts).
  */
 
 // Below this the pictures' text is too small to read; a smaller window scrolls instead.

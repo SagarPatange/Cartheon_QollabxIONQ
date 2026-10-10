@@ -11,21 +11,32 @@ export const CHECK_STEP = "check";
 
 export const PAIRS_PER_BLOCK = 7;
 
+// How long each part of one Barrett–Kok attempt shows on screen. The attempt that heralds a pair plays slowly enough
+// to follow (photons fly, a lamp lights, the qubits flip, round two); the failed tries before it play as a quick
+// burst, so the TRIES counter visibly climbs without making the player sit through every lost photon.
+const HERALDING_ATTEMPT_TIMING = { photonFlightMs: 120, lampHoldMs: 120, flipMs: 80 };
+const FAILED_ATTEMPT_TIMING = { photonFlightMs: 50, lampHoldMs: 40, flipMs: 30 };
+// With reduced motion no photons fly and failed tries only count up (no lamp flicker); the heralding attempt still
+// lights its lamps long enough to read.
+const REDUCED_MOTION_HERALDING_TIMING = { photonFlightMs: 0, lampHoldMs: 300, flipMs: 0 };
+const REDUCED_MOTION_FAILED_TIMING = { photonFlightMs: 0, lampHoldMs: 0, flipMs: 0 };
+// Pause after each pair lands in both racks, so the pairs are seen arriving one by one.
+export const PAIR_LANDED_PAUSE_MS = 120;
+
 
 /**
- * The steps in protocol order: one per physical pair, then encoding, the teleported CNOT and the final check.
+ * The steps in protocol order: heralding all 7 physical pairs (one Space press plays them one after another), then
+ * encoding, the teleported CNOT and the final check.
  *
  * @param {object} response - LogicalPairResponse JSON.
- * @returns {{kind: string, pairIndex?: number, attempts?: object[]}[]}
+ * @returns {{kind: string, pairAttempts?: object[][]}[]}
  */
 export function buildPlaybackSteps(response) {
     if (response.herald_attempts.length !== PAIRS_PER_BLOCK) {
         throw new Error(`expected ${PAIRS_PER_BLOCK} heralded pairs, got ${response.herald_attempts.length}`);
     }
     const steps = [];
-    for (let i = 0; i < PAIRS_PER_BLOCK; i++) {
-        steps.push({ kind: HERALD_STEP, pairIndex: i, attempts: response.herald_attempts[i] });
-    }
+    steps.push({ kind: HERALD_STEP, pairAttempts: response.herald_attempts });
     steps.push({ kind: ENCODE_STEP });
     steps.push({ kind: TELEPORT_STEP });
     steps.push({ kind: CHECK_STEP });
@@ -36,12 +47,12 @@ export function buildPlaybackSteps(response) {
 /**
  * What the Space key does next (shown in the key hints).
  *
- * @param {{kind: string, pairIndex?: number}} step
+ * @param {{kind: string}} step
  * @returns {string}
  */
 export function describeStepAction(step) {
     const labels = {
-        [HERALD_STEP]: () => `Herald pair ${step.pairIndex + 1}/${PAIRS_PER_BLOCK}`,
+        [HERALD_STEP]: () => `Herald ${PAIRS_PER_BLOCK} pairs`,
         [ENCODE_STEP]: () => "Encode blocks",
         [TELEPORT_STEP]: () => "Teleported CNOT",
         [CHECK_STEP]: () => "Check the pair",
@@ -51,6 +62,22 @@ export function describeStepAction(step) {
         throw new Error(`unknown step kind ${step.kind}`);
     }
     return makeLabel();
+}
+
+
+/**
+ * How long to show each part of one attempt: the attempt that heralds its pair (the last one) plays at a readable
+ * pace, the failed tries before it as a quick burst.
+ *
+ * @param {boolean} isHeraldingAttempt - whether this is the pair's last (successful) attempt.
+ * @param {boolean} prefersReducedMotion - the player asked for reduced motion.
+ * @returns {{photonFlightMs: number, lampHoldMs: number, flipMs: number}}
+ */
+export function chooseAttemptTiming(isHeraldingAttempt, prefersReducedMotion) {
+    if (prefersReducedMotion) {
+        return isHeraldingAttempt ? REDUCED_MOTION_HERALDING_TIMING : REDUCED_MOTION_FAILED_TIMING;
+    }
+    return isHeraldingAttempt ? HERALDING_ATTEMPT_TIMING : FAILED_ATTEMPT_TIMING;
 }
 
 

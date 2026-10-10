@@ -31,6 +31,18 @@
     opacity: 1;
 }
 
+/* Heralding plays fast, so a qubit flip lasts as long as render_level2.js gives it (--flip-ms), not the 0.4 s default. */
+.level2-track .qubit-orb.is-flipping {
+    animation-duration: var(--flip-ms, 0.4s);
+}
+
+/* With reduced motion the flip is skipped (its time is 0), so the orb doesn't flicker either. */
+@media (prefers-reduced-motion: reduce) {
+    .level2-track .qubit-orb.is-flipping {
+        animation: none;
+    }
+}
+
 /* ---------- Bits riding along the fiber during the teleported CNOT ---------- */
 
 .bit-packet {

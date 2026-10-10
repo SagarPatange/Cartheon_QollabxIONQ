@@ -1,5 +1,6 @@
 /**
- * Tests for src/bb84_hut/bb84_hut_panels.js: Toad's BB84 panels, the intercept-resend error rate, and paging.
+ * Tests for src/bb84_hut/bb84_hut_panels.js: Toad's BB84 panels and the intercept-resend error rate.
+ * Paging is tested in tests/hut/hut_paging.test.js.
  */
 
 import { test } from "node:test";
@@ -7,8 +8,7 @@ import assert from "node:assert/strict";
 
 import {
     AWARD_SOURCE, AWARD_SOURCE_URL, BB84_EXAMPLE, BB84_PANELS, BB84_SOURCE, RANDOM_BIT, SAMPLE_SIZE, WIKIPEDIA_URL,
-    applyPageStep, countSampleErrors, describePanelPosition, findInterceptResendErrorRate, findNextPanelIndex,
-    findPageStep, findPreviousPanelIndex, listEveRiskPositions, listSiftedPositions, predictBobBit,
+    countSampleErrors, findInterceptResendErrorRate, listEveRiskPositions, listSiftedPositions, predictBobBit,
 } from "../../src/bb84_hut/bb84_hut_panels.js";
 
 // The game's style is terse: no line runs past this many characters.
@@ -93,28 +93,3 @@ test("every panel is short", () => {
     }
 });
 
-
-test("paging forward stops on the last panel and paging back stops on the first", () => {
-    assert.equal(findNextPanelIndex(0, 5), 1);
-    assert.equal(findNextPanelIndex(4, 5), 4);
-    assert.equal(findPreviousPanelIndex(1), 0);
-    assert.equal(findPreviousPanelIndex(0), 0);
-});
-
-
-test("Space, Enter and → page forward; ← and Backspace page back; other keys do nothing", () => {
-    assert.equal(findPageStep(" "), "next");
-    assert.equal(findPageStep("Enter"), "next");
-    assert.equal(findPageStep("ArrowRight"), "next");
-    assert.equal(findPageStep("ArrowLeft"), "previous");
-    assert.equal(findPageStep("Backspace"), "previous");
-    assert.equal(findPageStep("q"), null);
-    assert.equal(applyPageStep(2, "next", 5), 3);
-    assert.equal(applyPageStep(2, "previous", 5), 1);
-});
-
-
-test("the counter shows the panel number out of the total", () => {
-    assert.equal(describePanelPosition(0, 5), "1 / 5");
-    assert.equal(describePanelPosition(5, 6), "6 / 6");
-});

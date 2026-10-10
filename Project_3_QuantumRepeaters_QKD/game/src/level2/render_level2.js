@@ -8,17 +8,13 @@
  * live in styles/level2.css and styles/bsm_link.css.
  */
 
-import { listSetPositions } from "./level2_plan.js";
+import { PAIR_LANDED_PAUSE_MS, chooseAttemptTiming, listSetPositions } from "./level2_plan.js";
 import { buildBsmLink, showDetectorClick } from "../bsm_link.js";
 import { createElement } from "../page_helpers.js";
 import { LUIGI_SPRITE, MARIO_SPRITE } from "../pixel_sprites.js";
 import { buildStation } from "../qkd/render_qkd_world.js";
 import { buildQubitTower } from "../qubit_tower.js";
 
-// Matches the photon-fly animation in styles/bsm_link.css.
-const PHOTON_FLIGHT_MS = 700;
-const LAMP_HOLD_MS = 450;
-const FLIP_MS = 400;
 const REJECT_FLASH_MS = 600;
 const CELL_FILL_MS = 70;
 // Matches the bit-packet animations in styles/level2.css.
@@ -85,20 +81,35 @@ export function resetScene(scene) {
 
 
 /**
- * Phase 1 for one pair: every Barrett–Kok attempt, then the pair lands in both racks.
+ * Phase 1: herald the 7 pairs one after another. Each pair plays its Barrett–Kok attempts (failed tries as a quick
+ * burst, the heralding one at a readable pace), then lands in both racks.
  *
  * @param {object} scene
- * @param {{pairIndex: number, attempts: object[]}} step
- * @param {() => void} onAttempt - called as each attempt starts, to count it in the HUD.
+ * @param {object[][]} pairAttempts - each pair's attempts, from the response's herald_attempts.
+ * @param {{onAttempt: () => void, onPairLanded: () => void}} callbacks - count attempts and pairs in the HUD.
  */
-export async function playHeraldStep(scene, step, onAttempt) {
-    for (const attempt of step.attempts) {
+export async function playHeraldAllPairs(scene, pairAttempts, callbacks) {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    for (let pairIndex = 0; pairIndex < pairAttempts.length; pairIndex++) {
+        await playHeraldPair(scene, pairIndex, pairAttempts[pairIndex], callbacks.onAttempt, prefersReducedMotion);
+        callbacks.onPairLanded();
+        await wait(PAIR_LANDED_PAUSE_MS);
+    }
+}
+
+
+/**
+ * One pair: every attempt, then the pair lands in both racks.
+ */
+async function playHeraldPair(scene, pairIndex, attempts, onAttempt, prefersReducedMotion) {
+    for (let i = 0; i < attempts.length; i++) {
+        const isHeraldingAttempt = i === attempts.length - 1;
         onAttempt();
-        await playAttempt(scene, attempt, step.pairIndex);
+        await playAttempt(scene, attempts[i], pairIndex, chooseAttemptTiming(isHeraldingAttempt, prefersReducedMotion));
     }
     for (const rack of [scene.aliceRack, scene.bobRack]) {
-        rack.linkCells[step.pairIndex].classList.remove("is-flipping");
-        rack.linkCells[step.pairIndex].classList.add("is-pair");
+        rack.linkCells[pairIndex].classList.remove("is-flipping");
+        rack.linkCells[pairIndex].classList.add("is-pair");
     }
 }
 
@@ -106,31 +117,37 @@ export async function playHeraldStep(scene, step, onAttempt) {
 /**
  * One attempt: round one; if it clicked, flip both qubits and play round two.
  */
-async function playAttempt(scene, attempt, pairIndex) {
-    const isRoundOneClick = await playRound(scene, attempt.round_one_detector);
+async function playAttempt(scene, attempt, pairIndex, timing) {
+    const isRoundOneClick = await playRound(scene, attempt.round_one_detector, timing);
     if (!isRoundOneClick) {
         return;
     }
-    await playFlip(scene, pairIndex);
-    await playRound(scene, attempt.round_two_detector);
+    await playFlip(scene, pairIndex, timing.flipMs);
+    await playRound(scene, attempt.round_two_detector, timing);
 }
 
 
 /**
- * Photons fly to the BSM tower; the clicked detector's lamp lights, or the fiber flashes red for a lost photon.
+ * Photons fly to the BSM tower; the clicked detector's lamp lights, or the fiber flashes red for a lost photon. With
+ * no flight time (reduced motion) the photons stay put, and with no hold time nothing lights.
  *
  * @returns {Promise<boolean>} whether a detector clicked.
  */
-async function playRound(scene, detectorName) {
-    restartClass(scene.linkElement, "is-sending");
-    await wait(PHOTON_FLIGHT_MS);
-    scene.linkElement.classList.remove("is-sending");
+async function playRound(scene, detectorName, timing) {
+    if (timing.photonFlightMs > 0) {
+        scene.linkElement.style.setProperty("--photon-flight-ms", `${timing.photonFlightMs}ms`);
+        restartClass(scene.linkElement, "is-sending");
+        await wait(timing.photonFlightMs);
+        scene.linkElement.classList.remove("is-sending");
+    }
     const isClick = detectorName !== null;
-    showDetectorClick(scene.linkElement, detectorName);
-    scene.linkElement.classList.toggle("is-missed", !isClick);
-    await wait(LAMP_HOLD_MS);
-    scene.linkElement.classList.remove("is-missed");
-    showDetectorClick(scene.linkElement, null);
+    if (timing.lampHoldMs > 0) {
+        showDetectorClick(scene.linkElement, detectorName);
+        scene.linkElement.classList.toggle("is-missed", !isClick);
+        await wait(timing.lampHoldMs);
+        scene.linkElement.classList.remove("is-missed");
+        showDetectorClick(scene.linkElement, null);
+    }
     return isClick;
 }
 
@@ -138,11 +155,12 @@ async function playRound(scene, detectorName) {
 /**
  * Between the rounds both communication qubits flip (↑ ↔ ↓).
  */
-async function playFlip(scene, pairIndex) {
+async function playFlip(scene, pairIndex, flipMs) {
     for (const rack of [scene.aliceRack, scene.bobRack]) {
+        rack.linkCells[pairIndex].style.setProperty("--flip-ms", `${flipMs}ms`);
         restartClass(rack.linkCells[pairIndex], "is-flipping");
     }
-    await wait(FLIP_MS);
+    await wait(flipMs);
 }
 
 

@@ -6,8 +6,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
-    CHECK_STEP, ENCODE_STEP, HERALD_STEP, TELEPORT_STEP, buildPlaybackSteps, describeCheckResult, describeHeraldedState,
-    describeStepAction, isHeraldSuccess, listSetPositions,
+    CHECK_STEP, ENCODE_STEP, HERALD_STEP, TELEPORT_STEP, buildPlaybackSteps, chooseAttemptTiming, describeCheckResult,
+    describeHeraldedState, describeStepAction, isHeraldSuccess, listSetPositions,
 } from "../../src/level2/level2_plan.js";
 
 const SUCCESS = { round_one_detector: "D+", round_two_detector: "D+" };
@@ -23,12 +23,12 @@ function makeResponse() {
 }
 
 
-test("Space walks through 7 heralded pairs, then encoding, the teleported CNOT and the check", () => {
-    const steps = buildPlaybackSteps(makeResponse());
+test("one Space press heralds all 7 pairs, then encoding, the teleported CNOT and the check", () => {
+    const response = makeResponse();
+    const steps = buildPlaybackSteps(response);
     const kinds = steps.map((step) => step.kind);
-    assert.deepEqual(kinds, [...Array(7).fill(HERALD_STEP), ENCODE_STEP, TELEPORT_STEP, CHECK_STEP]);
-    assert.equal(steps[2].pairIndex, 2);
-    assert.equal(steps[2].attempts.length, 2);
+    assert.deepEqual(kinds, [HERALD_STEP, ENCODE_STEP, TELEPORT_STEP, CHECK_STEP]);
+    assert.equal(steps[0].pairAttempts, response.herald_attempts);
 });
 
 
@@ -39,10 +39,33 @@ test("a response without exactly 7 pairs fails fast", () => {
 
 test("each step's key hint says what it does", () => {
     const steps = buildPlaybackSteps(makeResponse());
-    assert.equal(describeStepAction(steps[0]), "Herald pair 1/7");
-    assert.equal(describeStepAction(steps[6]), "Herald pair 7/7");
-    assert.equal(describeStepAction(steps[7]), "Encode blocks");
-    assert.equal(describeStepAction(steps[9]), "Check the pair");
+    assert.equal(describeStepAction(steps[0]), "Herald 7 pairs");
+    assert.equal(describeStepAction(steps[1]), "Encode blocks");
+    assert.equal(describeStepAction(steps[3]), "Check the pair");
+});
+
+
+test("failed tries play as a quick burst; the heralding attempt plays slower but still far under the old 1.15 s round", () => {
+    // Before the speed-up every round took a 700 ms photon flight plus a 450 ms lamp hold.
+    const oldRoundMs = 700 + 450;
+    const failed = chooseAttemptTiming(false, false);
+    const heralding = chooseAttemptTiming(true, false);
+    const failedRoundMs = failed.photonFlightMs + failed.lampHoldMs;
+    const heraldingRoundMs = heralding.photonFlightMs + heralding.lampHoldMs;
+    assert.ok(failedRoundMs < heraldingRoundMs);
+    assert.ok(failedRoundMs * 10 <= oldRoundMs);
+    assert.ok(heraldingRoundMs * 3 <= oldRoundMs);
+    assert.ok(failed.flipMs > 0 && failed.flipMs <= heralding.flipMs);
+});
+
+
+test("with reduced motion no photon flies or qubit flips, failed tries only count, the herald still lights a lamp", () => {
+    const failed = chooseAttemptTiming(false, true);
+    const heralding = chooseAttemptTiming(true, true);
+    assert.deepEqual(failed, { photonFlightMs: 0, lampHoldMs: 0, flipMs: 0 });
+    assert.equal(heralding.photonFlightMs, 0);
+    assert.equal(heralding.flipMs, 0);
+    assert.ok(heralding.lampHoldMs > 0);
 });
 
 

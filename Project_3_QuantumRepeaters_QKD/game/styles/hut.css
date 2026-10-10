@@ -1,50 +1,200 @@
 /*
- * Toad's QEC hut on top of world.css: the mushroom-house room and Toad's speech. The room's cream wall fills the
- * whole page below the HUD.
+ * Toad's huts (BB84 and QEC) on top of world.css: the mushroom-house room, Toad, and his speech. The page is exactly
+ * one window tall: the HUD, the room (big Toad on the left, his speech filling the rest), and a short footer with the
+ * sources. Inside the speech the picture takes whatever height is left; hut_pager.js shrinks it to fit, so Back /
+ * Next always stay in sight. Each hut's pictures are styled in its own file (bb84_hut.css, qec_hut.css).
  */
 
 :root {
     --hut-wall: #fcd8a8;
     --hut-wood: #c84c0c;
+    --hut-picture-sky: #dff4fc;
 }
 
 .hut-page {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
     background: var(--hut-wall);
 }
 
-/* The inside of the mushroom house: cream walls with a red-and-white cap pattern along the top. */
+/* The hut's name on one line in the HUD: "TOAD'S HUT · BB84". */
+.hut-page .hud-item {
+    flex-direction: row;
+    gap: 0;
+}
+
+/* The inside of the mushroom house: cream walls with a red-and-white cap pattern along the top. Toad's column, then
+   the speech. */
 .hut-room {
-    flex: 1;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 24px;
-    padding: 48px 16px 24px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    align-items: stretch;
+    gap: clamp(16px, 2vw, 32px);
+    min-height: 0;
+    padding: 44px clamp(16px, 2vw, 32px) 12px;
     background:
         radial-gradient(circle at 20px 12px, var(--cloud-white) 8px, transparent 9px) 0 0 / 60px 32px repeat-x,
         linear-gradient(var(--error-red) 0 32px, var(--hut-wall) 32px);
 }
 
-.toad {
-    flex-shrink: 0;
+.hut-toad-column {
+    display: grid;
+    justify-items: center;
+    align-content: start;
+    gap: 12px;
+    padding-top: 12px;
 }
 
+.hut-toad-name {
+    margin: 0;
+    font-size: 14px;
+    color: var(--ink);
+}
+
+/* The speech: panel words, the picture (the flexible row), then the controls. */
 .toad-speech {
-    position: relative;
-    flex: 1;
-    min-width: 260px;
-    max-width: 820px;
-    margin-bottom: 40px;
-    padding: 12px 16px;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: clamp(10px, 1.8vh, 18px);
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding: clamp(12px, 2vh, 24px) clamp(16px, 2.4vw, 36px);
     color: var(--ink);
     background: var(--cloud-white);
     border: var(--pixel) solid var(--ink);
-    line-height: 2;
+    line-height: 1.7;
 }
 
 .toad-speech p {
-    margin: 0 0 8px;
+    margin: 0;
+}
+
+/* The page's title is in the HUD already; the heading stays for screen readers, out of sight. */
+.hut-page-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.hut-panel-heading {
+    margin: 0 0 clamp(8px, 1.4vh, 16px);
+    font-size: clamp(16px, 2.8vh, 26px);
+    line-height: 1.4;
+    color: var(--ink);
+}
+
+.hut-panel-lines {
+    display: grid;
+    gap: clamp(10px, 1.4vh, 14px);
+    font-size: clamp(12px, 1.9vh, 16px);
+}
+
+/* The picture's box: a pale sky panel framed like a block, the picture centred in it. */
+.hut-picture {
+    display: grid;
+    place-items: center;
+    min-height: 0;
+    padding: clamp(10px, 1.6vh, 20px);
+    overflow: hidden;
+    background: var(--hut-picture-sky);
+    border: var(--pixel) solid var(--ink);
+}
+
+/* ---------- Controls ---------- */
+
+/* Back / Next with the counter between them, and the key hint beside them (under them when it wraps). */
+.hut-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px 40px;
+}
+
+.hut-paging {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.hut-paging .pixel-button {
+    min-width: 130px;
+    padding: clamp(8px, 1.4vh, 14px) 18px;
+    font-size: 14px;
+}
+
+.hut-counter {
+    min-width: 72px;
+    font-size: 16px;
+    text-align: center;
+}
+
+.toad-speech .pixel-button:focus-visible,
+.hut-sources a:focus-visible {
+    outline: 3px solid var(--qubit-dark-blue);
+    outline-offset: 4px;
+}
+
+.toad-speech .hut-keys {
+    font-size: 11px;
+    color: #333333;
+}
+
+/* ---------- Footer ---------- */
+
+/* Sources and the attribution line in one row, wrapping if they must. */
+.hut-footer {
+    display: grid;
+    gap: 10px;
+    padding: 10px clamp(16px, 2vw, 32px) 12px;
+    font-size: 10px;
+    line-height: 1.7;
+    color: var(--ink);
+    background: var(--hut-wall);
+    border-top: 3px dashed var(--brick-dark);
+}
+
+.hut-footer p {
+    margin: 0;
+}
+
+.hut-sources {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 24px;
+    color: #444444;
+}
+
+.hut-sources a {
+    color: var(--qubit-dark-blue);
+}
+
+.hut-attribution {
+    color: var(--ink);
+}
+
+/* A phone-sized window: stack Toad over the speech and let the page scroll. */
+@media (max-width: 760px) {
+    .hut-page {
+        height: auto;
+    }
+
+    .hut-room {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto;
+    }
+
+    .hut-toad-column {
+        grid-template-columns: auto auto;
+        align-items: center;
+        justify-content: start;
+    }
 }

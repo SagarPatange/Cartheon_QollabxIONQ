@@ -1,6 +1,6 @@
 /**
  * Level 2 page entry point: build one logical Bell pair between Alice and Bob, one phase per Space press (or click on
- * the scene); R starts a new run. The goal types itself out first and the level starts once it has. Keycap hints
+ * the scene; the first press heralds all 7 pairs in a row); R starts a new run. The goal types itself out first and the level starts once it has. Keycap hints
  * under the goal say what Space does next.
  *
  * The backend runs the whole protocol on Stim when the page opens (and on every new run); the page then plays back
@@ -13,7 +13,7 @@ import {
     describeStepAction,
 } from "./level2_plan.js";
 import {
-    buildLevel2Track, playCheck, playEncoding, playHeraldStep, playTeleport, resetScene,
+    buildLevel2Track, playCheck, playEncoding, playHeraldAllPairs, playTeleport, resetScene,
 } from "./render_level2.js";
 import { findElementsById, fitTrackToWorld, playGoalIntro, renderKeyHints } from "../page_helpers.js";
 
@@ -119,11 +119,16 @@ async function playStep(game, elements, step) {
     const scene = elements.scene;
     const response = game.response;
     if (step.kind === HERALD_STEP) {
-        await playHeraldStep(scene, step, () => {
-            game.tryCount += 1;
-            renderLevel2(game, elements);
+        await playHeraldAllPairs(scene, step.pairAttempts, {
+            onAttempt: () => {
+                game.tryCount += 1;
+                renderLevel2(game, elements);
+            },
+            onPairLanded: () => {
+                game.pairCount += 1;
+                renderLevel2(game, elements);
+            },
         });
-        game.pairCount += 1;
     } else if (step.kind === ENCODE_STEP) {
         await playEncoding(scene, response);
     } else if (step.kind === TELEPORT_STEP) {
