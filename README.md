@@ -9,9 +9,9 @@ This effort is supported by Qollab & IonQ.
 
 ## Energy Grid Optimization · [Project 1](./Project_1_EnergyGridOptimization/)
 
-A day-ahead energy-market optimizer using public SPP offers and fixed demand. Explore resource awards and the
-single-node marginal energy price, then compare QAOA, classical one-bit search and random sampling on a small
-SPP-derived dispatch subproblem. The model price is not nodal SPP LMP; the comparison does not establish quantum advantage.
+A day-ahead energy-market optimizer using public SPP offers and fixed demand, with an interactive view of resource
+awards and the single-node marginal energy price (not nodal SPP LMP). It compares QAOA, classical one-bit search and
+random sampling on a small SPP-derived dispatch subproblem to explore optimal-solution hit rates, without claiming quantum advantage.
 
 ![SPP day-ahead energy-market interface showing optimized model price and resource dispatch](Project_1_EnergyGridOptimization/docs/images/energy-market-interface.png)
 
