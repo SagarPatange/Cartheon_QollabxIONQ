@@ -1,0 +1,119 @@
+{
+  "source_url": "https://raw.githubusercontent.com/MATPOWER/matpower/master/data/case9.m",
+  "source_sha256": "ee50fc7bf9f6019c0f3a3bc94d20978cc667b08f695dc725d00dbd998b358623",
+  "licensing": "MATPOWER case data is explicitly excluded from MATPOWER BSD code license; third-party reference data, not relicensed MIT. Original source attribution: Chow (1982), Schulz/Turner/Ewart EPRI (1974).",
+  "buses": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9"
+  ],
+  "reference": "1",
+  "base_mva": 100.0,
+  "base_fixed_demand_mw": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    90.0,
+    0.0,
+    100.0,
+    0.0,
+    125.0
+  ],
+  "branches": [
+    {
+      "name": "1-4",
+      "from_bus": "1",
+      "to_bus": "4",
+      "reactance_pu": 0.0576,
+      "limit_mw": 250.0
+    },
+    {
+      "name": "4-5",
+      "from_bus": "4",
+      "to_bus": "5",
+      "reactance_pu": 0.092,
+      "limit_mw": 250.0
+    },
+    {
+      "name": "5-6",
+      "from_bus": "5",
+      "to_bus": "6",
+      "reactance_pu": 0.17,
+      "limit_mw": 150.0
+    },
+    {
+      "name": "3-6",
+      "from_bus": "3",
+      "to_bus": "6",
+      "reactance_pu": 0.0586,
+      "limit_mw": 300.0
+    },
+    {
+      "name": "6-7",
+      "from_bus": "6",
+      "to_bus": "7",
+      "reactance_pu": 0.1008,
+      "limit_mw": 150.0
+    },
+    {
+      "name": "7-8",
+      "from_bus": "7",
+      "to_bus": "8",
+      "reactance_pu": 0.072,
+      "limit_mw": 250.0
+    },
+    {
+      "name": "8-2",
+      "from_bus": "8",
+      "to_bus": "2",
+      "reactance_pu": 0.0625,
+      "limit_mw": 250.0
+    },
+    {
+      "name": "8-9",
+      "from_bus": "8",
+      "to_bus": "9",
+      "reactance_pu": 0.161,
+      "limit_mw": 250.0
+    },
+    {
+      "name": "9-4",
+      "from_bus": "9",
+      "to_bus": "4",
+      "reactance_pu": 0.085,
+      "limit_mw": 250.0
+    }
+  ],
+  "mapping_seeds": [
+    0,
+    1
+  ],
+  "constrained_rating_multiplier": 0.25,
+  "unconstrained_rating_multiplier": 10.0,
+  "synthetic_loss_sensitivities": [
+    0.0,
+    0.005,
+    0.01,
+    0.0,
+    -0.005,
+    0.0,
+    -0.01,
+    0.0,
+    -0.015
+  ],
+  "synthetic_loss_offset_mw": 0.0,
+  "assumptions": [
+    "N01",
+    "N02",
+    "N03",
+    "N04",
+    "N05"
+  ]
+}

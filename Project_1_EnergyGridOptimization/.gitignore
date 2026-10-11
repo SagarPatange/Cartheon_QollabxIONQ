@@ -5,6 +5,7 @@ __pycache__/
 
 # Generated optimizer reports and per-submission awards; recreate by running code.
 /results/
+/data/uploads/
 
 # Downloaded SPP document archives and extracted copies; retain source metadata.
 /data/reference/*

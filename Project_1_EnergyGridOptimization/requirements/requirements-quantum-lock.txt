@@ -1,0 +1,9 @@
+# Verified Windows Python 3.12 project .venv additions on 2026-10-11.
+qiskit==2.5.2
+dill==0.4.1
+rustworkx==0.18.1
+stevedore==5.9.1
+typing_extensions==4.16.0
+# Existing numerical dependencies preserved:
+numpy==2.5.3
+scipy==1.18.1

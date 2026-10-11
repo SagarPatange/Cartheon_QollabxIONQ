@@ -119,5 +119,11 @@
       ]
     }
   },
-  "historical_results_retrieved_date": "2026-10-10"
+  "historical_results_retrieved_date": "2026-10-10",
+  "network_test_case": {
+    "source_url": "https://raw.githubusercontent.com/MATPOWER/matpower/master/data/case9.m",
+    "source_sha256": "ee50fc7bf9f6019c0f3a3bc94d20978cc667b08f695dc725d00dbd998b358623",
+    "licensing": "MATPOWER case data is explicitly excluded from MATPOWER BSD code license; third-party reference data, not relicensed MIT. Original source attribution: Chow (1982), Schulz/Turner/Ewart EPRI (1974).",
+    "license_notice_url": "https://raw.githubusercontent.com/MATPOWER/matpower/master/LICENSE"
+  }
 }

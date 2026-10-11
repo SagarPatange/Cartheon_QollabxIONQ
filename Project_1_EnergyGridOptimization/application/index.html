@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Case 09 · Grid control cabinet</title>
+  <link rel="stylesheet" href="/cabinet.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+ <main class="cabinet">
+  <header class="cabinet-header panel">
+   <div class="nameplate"><span class="eyebrow">POWER SYSTEMS / LOCAL OPTIMIZER</span><h1>GRID CONTROL <span>09</span></h1><span class="subplate">24 INTERVALS <span aria-hidden="true">/</span> <span id="operating-day">—</span></span></div>
+   <div class="status-bank" aria-label="Cabinet status">
+    <span class="lamp-label"><i class="lamp" id="ready-lamp"></i>READY</span>
+    <span class="lamp-label"><i class="lamp" id="run-lamp"></i>RUN</span>
+    <span class="lamp-label"><i class="lamp" id="fault-lamp"></i>FAULT</span>
+    <output id="status" role="status" aria-live="polite">LOADING</output>
+   </div>
+   <div class="switches"><button id="reset" disabled title="Restore original controls; requires a new solve">↺ RESET</button><button id="run" class="run-switch" disabled>▶ RUN 24H</button></div>
+  </header>
+
+  <section class="instrument-bank panel" aria-label="Solver instruments">
+   <div class="instrument principal"><span class="instrument-label">TOTAL COST <small>USD / 24H</small></span><output id="cost">—</output></div>
+   <div class="instrument"><span class="instrument-label">LOWER BOUND <small>USD</small></span><output id="bound">—</output></div>
+   <div class="instrument"><span class="instrument-label">MILP GAP <small>%</small></span><output id="gap">—</output></div>
+   <div class="instrument"><span class="instrument-label">SOLVE TIME <small>SEC</small></span><output id="duration">—</output></div>
+   <div class="revision-plate"><span>INPUT <b id="input-revision">00</b></span><span>RESULT <b id="result-revision">—</b></span><strong id="result-state">NO RESULT</strong></div>
+  </section>
+
+  <div id="fault-message" class="fault-message" role="alert" hidden></div>
+  <div class="working-area">
+   <section class="network-panel panel" aria-labelledby="network-title">
+    <div class="panel-heading"><h2 id="network-title">01 / POWER FLOW</h2><span class="scope-plate">SYNTHETIC TEST SYSTEM</span><span id="network-hour">HOUR 01</span></div>
+    <div class="diagram-viewport" tabindex="0" role="region" aria-label="Electrical schematic; scroll horizontally on small screens, or use Select asset below"><svg id="network" viewBox="0 -25 1000 625" role="group" aria-label="Case9 electrical schematic. Select a bus, unit or line for its inspector."></svg></div>
+    <div class="network-footer"><span><i class="legend-line"></i> LINE: MW / % CAPACITY</span><span>BUS: LOAD / PRICE</span><span>R: RESERVE · → FLOW</span><span id="network-validity">AWAITING SOLVE</span></div>
+   </section>
+
+   <aside class="side-stack">
+    <section class="inspector panel" aria-labelledby="inspector-title">
+     <div class="panel-heading"><h2 id="inspector-title">02 / ASSET</h2><span id="asset-kind">UNIT</span></div>
+     <div class="inspector-body"><label class="asset-select-label" for="asset-select">SELECT ASSET</label><select id="asset-select" aria-label="Select unit, bus or branch"></select><div id="asset-readings"></div><form id="asset-controls" aria-label="Selected asset controls"></form></div>
+    </section>
+    <section class="global-panel panel" aria-labelledby="global-title">
+     <div class="panel-heading"><h2 id="global-title">03 / SYSTEM INPUTS</h2><span>24H</span></div>
+     <form id="global-controls" class="global-body" aria-label="System controls"></form>
+    </section>
+   </aside>
+  </div>
+
+  <section class="trace-panel panel" aria-labelledby="trace-title">
+   <div class="panel-heading"><h2 id="trace-title">04 / DAILY DISPATCH</h2><div class="trace-legend"><span>━ ENERGY</span><span>┄ RESERVE</span><span>MW</span></div><output id="hour-label" for="hour">HOUR 01</output></div>
+   <svg id="trace" viewBox="0 0 1200 130" role="img" aria-label="24-hour total energy and reserve dispatch"></svg>
+   <div class="hour-control"><span>01</span><input id="hour" type="range" min="0" max="23" step="1" value="0" aria-label="Selected interval, view only"><span>24</span><span class="view-plate">VIEW ONLY</span></div>
+  </section>
+  <footer class="cabinet-footer"><span>CASE 09 <span aria-hidden="true">·</span> FOUR UNIT BENCH</span><details id="information"><summary>DIAGRAM GUIDE / RUN RECORD</summary><div class="information-body"><p>Public case9 test network with declared synthetic units and a scaled historical load profile. The schematic has no geographic meaning.</p><p>Circles marked ~ are generators. Short thick bars are buses: electrical connection points. Each bus shows demand in MW, then its conditional model price in $/MWh. A line named 4-5 connects buses 4 and 5; its readings are signed MW flow and the percentage of its rating used. Arrows show actual flow direction. Generator readings show ON/OFF, output in MW and R for operating reserve. The blue outline marks your selected asset. Dashes mean no result is available yet.</p><p>RUN solves all 24 intervals. Inputs apply across the day; the hour selector only changes the view. Branch MW overrides replace global line scaling for that branch. Reset requires a fresh solve.</p><p>Flow, dispatch and conditional model prices come from the certified fixed-commitment pricing solution. Conditional prices are in $/MWh; total cost includes commitment costs. These are model prices, not historical SPP prices. Energy-only mode shows reserve as off.</p><p>Availability, demand, line or ramp changes may be infeasible. Reduced capacity does not alter original minima, initial state or reserve eligibility. All results remain labeled stale until the edited case completes.</p><pre id="run-record">No completed run.</pre></div></details><span>LOCAL / CLASSICAL</span></footer>
+ </main>
+</body>
+</html>
