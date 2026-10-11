@@ -56,7 +56,9 @@ def test_the_layout_gives_every_qubit_one_role():
         all_qubits.extend(layout.communication_qubits(link, qre_cec.RIGHT_SIDE))
     all_qubits.append(layout.ancilla)
     all_qubits.extend(layout.message_block)
-    assert sorted(all_qubits) == list(range(92))
+    # Per link: two data blocks and two sides of communication qubits; then the ancilla and the message block.
+    expected_qubit_count = 4 * qre_cec.LINK_COUNT * steane.QUBITS_PER_BLOCK + 1 + steane.QUBITS_PER_BLOCK
+    assert sorted(all_qubits) == list(range(expected_qubit_count))
 
 
 def test_a_report_records_one_entry_per_link_block_and_repeater():
@@ -67,7 +69,7 @@ def test_a_report_records_one_entry_per_link_block_and_repeater():
     assert min(report.heralding_attempts) >= steane.QUBITS_PER_BLOCK
     assert report.encoding_attempts == [1] * (2 * qre_cec.LINK_COUNT)
     assert len(report.decoder_corrections) == qre_cec.REPEATER_COUNT
-    assert report.tapped_links == [0, 1, 2]
+    assert report.tapped_links == list(range(qre_cec.LINK_COUNT))
     assert report.is_tapped
 
 

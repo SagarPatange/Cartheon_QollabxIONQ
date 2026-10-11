@@ -1,6 +1,7 @@
 /**
- * Build the messaging world once: Mario on the ground left of Alice, four towers with a BSM node and a cloud turtle on
- * every link, Luigi on the ground right of David, plus the envelope, the end-to-end beam and the banner.
+ * Build the messaging world once: Mario on the ground left of Alice, three towers (Alice, Bob, David) with water
+ * between them, a BSM telecom tower on a pier and a cloud turtle on every link, Peach on the ground right of David,
+ * plus the envelope, the end-to-end beam and the banner.
  *
  * render_qkd_state.js changes classes and text on these elements later. Fills the empty #track container from
  * qkd.html.
@@ -8,11 +9,14 @@
 
 import { LUIGI, MARIO, QKD_TOWER_NAMES } from "./qkd_constants.js";
 import { createElement } from "../page_helpers.js";
-import { CLOUD_TURTLE_SPRITE, LUIGI_SPRITE, MARIO_SPRITE, drawSprite } from "../pixel_sprites.js";
+import { CLOUD_TURTLE_SPRITE, MARIO_SPRITE, PEACH_SPRITE, TELECOM_TOWER_SPRITE, drawSprite } from "../pixel_sprites.js";
 
 // Plumbers are 12×16 sprite pixels; 4 screen pixels each makes them 48×64 on screen.
 const PLUMBER_PIXEL_SIZE = 4;
 const TURTLE_PIXEL_SIZE = 3;
+// The BSM telecom tower over the water: 15×27 sprite pixels at 4 screen pixels; its crossarm meets the fiber when it
+// stands on its pier (styles/qkd.css).
+const BSM_TOWER_PIXEL_SIZE = 4;
 // How many coins a link shows while heralding: one per physical Bell pair of a Steane block.
 const COINS_SHOWN_PER_LINK = 7;
 
@@ -27,7 +31,7 @@ const COINS_SHOWN_PER_LINK = 7;
 export function buildQkdTrack(trackElement) {
     const stationElements = {
         [MARIO]: buildStation("Mario", MARIO_SPRITE, MARIO),
-        [LUIGI]: buildStation("Luigi", LUIGI_SPRITE, LUIGI),
+        [LUIGI]: buildStation("Peach", PEACH_SPRITE, LUIGI),
     };
     const towerElements = [];
     const linkElements = [];
@@ -41,6 +45,7 @@ export function buildQkdTrack(trackElement) {
         towerElements.push(towerElement);
         if (i < lastTowerIndex) {
             const linkElement = buildQkdLink();
+            standBsmTowerInWater(linkElement);
             trackElement.append(linkElement);
             linkElements.push(linkElement);
         }
@@ -60,8 +65,8 @@ export function buildQkdTrack(trackElement) {
  * A plumber standing on the ground, name overhead, with a speech bubble for the message they receive.
  *
  * @param {string} displayName - shown under the sprite.
- * @param {object} plumberSprite - MARIO_SPRITE or LUIGI_SPRITE.
- * @param {string} plumberId - MARIO or LUIGI, kept on the element for the CSS.
+ * @param {object} plumberSprite - e.g. MARIO_SPRITE or PEACH_SPRITE.
+ * @param {string} plumberId - MARIO or LUIGI (Peach's id), kept on the element for the CSS.
  */
 export function buildStation(displayName, plumberSprite, plumberId) {
     const stationElement = createElement("div", "station");
@@ -76,7 +81,7 @@ export function buildStation(displayName, plumberSprite, plumberId) {
 
 
 /**
- * One tower on a pipe. End towers (Alice, David) measure; middle towers (Bob, Charlie) swap.
+ * One tower on a pipe. End towers (Alice, David) measure; the middle tower (Bob) swaps.
  *
  * @param {string} towerName - shown on the pipe.
  * @param {boolean} isEndTower
@@ -99,8 +104,23 @@ export function buildQkdTower(towerName, isEndTower) {
 
 
 /**
+ * In a messaging link, the BSM is a real telecom tower: swap the "?" block for the tower on a concrete pier, standing
+ * in the water that fills the span between the two castles.
+ *
+ * @param {HTMLElement} linkElement - from buildQkdLink.
+ */
+function standBsmTowerInWater(linkElement) {
+    const waterElement = createElement("div", "qkd-water");
+    const pierElement = createElement("div", "qkd-bsm-pier");
+    const towerElement = drawSprite(TELECOM_TOWER_SPRITE, BSM_TOWER_PIXEL_SIZE, "qkd-bsm-tower");
+    linkElement.querySelector(".question-block").replaceWith(pierElement, towerElement);
+    linkElement.prepend(waterElement);
+}
+
+
+/**
  * The span between two towers: a cloud turtle with a speech bubble, coins, the BSM "?" block, the logical arc and
- * the fiber.
+ * the fiber. (Levels 1 and 2 and the messaging world each replace the block with a telecom tower.)
  */
 export function buildQkdLink() {
     const linkElement = createElement("div", "link qkd-link");

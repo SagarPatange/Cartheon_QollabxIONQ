@@ -173,23 +173,20 @@
 
 /* ---------- Banner ---------- */
 
+/* In the sky panel's flow, under the key hints: it takes its own room and the board is fitted below it, so it never
+   covers the cards. Hidden banners take no room at all. */
 .lesson-banner {
-    position: absolute;
-    z-index: 5;
-    top: 8px;
-    left: 50%;
-    translate: -50% 0;
+    display: none;
     padding: 12px 22px;
     font-size: 18px;
     white-space: nowrap;
     color: var(--ink);
     background: var(--coin-gold);
     border: var(--pixel) solid var(--ink);
-    visibility: hidden;
 }
 
 .lesson-banner.is-visible {
-    visibility: visible;
+    display: block;
 }
 
 /* ---------- Small tables (syndromes, readings) ---------- */

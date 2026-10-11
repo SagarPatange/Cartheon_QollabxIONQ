@@ -2,13 +2,16 @@
  * Level 2's scene and animations: Mario by Alice's tower, the fiber with the BSM telecom tower and its two detector
  * lamps, Bob's tower, Luigi beside it. Each tower has a glass window with two vertical stacks of 7 qubit orbs: the
  * stack next to the fiber holds the communication qubits (filled by Barrett–Kok), the other the 7 data qubits of the
- * Steane block.
+ * Steane block, framed as one unit and labelled as ONE logical qubit (|+̃⟩, |0̃⟩, then the pair's |Φ̃⁺⟩), never per
+ * qubit.
  *
  * Each play… function animates one step of a /api/logical-pair response and resolves when it has finished. Looks
  * live in styles/level2.css and styles/bsm_link.css.
  */
 
-import { PAIR_LANDED_PAUSE_MS, chooseAttemptTiming, listSetPositions } from "./level2_plan.js";
+import {
+    PAIR_LANDED_PAUSE_MS, chooseAttemptTiming, describeBlockLabel, describeCheckBanner, listSetPositions,
+} from "./level2_plan.js";
 import { buildBsmLink, showDetectorClick } from "../bsm_link.js";
 import { createElement } from "../page_helpers.js";
 import { LUIGI_SPRITE, MARIO_SPRITE } from "../pixel_sprites.js";
@@ -22,7 +25,8 @@ const PACKET_FLIGHT_MS = 1000;
 const CORRECTION_FLASH_MS = 600;
 // Each tower holds 7 communication qubits (the link stack) and a 7-qubit Steane block.
 const LINK_STACK = { name: "link", orbCount: 7 };
-const BLOCK_STACK = { name: "block", orbCount: 7 };
+const BLOCK_STACK = { name: "block", orbCount: 7, hasLabel: true };
+const BLOCK_STATE_CLASSES = { alice: "is-plus", bob: "is-zero" };
 
 
 /**
@@ -45,17 +49,55 @@ export function buildLevel2Track(trackElement) {
     );
     return {
         aliceTower: alice.towerElement, bobTower: bob.towerElement, aliceReadout: alice.readoutElement,
-        bobReadout: bob.readoutElement, aliceRack: toRack(alice.stacks), bobRack: toRack(bob.stacks),
+        bobReadout: bob.readoutElement, aliceRack: toRack(alice, "alice"), bobRack: toRack(bob, "bob"),
         linkElement, packetElement, bannerElement,
     };
 }
 
 
 /**
- * A tower's two stacks as the animations use them.
+ * A tower's two stacks and its block label, as the animations use them.
  */
-function toRack(stacks) {
-    return { linkCells: stacks[LINK_STACK.name], blockCells: stacks[BLOCK_STACK.name] };
+function toRack(tower, towerKey) {
+    return {
+        towerKey, linkCells: tower.stacks[LINK_STACK.name], blockCells: tower.stacks[BLOCK_STACK.name],
+        blockLabel: tower.labels[BLOCK_STACK.name],
+    };
+}
+
+
+/**
+ * Write a block's label for a stage (see describeBlockLabel), or clear it.
+ */
+function showBlockLabel(rack, stage) {
+    const label = describeBlockLabel(stage, rack.towerKey);
+    if (label === null) {
+        rack.blockLabel.replaceChildren();
+        rack.blockLabel.removeAttribute("aria-label");
+        return;
+    }
+    rack.blockLabel.replaceChildren(buildKet(label));
+    rack.blockLabel.setAttribute("aria-label", label.text);
+}
+
+
+/**
+ * A ket with a tilde over its symbol, |+̃⟩ or |Φ̃⁺⟩: the tilde is drawn by CSS (.ket-tilde), so it never depends on
+ * the pixel font having combining marks.
+ */
+function buildKet(label) {
+    const ketElement = createElement("span", "ket");
+    const symbolElement = createElement("span", "ket-tilde");
+    symbolElement.textContent = label.symbol;
+    ketElement.append("|", symbolElement);
+    if (label.superscript) {
+        const superscriptElement = createElement("sup", "ket-superscript");
+        superscriptElement.textContent = label.superscript;
+        ketElement.append(superscriptElement);
+    }
+    ketElement.append("⟩");
+    ketElement.setAttribute("aria-hidden", "true");
+    return ketElement;
 }
 
 
@@ -72,6 +114,8 @@ export function resetScene(scene) {
     for (const towerElement of [scene.aliceTower, scene.bobTower]) {
         towerElement.classList.remove("is-linked");
     }
+    showBlockLabel(scene.aliceRack, "empty");
+    showBlockLabel(scene.bobRack, "empty");
     scene.aliceReadout.textContent = "";
     scene.bobReadout.textContent = "";
     scene.linkElement.classList.remove("has-logical-pair", "is-missed");
@@ -165,25 +209,28 @@ async function playFlip(scene, pairIndex, flipMs) {
 
 
 /**
- * Phase 2: Alice's block becomes |+̄⟩ and Bob's |0̄⟩. Each rejected try flashes red before the accepted one.
+ * Phase 2: Alice's block becomes logical |+̃⟩ and Bob's |0̃⟩: the cells fill (no symbol per qubit: one qubit alone
+ * is not |+⟩ or |0⟩), then the block's label names the logical state. Each rejected try flashes red first.
  *
  * @param {object} scene
  * @param {object} response - LogicalPairResponse JSON.
  */
 export async function playEncoding(scene, response) {
-    await playBlockEncoding(scene.aliceRack.blockCells, response.alice_encoding_attempts, "+", "is-plus");
-    await playBlockEncoding(scene.bobRack.blockCells, response.bob_encoding_attempts, "0", "is-zero");
+    for (const [rack, attemptCount] of [[scene.aliceRack, response.alice_encoding_attempts],
+        [scene.bobRack, response.bob_encoding_attempts]]) {
+        await playBlockEncoding(rack.blockCells, attemptCount, BLOCK_STATE_CLASSES[rack.towerKey]);
+        showBlockLabel(rack, "encoded");
+    }
 }
 
 
 /**
  * Fill one block cell by cell; rejected tries flash red and start over.
  */
-async function playBlockEncoding(cells, attemptCount, glyph, stateClass) {
+async function playBlockEncoding(cells, attemptCount, stateClass) {
     for (let attempt = 1; attempt <= attemptCount; attempt++) {
         for (const cell of cells) {
             cell.className = `qubit-orb ${stateClass}`;
-            cell.textContent = glyph;
             await wait(CELL_FILL_MS);
         }
         const isRejected = attempt < attemptCount;
@@ -199,7 +246,8 @@ async function playBlockEncoding(cells, attemptCount, glyph, stateClass) {
 
 /**
  * Phase 3: Alice's 7 bits fly to Bob, who flips (X) the matching data qubits; Bob's 7 bits fly back and Alice
- * phase-flips (Z) hers. The physical pairs are used up and the logical pair appears.
+ * phase-flips (Z) hers. The physical pairs are used up and the logical pair appears: the two blocks are no longer
+ * |+̃⟩ and |0̃⟩ but together the logical Bell pair |Φ̃⁺⟩, so both take its colour and its label.
  *
  * @param {object} scene
  * @param {object} response - LogicalPairResponse JSON.
@@ -213,11 +261,17 @@ export async function playTeleport(scene, response) {
         for (const cell of rack.linkCells) {
             cell.className = "qubit-orb is-used";
         }
+        for (const cell of rack.blockCells) {
+            cell.className = "qubit-orb is-bell";
+        }
+        showBlockLabel(rack, "paired");
     }
     scene.linkElement.classList.add("has-logical-pair");
     scene.aliceTower.classList.add("is-linked");
     scene.bobTower.classList.add("is-linked");
-    showBanner(scene, "LOGICAL PAIR!", "is-win");
+    showBanner(scene, "LOGICAL BELL PAIR ", "is-win");
+    scene.bannerElement.append(buildKet(describeBlockLabel("paired", "alice")), "!");
+    scene.bannerElement.setAttribute("aria-label", "Logical Bell pair Phi plus!");
 }
 
 
@@ -254,7 +308,8 @@ async function flashCorrections(cells, bits, correctionLetter) {
 
 
 /**
- * Phase 4: both blocks are read in the same basis; each tower's readout shows its decoded logical bit.
+ * Phase 4: both blocks are read in the same basis; each tower's readout shows its decoded logical bit, and the banner
+ * says what both read and whether that made the logical Bell pair.
  *
  * @param {object} scene
  * @param {{aliceLabel: string, bobLabel: string, isMatch: boolean}} checkResult - from describeCheckResult.
@@ -269,13 +324,18 @@ export function playCheck(scene, checkResult, basis) {
         for (const cell of rack.blockCells) {
             cell.className = "qubit-orb is-measured";
         }
+        showBlockLabel(rack, "measured");
     }
-    if (checkResult.isMatch) {
-        showBanner(scene, `MATCH! ${basis} basis: ${checkResult.aliceLabel} and ${checkResult.bobLabel}`, "is-win");
-    } else {
-        showBanner(scene, `✖ No match (${checkResult.aliceLabel} vs ${checkResult.bobLabel}): an error got through`,
-            "is-lose");
+    const banner = describeCheckBanner(checkResult.isMatch, basis);
+    showBanner(scene, "", checkResult.isMatch ? "is-win" : "is-lose");
+    for (const line of banner.lines) {
+        const lineElement = createElement("span", "level2-banner-line");
+        for (const part of line) {
+            lineElement.append(typeof part === "string" ? part : buildKet(part));
+        }
+        scene.bannerElement.append(lineElement);
     }
+    scene.bannerElement.setAttribute("aria-label", banner.spokenText);
 }
 
 

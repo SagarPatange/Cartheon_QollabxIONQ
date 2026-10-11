@@ -1,7 +1,8 @@
 <!doctype html>
 <!--
-  Level 3 (map id "steane-block"): build a Steane |0̄⟩ block CNOT by CNOT (docs/qre_cec_protocol.md, phase 2), check
-  it with the paper's ancilla, then find and fix an X, a Z and a Y error from their syndromes. The Stim backend
+  Level 3 (map id "steane-block"): build a Steane |0̄⟩ block CNOT by CNOT with the Error Correction Zoo's encoder
+  (errorcorrectionzoo.org/c/steane: q0 holds |ψ⟩, H on q4-q6, 11 CNOTs), check
+  it with one ancilla, then find and fix an X, a Z and a Y error from the circles that fire. The Stim backend
   computes every check and syndrome (POST /api/steane-block, /api/steane-errors); keys only. Run `npm run backend`
   and open it from the map.
 -->
@@ -36,6 +37,7 @@
         <div class="sky-panel">
             <p id="status-banner" class="sky-status" aria-live="polite">Encode Mario's qubits into a Steane block!</p>
             <p id="key-hints" class="key-hints" aria-live="polite"></p>
+            <div id="banner" class="lesson-banner" role="status"></div>
         </div>
         <div id="stage" class="lesson-stage">
             <div id="lesson-content" class="lesson-content">
@@ -54,7 +56,6 @@
                     <p id="lesson-message" class="lesson-message-text" aria-live="polite"></p>
                 </div>
             </div>
-            <div id="banner" class="lesson-banner" role="status"></div>
         </div>
         <div id="cast" class="lesson-cast"></div>
         <div id="turtle" class="lesson-turtle" aria-hidden="true"></div>

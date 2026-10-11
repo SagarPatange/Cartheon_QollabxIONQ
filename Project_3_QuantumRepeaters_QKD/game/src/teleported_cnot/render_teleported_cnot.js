@@ -7,17 +7,15 @@
  * Writes only the level page's elements passed in.
  */
 
-import { drawCircuit } from "../circuit_picture.js";
 import { playTurtleZap } from "../lesson_stage.js";
 import { createElement } from "../page_helpers.js";
 import { CLOUD_TURTLE_SPRITE, LUIGI_SPRITE, MARIO_SPRITE, TOAD_SPRITE, drawSprite } from "../pixel_sprites.js";
+import { drawFig4 } from "./fig4_picture.js";
 
 const PLAYER_PIXEL_SIZE = 4;
 const TURTLE_PIXEL_SIZE = 4;
 const TOAD_PIXEL_SIZE = 3;
 const BLOCK_SIZE = 7;
-// Fig. 4 has 6 columns (2 CNOTs, 2 measurements, 2 fixes); keep room for all of them so the circuit never jumps.
-const PAIR_CIRCUIT_COLUMN_COUNT = 6;
 
 
 /**
@@ -49,22 +47,20 @@ export function showMessage(scene, message) {
 
 
 /**
- * The left card in a one-pair round: Fig. 4 so far, with a text alternative.
+ * The left card in a one-pair round: Fig. 4 as the paper draws it, lit up to the current step, with a text
+ * alternative and a legend saying what |α⟩ and |β⟩ are in this round.
  *
  * @param {object} scene
- * @param {{circuit: object, doneColumnCount: number, endNotes: Object<string, string>}} pairCircuit
+ * @param {object} figure - from buildPairCircuit (teleported_cnot_plan.js).
  */
-export function renderPairCircuit(scene, pairCircuit) {
+export function renderPairCircuit(scene, figure) {
     scene.leftTitleElement.textContent = "One Bell pair (paper Fig. 4)";
-    const circuitElement = drawCircuit(pairCircuit.circuit, {
-        doneColumnCount: pairCircuit.doneColumnCount,
-        endNotes: pairCircuit.endNotes,
-        minColumnCount: PAIR_CIRCUIT_COLUMN_COUNT,
-    });
+    const circuitElement = drawFig4(figure);
     circuitElement.setAttribute("role", "img");
-    circuitElement.setAttribute("aria-label", describePairCircuit(pairCircuit));
+    circuitElement.setAttribute("aria-label", describePairCircuit(figure));
     const legendElement = createElement("p", "cnot-legend");
-    legendElement.textContent = "d = data qubit, c = half of the Bell pair. A = Mario, B = Luigi.";
+    legendElement.textContent = `Here |α⟩ = ${figure.alphaText} and |β⟩ = ${figure.betaText}. d = data qubit, `
+        + "c = half of the Bell pair.";
     scene.leftBodyElement.replaceChildren(circuitElement, legendElement);
 }
 
@@ -72,13 +68,18 @@ export function renderPairCircuit(scene, pairCircuit) {
 /**
  * Fig. 4 in words, with the bits measured so far.
  */
-function describePairCircuit(pairCircuit) {
-    const startText = pairCircuit.circuit.wires[0].start;
-    const bitTexts = Object.values(pairCircuit.endNotes);
+function describePairCircuit(figure) {
+    const bitTexts = [];
+    if (figure.bits.m !== null) {
+        bitTexts.push(`m=${figure.bits.m}`);
+    }
+    if (figure.bits.n !== null) {
+        bitTexts.push(`n=${figure.bits.n}`);
+    }
     const bitsText = bitTexts.length > 0 ? ` Measured so far: ${bitTexts.join(", ")}.` : "";
-    return `Mario's data dA starts in ${startText}, Luigi's dB in |0⟩, and cA, cB share a Bell pair. CNOT dA to cA,`
-        + ` measure cA in Z giving m; CNOT cB to dB, measure cB in X giving n; X on dB if m is 1, Z on dA if n is 1.`
-        + bitsText;
+    return `Mario's data dA starts in ${figure.alphaText}, Luigi's dB in ${figure.betaText}, and cA, cB share a Bell`
+        + " pair. CNOT dA to cA and CNOT cB to dB; measure cA in Z giving m and cB in X giving n; m travels to an X"
+        + " on dB and n to a Z on dA. The data end as |α⟩ and |β ⊕ α⟩." + bitsText;
 }
 
 

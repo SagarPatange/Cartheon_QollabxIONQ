@@ -1,28 +1,31 @@
 /**
- * Level 3's rules, pure: the build rounds (one per Hadamard qubit, in steane.py's order q4, q2, q1), the encoder
- * circuit to draw, what to say after each CNOT, how to read a syndrome, and which keys do what in each phase. No DOM,
- * so node tests can call it; steane_block_main.js plays the level.
+ * Level 3's rules, pure: the build rounds of the Error Correction Zoo's Steane encoder
+ * (errorcorrectionzoo.org/c/steane: q0 copies |ψ⟩ onto q1 and q2, then q6, q5 and q4 each spread along their
+ * circle), the circuit to draw, what to say after each CNOT, how to read a syndrome, and which keys do what in each
+ * phase. No DOM, so node tests can call it; steane_block_main.js plays the level.
  *
  * Every quantum result (what a check reads, the syndromes, whether a fix worked) comes from the backend
- * (POST /api/steane-block and /api/steane-errors); this file only puts it into words.
+ * (POST /api/steane-block and /api/steane-errors, steane_block.py); this file only puts it into words.
  */
 
-import { listSteaneCheckPositions } from "../hut/qec_codes.js";
-
-// steane.py's ENCODER_HADAMARD_POSITIONS: H on these qubits before any CNOT puts each in |+⟩.
-export const HADAMARD_POSITIONS = [1, 2, 4];
-export const QUBIT_POSITIONS = [1, 2, 3, 4, 5, 6, 7];
+// Qubits q0-q6, numbered as in the Zoo's figure. q0 holds |ψ⟩ (|0⟩ here, so the block is logical |0⟩).
+export const QUBIT_POSITIONS = [0, 1, 2, 3, 4, 5, 6];
+export const DATA_POSITION = 0;
+// H on these qubits before any CNOT puts each in |+⟩.
+export const HADAMARD_POSITIONS = [4, 5, 6];
+// The three circles (checks), in the order the build spreads them: q6's, q5's, q4's (steane_block.CHECK_POSITIONS).
+export const CHECK_POSITIONS = [[0, 1, 3, 6], [0, 2, 3, 5], [1, 2, 3, 4]];
+// The encoder's CNOTs in order (steane_block.ENCODER_CNOTS).
+export const ENCODER_CNOTS = [[0, 1], [0, 2], [6, 0], [6, 1], [6, 3], [5, 0], [5, 2], [5, 3], [4, 1], [4, 2], [4, 3]];
+// The paper's encoder (Fig. 3, Paetznick–Reichardt) makes |0̄⟩ alone with 8 CNOTs.
+export const PAPER_CNOT_COUNT = 8;
 export const FIX_PAULIS = ["X", "Z", "Y"];
 export const CHECK_COUNT_PER_TYPE = 3;
-// The textbook encoder built here uses 9 CNOTs; the paper's (Fig. 3, Paetznick–Reichardt) makes the same block with
-// 8 (backend test: test_the_papers_8_cnot_encoder_makes_the_same_block).
-export const TEXTBOOK_CNOT_COUNT = 9;
-export const PAPER_CNOT_COUNT = 8;
-// The paper's one-ancilla check on a fresh |0̄⟩ measures the parity Z1 Z6 Z7 (ZIIIIZZ; Goto 2016, as in steane.py).
-export const VERIFICATION_POSITIONS = [1, 6, 7];
+// The ancilla checks logical Z = Z0 Z1 Z2 on a fresh block: 0 means |0̄⟩.
+export const VERIFICATION_POSITIONS = [0, 1, 2];
 export const ANCILLA_WIRE_ID = "anc";
-// Room for the H column, 9 CNOTs, the cursor's ghost CNOT and the ancilla check (3 CNOTs and a measurement).
-export const CIRCUIT_MIN_COLUMN_COUNT = 15;
+// Room for the H column, 11 CNOTs, the cursor's ghost CNOT and the ancilla check (3 CNOTs and a measurement).
+export const CIRCUIT_MIN_COLUMN_COUNT = 17;
 
 export const HADAMARD_PHASE = "hadamard";
 export const BUILD_PHASE = "build";
@@ -39,17 +42,18 @@ const PAULI_EFFECTS = { X: "a bit flip", Z: "a phase flip", Y: "a bit flip and a
 
 
 /**
- * The three build rounds: each Hadamard qubit spreads along its own check, the row of the parity-check matrix that
- * starts at it (4567 from q4, 2367 from q2, 1357 from q1).
+ * The four build rounds: q0 copies |ψ⟩ onto q1 and q2 (no circle), then each H qubit spreads onto the other qubits
+ * of its circle (q6 along 0136, q5 along 0235, q4 along 1234).
  *
- * @returns {{checkIndex: number, control: number, checkPositions: number[]}[]}
+ * @returns {{control: number, targets: number[], checkIndex: number | null, checkPositions: number[] | null}[]}
  */
 export function listBuildRounds() {
-    const rounds = [];
-    const checkPositions = listSteaneCheckPositions();
-    for (let i = 0; i < checkPositions.length; i++) {
-        rounds.push({ checkIndex: i, control: checkPositions[i][0], checkPositions: checkPositions[i] });
-    }
+    const rounds = [{ control: DATA_POSITION, targets: [1, 2], checkIndex: null, checkPositions: null }];
+    CHECK_POSITIONS.forEach((checkPositions, checkIndex) => {
+        const control = checkPositions.find((position) => HADAMARD_POSITIONS.includes(position));
+        const targets = checkPositions.filter((position) => position !== control);
+        rounds.push({ control, targets, checkIndex, checkPositions });
+    });
     return rounds;
 }
 
@@ -57,7 +61,7 @@ export function listBuildRounds() {
 /**
  * The qubits a CNOT from this control can target: every other qubit.
  *
- * @param {number} control - 1-7.
+ * @param {number} control - 0-6.
  * @returns {number[]}
  */
 export function listTargetChoices(control) {
@@ -81,7 +85,7 @@ export function moveThroughChoices(choices, current, step) {
 
 
 /**
- * The check's name as the circles show it, e.g. "4567".
+ * The check's name as the circles show it, e.g. "0136".
  *
  * @param {number[]} checkPositions
  * @returns {string}
@@ -101,15 +105,10 @@ export function nameCheck(checkPositions) {
  */
 export function findWrongCnot(roundIndex, roundTargets) {
     const round = listBuildRounds()[roundIndex];
-    const checkName = nameCheck(round.checkPositions);
-    const rightTargets = round.checkPositions.filter((position) => position !== round.control);
     for (let i = 0; i < roundTargets.length; i++) {
         const target = roundTargets[i];
-        if (!rightTargets.includes(target)) {
-            const rightText = listQubitNames(rightTargets);
-            const message = `Wrong circle: q${target} is not in circle ${checkName}. q${round.control} spreads only to`
-                + ` ${rightText}. Backspace undoes it.`;
-            return { index: i, message };
+        if (!round.targets.includes(target)) {
+            return { index: i, message: describeWrongTarget(round, target) };
         }
         if (roundTargets.indexOf(target) < i) {
             const message = `Wrong: q${target} already has a CNOT from q${round.control}, and a second one cancels it.`
@@ -122,7 +121,19 @@ export function findWrongCnot(roundIndex, roundTargets) {
 
 
 /**
- * Qubit names in words: "q3, q6 and q7".
+ * Why a target is wrong: outside the round's circle, or not one of the qubits |ψ⟩ is copied onto.
+ */
+function describeWrongTarget(round, target) {
+    if (round.checkPositions === null) {
+        return `Wrong: q0 copies |ψ⟩ only onto q1 and q2 (logical X̄ is X0 X1 X2). Backspace undoes it.`;
+    }
+    return `Wrong circle: q${target} is not in circle ${nameCheck(round.checkPositions)}. q${round.control} spreads `
+        + `only to ${listQubitNames(round.targets)}. Backspace undoes it.`;
+}
+
+
+/**
+ * Qubit names in words: "q0, q2 and q3".
  */
 function listQubitNames(positions) {
     const names = positions.map((position) => `q${position}`);
@@ -141,8 +152,7 @@ function listQubitNames(positions) {
  *     message: string}}
  */
 export function judgeBuildRound(report, roundIndex, roundTargets) {
-    const rounds = listBuildRounds();
-    const round = rounds[roundIndex];
+    const round = listBuildRounds()[roundIndex];
     const wrongCnot = findWrongCnot(roundIndex, roundTargets);
     if (wrongCnot !== null) {
         return {
@@ -151,17 +161,20 @@ export function judgeBuildRound(report, roundIndex, roundTargets) {
         };
     }
     const rightJudgement = { isWrong: false, wrongTargetIndex: null };
+    if (round.checkIndex === null) {
+        return { ...rightJudgement, brokenCheckIndices: [], ...judgeCopyRound(roundTargets) };
+    }
     const brokenCheckIndices = [];
-    for (let i = 0; i < roundIndex; i++) {
+    for (let i = 0; i < round.checkIndex; i++) {
         if (report.x_checks[i] !== 1) {
             brokenCheckIndices.push(i);
         }
     }
-    const isRoundCheckLit = report.x_checks[roundIndex] === 1;
+    const isRoundCheckLit = report.x_checks[round.checkIndex] === 1;
     const isComplete = isRoundCheckLit && brokenCheckIndices.length === 0;
     const checkName = nameCheck(round.checkPositions);
     if (brokenCheckIndices.length > 0) {
-        const brokenNames = brokenCheckIndices.map((i) => nameCheck(rounds[i].checkPositions)).join(" and ");
+        const brokenNames = brokenCheckIndices.map((i) => nameCheck(CHECK_POSITIONS[i])).join(" and ");
         const message = `That broke circle ${brokenNames}. Backspace undoes it.`;
         return { ...rightJudgement, isComplete, brokenCheckIndices, message };
     }
@@ -171,6 +184,19 @@ export function judgeBuildRound(report, roundIndex, roundTargets) {
     }
     const message = `Circle ${checkName} still reads ? (random). q${round.control} must reach every other qubit in it.`;
     return { ...rightJudgement, isComplete, brokenCheckIndices, message };
+}
+
+
+/**
+ * The copy round, judged by its rule alone: with |ψ⟩ = |0⟩ the two CNOTs change nothing a check can read.
+ */
+function judgeCopyRound(roundTargets) {
+    if (roundTargets.length === 2) {
+        return { isComplete: true, message: "q0 has copied |ψ⟩ onto q1 and q2: logical X̄ is now X0 X1 X2. (|ψ⟩ is |0⟩ "
+            + "here, so no check can see it yet.)" };
+    }
+    const missing = [1, 2].filter((target) => !roundTargets.includes(target));
+    return { isComplete: false, message: `q0 copies |ψ⟩ onto q1 and q2: q${missing[0]} still needs its CNOT.` };
 }
 
 
@@ -185,8 +211,8 @@ export function describeBuiltBlock(report) {
         return "The X circles hold, but a Z check doesn't. An extra CNOT broke it: Backspace undoes.";
     }
     const checkText = VERIFICATION_POSITIONS.map((position) => `Z${position}`).join(" ");
-    return `All 6 checks and logical Z read +1: the block is logical |0⟩! The paper checks it with one ancilla:`
-        + ` ${checkText}.`;
+    return `All 6 checks and logical Z read +1: |ψ⟩ = |0⟩ is now logical |0̄⟩! One ancilla checks logical Z: `
+        + `${checkText}.`;
 }
 
 
@@ -198,16 +224,16 @@ export function describeBuiltBlock(report) {
  */
 export function describeVerification(verificationBit) {
     if (verificationBit === 0) {
-        return `Ancilla reads 0: keep the block! (The paper's encoder makes the same block with ${PAPER_CNOT_COUNT}`
-            + ` CNOTs instead of ${TEXTBOOK_CNOT_COUNT}.)`;
+        return `Ancilla reads 0: keep the block! This encoder takes ${ENCODER_CNOTS.length} CNOTs because it can encode`
+            + ` any |ψ⟩; the paper's makes |0̄⟩ alone with ${PAPER_CNOT_COUNT}.`;
     }
     return "Ancilla reads 1: the block is bad. Throw it away and build again.";
 }
 
 
 /**
- * The circuit to draw: q1-q7 from |0⟩, the H column, the player's CNOTs (a wrong one in red), the cursor's ghost
- * CNOT, and the ancilla check once it has run.
+ * The circuit to draw: q0 from |ψ⟩ and q1-q6 from |0⟩, the H column, the player's CNOTs (a wrong one in red), the
+ * cursor's ghost CNOT, and the ancilla check once it has run.
  *
  * @param {{hasHadamards: boolean, cnots: number[][], ghost: {control: number, target: number} | null,
  *     hasVerification: boolean, wrongCnotIndex?: number | null}} buildState - wrongCnotIndex indexes cnots.
@@ -216,7 +242,8 @@ export function describeVerification(verificationBit) {
 export function buildEncoderCircuit(buildState) {
     const wires = [];
     for (const position of QUBIT_POSITIONS) {
-        wires.push({ id: findWireId(position), label: findWireId(position), start: "|0⟩" });
+        const start = position === DATA_POSITION ? "|ψ⟩" : "|0⟩";
+        wires.push({ id: findWireId(position), label: findWireId(position), start });
     }
     const columns = [];
     if (buildState.hasHadamards) {
@@ -255,8 +282,22 @@ export function findWireId(position) {
 
 
 /**
- * A syndrome read as a binary number, most significant bit first: the flipped qubit's position, 0 for none
- * (steane.py's decoder rule; the rows of the parity-check matrix are the qubit positions in binary).
+ * The qubit inside exactly the circles whose checks fired, or null when none fired (Level 3's layout: each qubit
+ * sits in a different set of circles, so the fired circles name it).
+ *
+ * @param {number[]} syndrome - one bit per circle, in CHECK_POSITIONS order.
+ * @returns {number | null}
+ */
+export function findFlippedPosition(syndrome) {
+    const position = QUBIT_POSITIONS.find((candidate) =>
+        CHECK_POSITIONS.every((check, index) => Number(check.includes(candidate)) === syndrome[index]));
+    return position ?? null;
+}
+
+
+/**
+ * Level 4's textbook numbering (steane.py): a syndrome read as a binary number, most significant bit first, is the
+ * flipped qubit's position, 0 for none (the rows of the parity-check matrix are the positions in binary).
  *
  * @param {number[]} syndrome - three bits.
  * @returns {number}
@@ -282,15 +323,15 @@ export function describeZap(pauli) {
 
 
 /**
- * How to read the measured syndromes: each row, top to bottom, as a binary number.
+ * How to read the measured syndromes: the qubit inside exactly the circles that fired.
  *
  * @param {number[]} zSyndrome - the Z checks: they catch X flips.
  * @param {number[]} xSyndrome - the X checks: they catch Z flips.
  * @returns {string}
  */
 export function describeSyndromes(zSyndrome, xSyndrome) {
-    return `Z checks: ${zSyndrome.join("")}. X checks: ${xSyndrome.join("")}. Read each as a binary number: it names`
-        + " the qubit. Z checks catch X flips, X checks catch Z flips.";
+    return `Z checks: ${zSyndrome.join("")}. X checks: ${xSyndrome.join("")}. A 1 means that circle fired: the hit `
+        + "qubit is inside exactly the circles that fired. Z checks catch X flips, X checks catch Z flips.";
 }
 
 
@@ -302,17 +343,28 @@ export function describeSyndromes(zSyndrome, xSyndrome) {
  * @returns {string}
  */
 export function explainSyndromes(zSyndrome, xSyndrome) {
-    const zPosition = readSyndromePosition(zSyndrome);
-    const xPosition = readSyndromePosition(xSyndrome);
-    const zText = zSyndrome.join("");
-    const xText = xSyndrome.join("");
-    if (zPosition !== 0 && zPosition === xPosition) {
-        return `Z ${zText} and X ${xText} are both ${zPosition}: X and Z on q${zPosition}, which is Y.`;
+    const zPosition = findFlippedPosition(zSyndrome);
+    const xPosition = findFlippedPosition(xSyndrome);
+    if (zPosition !== null && zPosition === xPosition) {
+        return `Both checks point at q${zPosition} (${describeFiredCircles(zSyndrome)}): X and Z on q${zPosition}, `
+            + "which is Y.";
     }
-    if (zPosition !== 0) {
-        return `Z checks ${zText} is ${zPosition} in binary: an X flip on q${zPosition}.`;
+    if (zPosition !== null) {
+        return `Z checks: ${describeFiredCircles(zSyndrome)}. Only q${zPosition} sits in exactly those: an X flip on `
+            + `q${zPosition}.`;
     }
-    return `X checks ${xText} is ${xPosition} in binary: a Z flip on q${xPosition}.`;
+    return `X checks: ${describeFiredCircles(xSyndrome)}. Only q${xPosition} sits in exactly those: a Z flip on `
+        + `q${xPosition}.`;
+}
+
+
+/**
+ * Which circles fired, in words: "0136 and 0235 fired".
+ */
+function describeFiredCircles(syndrome) {
+    const fired = CHECK_POSITIONS.filter((_, index) => syndrome[index] === 1).map(nameCheck);
+    const firedText = fired.length > 1 ? `${fired.slice(0, -1).join(", ")} and ${fired.at(-1)}` : fired[0];
+    return `${firedText} fired`;
 }
 
 
@@ -334,7 +386,7 @@ export function describeFixResult(fixResult, errorRound) {
 
 
 /**
- * The key for a fix in the backend's fixes table: X on q6 is "X6".
+ * The key for a fix in the backend's fixes table: X on q6 is "X6", Z on q0 is "Z0".
  *
  * @param {string} pauli
  * @param {number} position
@@ -374,7 +426,7 @@ export function listKeyHints(view) {
     const rounds = listBuildRounds();
     const restartHint = { key: "R", action: "Start over" };
     if (view.phase === HADAMARD_PHASE) {
-        return [{ key: "Space", action: "H on q1, q2, q4" }];
+        return [{ key: "Space", action: `H on ${HADAMARD_POSITIONS.map((position) => `q${position}`).join(", ")}` }];
     }
     if (view.phase === BUILD_PHASE) {
         const control = rounds[view.roundIndex].control;

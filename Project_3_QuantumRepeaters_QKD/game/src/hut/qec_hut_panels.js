@@ -65,7 +65,7 @@ export const QEC_PANELS = [
         lines: [
             "Start with 7 qubits in |0⟩. H on q1, q2 and q4, then 9 CNOTs.",
             "Each H qubit spreads along its check, so the block lands in |0̄⟩.",
-            "In Level 3 you build this circuit yourself, CNOT by CNOT.",
+            "In Level 3 you build another Steane encoder (from the Error Correction Zoo) CNOT by CNOT.",
         ],
     },
     {

@@ -51,29 +51,43 @@ test("the fixes are named as the backend names them", () => {
 });
 
 
-test("the circuit is Fig. 4: CNOT dA→cA, measure cA in Z, CNOT cB→dB, measure cB in X, then the fixes", () => {
-    const { circuit, doneColumnCount } = buildPairCircuit({
+test("the figure is Fig. 4: nothing has happened before the first step, and both fixes wait faded", () => {
+    const figure = buildPairCircuit({
         roundKind: CLASSICAL_ROUND, stepIndex: 0, m: null, n: null, hasLuigiX: false, hasMarioZ: false,
     });
-    assert.deepEqual(circuit.wires.map((wire) => wire.id), ["dA", "cA", "cB", "dB"]);
-    assert.equal(circuit.wires[0].start, "|1⟩");
-    assert.deepEqual(circuit.columns[0], [{ gate: "cnot", control: "dA", target: "cA" }]);
-    assert.deepEqual(circuit.columns[1], [{ gate: "measure", wire: "cA", basis: "Z" }]);
-    assert.deepEqual(circuit.columns[2], [{ gate: "cnot", control: "cB", target: "dB" }]);
-    assert.deepEqual(circuit.columns[3], [{ gate: "measure", wire: "cB", basis: "X" }]);
-    assert.deepEqual(circuit.columns.slice(4), [[{ gate: "x", wire: "dB" }], [{ gate: "z", wire: "dA" }]]);
-    assert.equal(doneColumnCount, 0);
+    assert.equal(figure.alphaText, "|1⟩");
+    assert.equal(figure.betaText, "|0⟩");
+    assert.deepEqual(figure.parts, {
+        pair: "future", cnotA: "future", measureA: "future", sendM: "future", cnotB: "future", measureB: "future",
+        sendN: "future",
+    });
+    assert.deepEqual(figure.fixes, { x: "faded", z: "faded" });
 });
 
 
-test("while choosing, only the chosen fixes are drawn, and the measured bits sit after their measurements", () => {
+test("each part lights up once its step is played, in the order the paper does them", () => {
+    const steps = listRoundSteps(CLASSICAL_ROUND);
+    const afterMeasureA = buildPairCircuit({
+        roundKind: CLASSICAL_ROUND, stepIndex: steps.indexOf("measureA") + 1, m: 1, n: null, hasLuigiX: false,
+        hasMarioZ: false,
+    });
+    assert.equal(afterMeasureA.parts.cnotA, "done");
+    assert.equal(afterMeasureA.parts.measureA, "done");
+    assert.equal(afterMeasureA.parts.sendM, "future");
+    assert.equal(afterMeasureA.parts.cnotB, "future");
+    assert.deepEqual(afterMeasureA.bits, { m: 1, n: null });
+});
+
+
+test("while choosing, only the chosen fixes are drawn, and the measured bits travel with them", () => {
     const chooseStepIndex = listRoundSteps(BELL_ROUND).indexOf("choose");
-    const { circuit, endNotes } = buildPairCircuit({
+    const figure = buildPairCircuit({
         roundKind: BELL_ROUND, stepIndex: chooseStepIndex, m: 1, n: 0, hasLuigiX: true, hasMarioZ: false,
     });
-    assert.equal(circuit.wires[0].start, "|+⟩");
-    assert.deepEqual(circuit.columns.slice(4), [[{ gate: "x", wire: "dB" }]]);
-    assert.deepEqual(endNotes, { cA: "m=1", cB: "n=0" });
+    assert.equal(figure.alphaText, "|+⟩");
+    assert.deepEqual(figure.fixes, { x: "chosen", z: "hidden" });
+    assert.equal(figure.parts.sendN, "done");
+    assert.deepEqual(figure.bits, { m: 1, n: 0 });
 });
 
 

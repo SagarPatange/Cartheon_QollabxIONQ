@@ -127,7 +127,7 @@ def teleport_states(request: TeleportRequest) -> TeleportResponse:
 @app.post("/api/steane-block")
 def check_steane_block(request: SteaneBlockRequest) -> SteaneBlockResponse:
     """steane_block.html, Part A: what each check reads after the H gates and the player's CNOTs. Noiseless and
-    deterministic, so no seed. A CNOT outside q1-q7 or onto its own qubit gets a 422."""
+    deterministic, so no seed. A CNOT outside q0-q6 or onto its own qubit gets a 422."""
     try:
         report = steane_block.run_build(StimBackend(seed=0), request.cnots)
     except ValueError as error:

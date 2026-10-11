@@ -16,7 +16,7 @@ function press(key) {
 }
 
 
-test("Q W E are Mario's three actions and I O P are Luigi's", () => {
+test("Q W E are Mario's three actions and I O P are Peach's", () => {
     assert.deepEqual(findKeyAction(press("q"), "BODY"), { sender: MARIO, kind: CLASSICAL });
     assert.deepEqual(findKeyAction(press("w"), "BODY"), { sender: MARIO, kind: ENCRYPTED });
     assert.deepEqual(findKeyAction(press("e"), "BODY"), { sender: MARIO, kind: QUANTUM });

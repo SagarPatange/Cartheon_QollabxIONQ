@@ -40,6 +40,59 @@
     transition: background 200ms, box-shadow 200ms;
 }
 
+/* The Steane block: 7 data qubits framed as ONE logical qubit, named once in the label over them. The label has a
+   fixed height so the plain stack beside the group can start level with the group's first qubit (below). */
+.qubit-window {
+    --group-border: 2px;
+    --group-padding-top: 12px;
+    --group-label-height: 22px;
+    --group-gap: 8px;
+}
+
+.qubit-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--group-gap);
+    padding: var(--group-padding-top) 4px 6px;
+    border: var(--group-border) solid #3cbcfc99;
+    border-radius: 6px;
+}
+
+/* Beside a framed group, a plain stack starts as low as the group's first orb (border, padding, label and gap), so
+   the two columns' qubits pair up row by row. */
+.qubit-window:has(> .qubit-group) > .qubit-stack {
+    margin-top: calc(var(--group-border) + var(--group-padding-top) + var(--group-label-height) + var(--group-gap));
+}
+
+.qubit-group-label {
+    height: var(--group-label-height);
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-light);
+    white-space: nowrap;
+}
+
+/* A ket's symbol with a tilde drawn above it: |+̃⟩, |0̃⟩, |Φ̃⁺⟩ (the logical state, not one qubit's). */
+.ket-tilde {
+    position: relative;
+    display: inline-block;
+}
+
+.ket-tilde::before {
+    content: "~";
+    position: absolute;
+    left: 50%;
+    bottom: 72%;
+    translate: -50% 0;
+    font-size: 0.85em;
+}
+
+.ket-superscript {
+    font-size: 0.65em;
+    vertical-align: 0.6em;
+}
+
 /* Data qubits are squarer: they are blocks of the code, not photons. */
 .qubit-stack.is-block .qubit-orb {
     border-radius: 4px;
@@ -79,6 +132,12 @@
 .qubit-orb.is-zero {
     background: var(--qubit-blue);
     box-shadow: inset -3px -3px 0 var(--qubit-dark-blue), inset 2px 2px 0 #ffffff88, 0 0 8px var(--qubit-blue);
+}
+
+/* After the teleported CNOT both blocks are one logical Bell pair: one shared colour across the fiber. */
+.qubit-orb.is-bell {
+    background: #b98cff;
+    box-shadow: inset -3px -3px 0 #6a3fc0, inset 2px 2px 0 #ffffff88, 0 0 8px #b98cff;
 }
 
 /* Once the logical pair exists, both code blocks pulse together: one shared state across the fiber. */

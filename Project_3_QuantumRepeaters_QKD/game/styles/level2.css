@@ -95,6 +95,16 @@
     visibility: visible;
 }
 
+/* The final check's banner has two lines: what both blocks read, then whether that made the logical Bell pair. */
+.level2-banner-line {
+    display: block;
+    text-align: center;
+}
+
+.level2-banner-line + .level2-banner-line {
+    margin-top: 10px;
+}
+
 .level2-banner.is-win {
     color: var(--ink);
     background: var(--coin-gold);

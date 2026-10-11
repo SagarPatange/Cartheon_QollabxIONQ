@@ -28,10 +28,9 @@ const STEPS_BY_ROUND = {
     [BAD_BLOCK_ROUND]: BAD_BLOCK_STEPS,
 };
 
-// How many of the one-pair circuit's columns have happened once each step is done (see buildPairCircuit).
-const PAIR_COLUMNS_DONE_AFTER_STEP = {
-    pair: 0, cnotA: 1, measureA: 2, sendM: 2, cnotB: 3, measureB: 4, sendN: 4, choose: 6, done: 6,
-};
+// The parts of the one-pair figure that light up as their step is played (see buildPairCircuit); each is named
+// after its step.
+const PAIR_FIGURE_PARTS = ["pair", "cnotA", "measureA", "sendM", "cnotB", "measureB", "sendN"];
 
 // The fixes as the backend names them: "x" = X on Luigi's d_B, "z" = Z on Mario's d_A.
 export const FIX_NAMES = { none: [false, false], x: [true, false], z: [false, true], xz: [true, true] };
@@ -85,51 +84,40 @@ export function nameFixChoice(hasLuigiX, hasMarioZ) {
 
 
 /**
- * The one-pair circuit (paper Fig. 4) with d_A, c_A, c_B, d_B, the measured bits written after each measurement, and
- * the fix boxes the player chose (both shown faded before they choose).
+ * The one-pair circuit, drawn like the paper's Fig. 4: the data |α⟩ (Mario's dA) and |β⟩ (Luigi's dB) around the
+ * Bell pair cA–cB; both CNOTs side by side (dA → cA and cB → dB); cA measured in Z and cB in X; and the measured
+ * bits carried on classical wires to the fixes (m → X on dB, n → Z on dA). Each part is "done" once its step has been
+ * played and "future" before; the fixes are both shown faded until the player chooses, then only the chosen ones.
  *
  * @param {{roundKind: string, stepIndex: number, m: number | null, n: number | null, hasLuigiX: boolean,
  *     hasMarioZ: boolean}} pairView - stepIndex is the next step to play; m and n are null until measured.
- * @returns {{circuit: {wires: object[], columns: object[][]}, doneColumnCount: number,
- *     endNotes: Object<string, string>}}
+ * @returns {{alphaText: string, betaText: string, parts: Object<string, string>, fixes: {x: string, z: string},
+ *     bits: {m: number | null, n: number | null}}} fixes are "faded", "chosen" or "hidden".
  */
 export function buildPairCircuit(pairView) {
-    const marioStart = pairView.roundKind === CLASSICAL_ROUND ? "|1⟩" : "|+⟩";
-    const wires = [
-        { id: "dA", label: "dA", start: marioStart },
-        { id: "cA", label: "cA", start: "Φ⁺" },
-        { id: "cB", label: "cB", start: "Φ⁺" },
-        { id: "dB", label: "dB", start: "|0⟩" },
-    ];
-    const steps = PAIR_STEPS;
-    const isChoosing = steps[pairView.stepIndex] === "choose";
-    const hasChosen = pairView.stepIndex > steps.indexOf("choose");
-    const columns = [
-        [{ gate: "cnot", control: "dA", target: "cA" }],
-        [{ gate: "measure", wire: "cA", basis: "Z" }],
-        [{ gate: "cnot", control: "cB", target: "dB" }],
-        [{ gate: "measure", wire: "cB", basis: "X" }],
-    ];
-    const showsBothFixes = !isChoosing && !hasChosen;
-    if (showsBothFixes || pairView.hasLuigiX) {
-        columns.push([{ gate: "x", wire: "dB" }]);
+    const alphaText = pairView.roundKind === CLASSICAL_ROUND ? "|1⟩" : "|+⟩";
+    const parts = {};
+    for (const part of PAIR_FIGURE_PARTS) {
+        const isPlayed = PAIR_STEPS.indexOf(part) < pairView.stepIndex;
+        parts[part] = isPlayed ? "done" : "future";
     }
-    if (showsBothFixes || pairView.hasMarioZ) {
-        columns.push([{ gate: "z", wire: "dA" }]);
+    const hasChoiceBegun = pairView.stepIndex >= PAIR_STEPS.indexOf("choose");
+    const fixes = {
+        x: describeFixPart(hasChoiceBegun, pairView.hasLuigiX),
+        z: describeFixPart(hasChoiceBegun, pairView.hasMarioZ),
+    };
+    return { alphaText, betaText: "|0⟩", parts, fixes, bits: { m: pairView.m, n: pairView.n } };
+}
+
+
+/**
+ * A fix box: faded (still to come) before the player chooses, then drawn if chosen and left out if not.
+ */
+function describeFixPart(hasChoiceBegun, isChosen) {
+    if (!hasChoiceBegun) {
+        return "faded";
     }
-    const endNotes = {};
-    if (pairView.m !== null) {
-        endNotes.cA = `m=${pairView.m}`;
-    }
-    if (pairView.n !== null) {
-        endNotes.cB = `n=${pairView.n}`;
-    }
-    const playedStep = steps[Math.max(pairView.stepIndex - 1, 0)];
-    let doneColumnCount = pairView.stepIndex === 0 ? 0 : PAIR_COLUMNS_DONE_AFTER_STEP[playedStep];
-    if (isChoosing) {
-        doneColumnCount = columns.length;
-    }
-    return { circuit: { wires, columns }, doneColumnCount, endNotes };
+    return isChosen ? "chosen" : "hidden";
 }
 
 

@@ -117,9 +117,9 @@ def test_the_new_level_pages_are_listed():
     assert "bb84_hut.html" in PAGE_NAMES
 
 
-def test_the_steane_encoder_cnots_give_an_encoded_block_and_a_bad_cnot_gets_a_422():
-    textbook_cnots = [[4, 5], [4, 6], [4, 7], [2, 3], [2, 6], [2, 7], [1, 3], [1, 5], [1, 7]]
-    body = client.post("/api/steane-block", json={"cnots": textbook_cnots}).json()
+def test_the_zoo_encoder_cnots_give_an_encoded_block_and_a_bad_cnot_gets_a_422():
+    zoo_cnots = [[0, 1], [0, 2], [6, 0], [6, 1], [6, 3], [5, 0], [5, 2], [5, 3], [4, 1], [4, 2], [4, 3]]
+    body = client.post("/api/steane-block", json={"cnots": zoo_cnots}).json()
     assert body == {
         "x_checks": [1, 1, 1], "z_checks": [1, 1, 1], "logical_z": 1, "is_encoded": True, "verification_bit": 0,
     }
@@ -127,7 +127,7 @@ def test_the_steane_encoder_cnots_give_an_encoded_block_and_a_bad_cnot_gets_a_42
     assert empty_body["is_encoded"] is False
     assert empty_body["verification_bit"] is None
     assert client.post("/api/steane-block", json={"cnots": [[3, 3]]}).status_code == 422
-    assert client.post("/api/steane-block", json={"cnots": [[8, 1]]}).status_code == 422
+    assert client.post("/api/steane-block", json={"cnots": [[7, 1]]}).status_code == 422
 
 
 def test_steane_errors_come_as_x_z_y_rounds_with_every_fix_and_repeat_with_a_seed():

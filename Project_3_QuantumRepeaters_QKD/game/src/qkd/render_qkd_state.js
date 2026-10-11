@@ -123,7 +123,7 @@ function findBannerResult(response, reachedPhases) {
     if (!reachedPhases.has("deliver")) {
         return null;
     }
-    const receiverName = response.receiver === LUIGI ? "LUIGI" : "MARIO";
+    const receiverName = response.receiver === LUIGI ? "PEACH" : "MARIO";
     return { isAborted: false, text: `★ MESSAGE FOR ${receiverName}! ${response.bit_errors} bits wrong ★` };
 }
 

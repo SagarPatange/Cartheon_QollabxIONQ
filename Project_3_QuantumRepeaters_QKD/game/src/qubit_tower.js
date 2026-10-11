@@ -12,15 +12,18 @@ import { createElement } from "./page_helpers.js";
  * A tower whose window holds the given stacks, left to right.
  *
  * @param {string} towerName - shown on the pipe.
- * @param {{name: string, orbCount: number}[]} stackSpecs - e.g. [{name: "block", orbCount: 7}, {name: "link", ...}];
- *     each stack gets the class is-<name>.
- * @returns {{towerElement: HTMLElement, readoutElement: HTMLElement, stacks: Object<string, HTMLElement[]>}} the
- *     tower, its readout badge, and each stack's orbs (top to bottom) by name.
+ * @param {{name: string, orbCount: number, hasLabel?: boolean}[]} stackSpecs - e.g. [{name: "block", orbCount: 7,
+ *     hasLabel: true}, {name: "link", ...}]; each stack gets the class is-<name>. A stack with a label is framed as
+ *     one unit (the Steane block: 7 qubits, one logical qubit) with the label over it.
+ * @returns {{towerElement: HTMLElement, readoutElement: HTMLElement, stacks: Object<string, HTMLElement[]>,
+ *     labels: Object<string, HTMLElement>}} the tower, its readout badge, each stack's orbs (top to bottom) and each
+ *     labelled stack's label, by name.
  */
 export function buildQubitTower(towerName, stackSpecs) {
     const towerElement = createElement("div", "tower qubit-tower");
     const windowElement = createElement("div", "qubit-window");
     const stacks = {};
+    const labels = {};
     for (const stackSpec of stackSpecs) {
         const stackElement = createElement("div", `qubit-stack is-${stackSpec.name}`);
         stacks[stackSpec.name] = [];
@@ -29,7 +32,14 @@ export function buildQubitTower(towerName, stackSpecs) {
             stackElement.append(orbElement);
             stacks[stackSpec.name].push(orbElement);
         }
-        windowElement.append(stackElement);
+        if (stackSpec.hasLabel) {
+            const groupElement = createElement("div", `qubit-group is-${stackSpec.name}`);
+            labels[stackSpec.name] = createElement("div", "qubit-group-label");
+            groupElement.append(labels[stackSpec.name], stackElement);
+            windowElement.append(groupElement);
+        } else {
+            windowElement.append(stackElement);
+        }
     }
     const bodyElement = createElement("div", "tower-body qubit-tower-body");
     bodyElement.append(windowElement);
@@ -40,5 +50,5 @@ export function buildQubitTower(towerName, stackSpecs) {
         readoutElement, createElement("div", "tower-battlements"), bodyElement, createElement("div", "tower-pipe"),
         nameElement,
     );
-    return { towerElement, readoutElement, stacks };
+    return { towerElement, readoutElement, stacks, labels };
 }

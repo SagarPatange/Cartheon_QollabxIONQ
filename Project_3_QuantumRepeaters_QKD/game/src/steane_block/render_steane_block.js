@@ -10,10 +10,11 @@
 import { drawCircuit } from "../circuit_picture.js";
 import { createElement } from "../page_helpers.js";
 import { CLOUD_TURTLE_SPRITE, MARIO_SPRITE, TOAD_SPRITE, drawSprite } from "../pixel_sprites.js";
-import { listSteaneCheckPositions } from "../hut/qec_codes.js";
 import { playTurtleZap } from "../lesson_stage.js";
 import { drawSteaneDiagram } from "../steane_diagram.js";
-import { CIRCUIT_MIN_COLUMN_COUNT, FIX_PAULIS, HADAMARD_POSITIONS, nameCheck } from "./steane_block_plan.js";
+import {
+    CHECK_POSITIONS, CIRCUIT_MIN_COLUMN_COUNT, FIX_PAULIS, HADAMARD_POSITIONS, VERIFICATION_POSITIONS, nameCheck,
+} from "./steane_block_plan.js";
 
 const MARIO_PIXEL_SIZE = 4;
 const TURTLE_PIXEL_SIZE = 4;
@@ -30,11 +31,10 @@ export function buildSteaneScene(elements) {
     elements.messageToadElement.append(drawSprite(TOAD_SPRITE, TOAD_PIXEL_SIZE, "lesson-toad"));
     elements.castElement.append(drawSprite(MARIO_SPRITE, MARIO_PIXEL_SIZE, "lesson-mario"));
     elements.turtleElement.append(drawSprite(CLOUD_TURTLE_SPRITE, TURTLE_PIXEL_SIZE, "lesson-turtle-sprite"));
-    const checkPositions = listSteaneCheckPositions();
-    const diagram = drawSteaneDiagram(checkPositions);
+    const diagram = drawSteaneDiagram(CHECK_POSITIONS);
     diagram.svgElement.setAttribute("role", "img");
     elements.diagramElement.replaceChildren(diagram.svgElement);
-    return { ...elements, diagram, checkNames: checkPositions.map(nameCheck) };
+    return { ...elements, diagram, checkNames: CHECK_POSITIONS.map(nameCheck) };
 }
 
 
@@ -71,7 +71,7 @@ export function renderEncoderCard(scene, circuit, buildState) {
  * The encoder in words, for screen readers.
  */
 function describeEncoder(buildState) {
-    const parts = ["Seven qubits q1 to q7 start in |0⟩."];
+    const parts = ["Seven qubits: q0 holds |ψ⟩ = |0⟩, q1 to q6 start in |0⟩."];
     if (buildState.hasHadamards) {
         parts.push(`H on ${HADAMARD_POSITIONS.map((position) => `q${position}`).join(", ")}.`);
     }
@@ -80,7 +80,8 @@ function describeEncoder(buildState) {
         parts.push(`CNOTs: ${cnotTexts.join(", ")}.`);
     }
     if (buildState.hasVerification) {
-        parts.push("Then CNOTs from q1, q6 and q7 onto the ancilla, which is measured.");
+        const controls = VERIFICATION_POSITIONS.map((position) => `q${position}`).join(", ");
+        parts.push(`Then CNOTs from ${controls} onto the ancilla, which is measured.`);
     }
     return parts.join(" ");
 }

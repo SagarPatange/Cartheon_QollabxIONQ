@@ -1,11 +1,13 @@
-"""QRE-CEC (paper §III): distribute one logical Steane Bell pair Φ̄⁺ from Alice to David over two repeaters.
+"""QRE-CEC (paper §III): distribute one logical Steane Bell pair Φ̄⁺ from Alice to David over one repeater.
 
-Nodes in a line: Alice ─ Bob ─ Charlie ─ David, one fiber link between each neighbour pair. Each pair goes through:
+Nodes in a line: Alice ─ Bob ─ David, one fiber link between each neighbour pair (the paper's Fig. 2 chain has two
+repeaters; the game uses one, so the scene stays readable). Everything below follows NODE_NAMES, so a longer chain
+only means adding names. Each pair goes through:
 
 1. Heralded generation: 7 physical Bell pairs per link, on communication qubits (c_left[i], c_right[i]).
 2. Encoding: the left end of every link gets a verified |+̄⟩, the right end a verified |0̄⟩.
 3. Transversal teleported CNOT (Fig. 4): consumes the physical pairs and leaves Φ̄⁺ on every link.
-4. Encoded swapping at Bob and Charlie: a logical Bell measurement, decoded with the Steane decoder.
+4. Encoded swapping at every repeater (here Bob): a logical Bell measurement, decoded with the Steane decoder.
 5. Pauli-frame correction on David's block. Alice's and David's blocks then hold Φ̄⁺.
 
 Cloud turtles may tap photons in step 1: an intercept-resend measurement of c_right[i] in a random basis.
@@ -21,7 +23,7 @@ from quantum_bros.backends.quantum_backend import QuantumBackend
 from quantum_bros.protocol import steane
 from quantum_bros.protocol.noise import NoiseModel
 
-NODE_NAMES = ["Alice", "Bob", "Charlie", "David"]
+NODE_NAMES = ["Alice", "Bob", "David"]
 LINK_COUNT = len(NODE_NAMES) - 1
 REPEATER_COUNT = LINK_COUNT - 1
 

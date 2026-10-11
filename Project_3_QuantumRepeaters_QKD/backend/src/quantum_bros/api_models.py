@@ -15,7 +15,7 @@ MAX_TELEPORT_STATES = 16
 # Seeds go into Stim and random.Random; keep them in the range both accept and JSON carries exactly.
 MAX_SEED = 2**32 - 1
 
-# The Steane encoder needs 9 CNOTs; this leaves room for wrong tries the player has not undone yet.
+# Level 3's encoder needs 11 CNOTs; this leaves room for wrong tries the player has not undone yet.
 MAX_BUILD_CNOTS = 40
 
 
@@ -140,7 +140,7 @@ class SeededRequest(BaseModel):
 
 
 class SteaneBlockRequest(BaseModel):
-    """steane_block.html, Part A: the player's CNOTs so far, as 1-based (control, target) positions."""
+    """steane_block.html, Part A: the player's CNOTs so far, as (control, target) qubits 0-6."""
 
     cnots: list[tuple[int, int]] = Field(default_factory=list, max_length=MAX_BUILD_CNOTS)
 
@@ -165,7 +165,7 @@ class FixResultModel(BaseModel):
 
 
 class ErrorRoundModel(BaseModel):
-    """One error: its Pauli and qubit, the measured syndromes, and every fix's result (keys like "X6")."""
+    """One error: its Pauli and qubit (0-6), the measured syndromes, and every fix's result (keys like "X6")."""
 
     pauli: Literal["X", "Z", "Y"]
     position: int

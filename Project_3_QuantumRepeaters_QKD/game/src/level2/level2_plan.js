@@ -121,13 +121,14 @@ export function describeHeraldedState(attempt) {
 
 
 /**
- * The final check: what each tower shows and whether the two agree. In the X basis a 0 reads "+" and a 1 "−".
+ * The final check: what each tower shows and whether the two agree. In the X basis a 0 reads "+" and a 1 "-": a plain
+ * hyphen, because the pixel font draws the true minus sign low, where it reads as an underscore.
  *
  * @param {{check_basis: string, alice_check: {logical_bit: number}, bob_check: {logical_bit: number}}} response
  * @returns {{aliceLabel: string, bobLabel: string, isMatch: boolean}}
  */
 export function describeCheckResult(response) {
-    const labelsByBasis = { Z: ["0", "1"], X: ["+", "−"] };
+    const labelsByBasis = { Z: ["0", "1"], X: ["+", "-"] };
     const labels = labelsByBasis[response.check_basis];
     if (labels === undefined) {
         throw new Error(`unknown check basis ${response.check_basis}`);
@@ -135,4 +136,60 @@ export function describeCheckResult(response) {
     const aliceBit = response.alice_check.logical_bit;
     const bobBit = response.bob_check.logical_bit;
     return { aliceLabel: labels[aliceBit], bobLabel: labels[bobBit], isMatch: aliceBit === bobBit };
+}
+
+
+/**
+ * The final banner, two lines: whether both blocks agree in the basis they were read in (each tower's own result
+ * stays in its readout), then whether that made the logical Bell pair. Strings are plain text and objects are kets
+ * ({symbol, superscript?}); spokenText is the same thing for a screen reader, since the kets are drawn rather than
+ * typed.
+ *
+ * @param {boolean} isMatch - from describeCheckResult.
+ * @param {string} basis - "Z" or "X".
+ * @returns {{lines: Array<Array<string|{symbol: string, superscript?: string}>>, spokenText: string}}
+ */
+export function describeCheckBanner(isMatch, basis) {
+    if (isMatch) {
+        const bellPair = describeBlockLabel("paired", "alice");
+        return {
+            lines: [
+                [`MATCH! Both blocks agree in the ${basis} basis`],
+                ["The logical Bell pair ", { symbol: bellPair.symbol, superscript: bellPair.superscript },
+                    " has been made!"],
+            ],
+            spokenText: `Match! Both blocks agree in the ${basis} basis. The logical Bell pair Phi plus has been made!`,
+        };
+    }
+    return {
+        lines: [
+            [`✖ No match: the blocks disagree in the ${basis} basis`],
+            ["An error got through: no Bell pair this run (R to try again)"],
+        ],
+        spokenText: `No match: the blocks disagree in the ${basis} basis. `
+            + "An error got through: no Bell pair this run. Press R to try again.",
+    };
+}
+
+
+/**
+ * The label under a tower's Steane block: the block's 7 data qubits together hold ONE logical qubit, so it is named
+ * once, with a tilde over the symbol (|+̃⟩, |0̃⟩), never per qubit. After the teleported CNOT the two blocks together
+ * are the logical Bell pair |Φ̃⁺⟩, so both show that; before encoding and after the check (which uses the pair up)
+ * there is nothing to name.
+ *
+ * @param {"empty" | "encoded" | "paired" | "measured"} stage
+ * @param {"alice" | "bob"} tower
+ * @returns {{symbol: string, superscript?: string, text: string} | null} the symbol under the tilde, an optional
+ *     superscript after it, and the label's text alternative.
+ */
+export function describeBlockLabel(stage, tower) {
+    if (stage === "encoded") {
+        const symbol = tower === "alice" ? "+" : "0";
+        return { symbol, text: `logical |${symbol}⟩, all 7 data qubits` };
+    }
+    if (stage === "paired") {
+        return { symbol: "Φ", superscript: "+", text: "one half of the logical Bell pair Φ⁺" };
+    }
+    return null;
 }

@@ -1,7 +1,8 @@
-"""Mario and Luigi send a text message three ways: in the clear, one-time-pad encrypted with a QKD key, or teleported
+"""Mario and Peach send a text message three ways: in the clear, one-time-pad encrypted with a QKD key, or teleported
 bit by bit over logical Bell pairs.
 
-Mario stands at Alice's end of the chain and Luigi at David's. Either one can send.
+Mario stands at Alice's end of the chain and Peach at David's. Either one can send. Peach's sender id is still
+"luigi" (LUIGI below), so the page's requests and the API did not change when she took Luigi's place.
 
 Simplification for quantum messages: Stim only simulates Clifford circuits, so a quantum message carries each text
 bit as a logical |0̄⟩ or |1̄⟩. Teleporting arbitrary qubit states needs a non-Clifford backend such as Qiskit.
@@ -157,14 +158,14 @@ def teleport_bit(network: QuantumNetwork, message_bit: int, sender: str) -> tupl
 
 
 def pick_halves(layout: qre_cec.QubitLayout, sender: str) -> tuple[list[int], list[int]]:
-    """(sender's block, receiver's block): Mario holds Alice's half, Luigi holds David's."""
+    """(sender's block, receiver's block): Mario holds Alice's half, Peach holds David's."""
     if sender == MARIO:
         return layout.alice_block, layout.david_block
     return layout.david_block, layout.alice_block
 
 
 def pick_keys(qkd_report: qkd.QkdReport, sender: str) -> tuple[list[int], list[int]]:
-    """(sender's key, receiver's key): Mario's key is Alice's, Luigi's is David's."""
+    """(sender's key, receiver's key): Mario's key is Alice's, Peach's is David's."""
     if sender == MARIO:
         return qkd_report.alice_key, qkd_report.david_key
     return qkd_report.david_key, qkd_report.alice_key

@@ -24,8 +24,14 @@ PHASES = [
     "deliver",
 ]
 
-DISPLAY_NAMES = {messaging.MARIO: "Mario", messaging.LUIGI: "Luigi"}
-LINK_NAMES = ["Alice–Bob", "Bob–Charlie", "Charlie–David"]
+# The player at the far end is Peach; her sender id stays "luigi" so the page's requests did not have to change.
+DISPLAY_NAMES = {messaging.MARIO: "Mario", messaging.LUIGI: "Peach"}
+# Each link is named after the two nodes it joins ("Alice–Bob"); the repeaters are every node but the two ends.
+LINK_NAMES = [
+    f"{left}–{right}" for left, right in zip(qre_cec.NODE_NAMES[:-1], qre_cec.NODE_NAMES[1:], strict=True)
+]
+REPEATER_NAMES = qre_cec.NODE_NAMES[1:-1]
+FAR_END_NAME = qre_cec.NODE_NAMES[-1]
 PERCENT = 100
 
 
@@ -74,16 +80,23 @@ def build_pair_steps(statistics: PairStatistics) -> list[dict]:
         ),
         make_step(
             "encoded_swapping",
-            "Encoded swapping at Bob and Charlie",
-            f"Decoder fixed a flipped bit {statistics.decoder_corrections[0]} times at Bob, "
-            f"{statistics.decoder_corrections[1]} at Charlie.",
+            f"Encoded swapping at {' and '.join(REPEATER_NAMES)}",
+            describe_decoder_fixes(statistics),
         ),
         make_step(
             "frame_correction",
-            "Pauli-frame correction at David",
-            f"{statistics.frame_corrected_pair_count} of {pair_count} pairs needed X̄/Z̄ on David's block.",
+            f"Pauli-frame correction at {FAR_END_NAME}",
+            f"{statistics.frame_corrected_pair_count} of {pair_count} pairs needed X̄/Z̄ on {FAR_END_NAME}'s block.",
         ),
     ]
+
+
+def describe_decoder_fixes(statistics: PairStatistics) -> str:
+    """How often the decoder fixed a flipped bit at each repeater."""
+    fix_texts = []
+    for repeater_name, correction_count in zip(REPEATER_NAMES, statistics.decoder_corrections, strict=True):
+        fix_texts.append(f"{correction_count} times at {repeater_name}")
+    return f"Decoder fixed a flipped bit {', '.join(fix_texts)}."
 
 
 def describe_heralding(statistics: PairStatistics) -> str:

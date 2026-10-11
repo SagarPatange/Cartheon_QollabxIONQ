@@ -6,8 +6,9 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
-    CHECK_STEP, ENCODE_STEP, HERALD_STEP, TELEPORT_STEP, buildPlaybackSteps, chooseAttemptTiming, describeCheckResult,
-    describeHeraldedState, describeStepAction, isHeraldSuccess, listSetPositions,
+    CHECK_STEP, ENCODE_STEP, HERALD_STEP, TELEPORT_STEP, buildPlaybackSteps, chooseAttemptTiming, describeBlockLabel,
+    describeCheckBanner, describeCheckResult, describeHeraldedState, describeStepAction, isHeraldSuccess,
+    listSetPositions,
 } from "../../src/level2/level2_plan.js";
 
 const SUCCESS = { round_one_detector: "D+", round_two_detector: "D+" };
@@ -88,5 +89,41 @@ test("the check shows each block's logical bit in its basis and whether they mat
     const zMatch = { check_basis: "Z", alice_check: { logical_bit: 1 }, bob_check: { logical_bit: 1 } };
     assert.deepEqual(describeCheckResult(zMatch), { aliceLabel: "1", bobLabel: "1", isMatch: true });
     const xMismatch = { check_basis: "X", alice_check: { logical_bit: 0 }, bob_check: { logical_bit: 1 } };
-    assert.deepEqual(describeCheckResult(xMismatch), { aliceLabel: "+", bobLabel: "−", isMatch: false });
+    assert.deepEqual(describeCheckResult(xMismatch), { aliceLabel: "+", bobLabel: "-", isMatch: false });
+});
+
+
+test("a match names only the basis, then says the logical Bell pair has been made", () => {
+    const banner = describeCheckBanner(true, "X");
+    assert.deepEqual(banner.lines, [
+        ["MATCH! Both blocks agree in the X basis"],
+        ["The logical Bell pair ", { symbol: "Φ", superscript: "+" }, " has been made!"],
+    ]);
+    assert.equal(banner.spokenText,
+        "Match! Both blocks agree in the X basis. The logical Bell pair Phi plus has been made!");
+});
+
+
+test("a mismatch names the basis and says no Bell pair was made this run", () => {
+    const banner = describeCheckBanner(false, "Z");
+    assert.deepEqual(banner.lines[0], ["✖ No match: the blocks disagree in the Z basis"]);
+    assert.match(banner.lines[1][0], /error got through/);
+    assert.match(banner.spokenText, /disagree in the Z basis/);
+});
+
+
+test("each block is labelled as one logical qubit: |+̃⟩ for Alice, |0̃⟩ for Bob once encoded", () => {
+    assert.deepEqual(describeBlockLabel("encoded", "alice"), { symbol: "+", text: "logical |+⟩, all 7 data qubits" });
+    assert.deepEqual(describeBlockLabel("encoded", "bob"), { symbol: "0", text: "logical |0⟩, all 7 data qubits" });
+});
+
+
+test("after the teleported CNOT both blocks are the logical Bell pair Φ⁺; before encoding and after the check, none",
+    () => {
+    for (const tower of ["alice", "bob"]) {
+        assert.deepEqual(describeBlockLabel("paired", tower),
+            { symbol: "Φ", superscript: "+", text: "one half of the logical Bell pair Φ⁺" });
+        assert.equal(describeBlockLabel("empty", tower), null);
+        assert.equal(describeBlockLabel("measured", tower), null);
+    }
 });

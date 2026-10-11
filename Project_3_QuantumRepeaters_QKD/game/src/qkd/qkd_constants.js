@@ -3,10 +3,12 @@
  * (backend/src/quantum_bros); these numbers only set up the page and its requests.
  */
 
-// The paper's Fig. 2 chain: Alice and David at the ends, Bob and Charlie swapping in the middle.
-export const QKD_TOWER_NAMES = ["Alice", "Bob", "Charlie", "David"];
+// The repeater chain: Alice and David at the ends, Bob swapping in the middle. Must match NODE_NAMES in
+// backend/src/quantum_bros/protocol/qre_cec.py.
+export const QKD_TOWER_NAMES = ["Alice", "Bob", "David"];
 
 export const MARIO = "mario";
+// Peach stands at David's end. Her sender id is still "luigi", the value the backend's API expects.
 export const LUIGI = "luigi";
 
 export const CLASSICAL = "classical";

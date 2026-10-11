@@ -121,15 +121,22 @@
     background: var(--pipe-green);
 }
 
-/* A fix that landed on a data qubit: a small black badge with the letter, in the tile's corner. */
+/* A fix that landed on a data qubit: a small black badge with the letter, inside the tile's top-right corner, so it
+   never reaches into the neighbouring tile or the gap. */
 .cnot-badge {
     position: absolute;
-    top: -10px;
-    right: -10px;
-    padding: 2px 4px;
-    font-size: 10px;
+    top: 0;
+    right: 0;
+    padding: 1px 2px;
+    font-size: 9px;
+    line-height: 1;
     color: var(--cloud-white);
     background: var(--ink);
+}
+
+/* With a badge in its corner, the tile's number moves down and left so the two never touch. */
+.cnot-tile:has(> .cnot-badge) {
+    padding: 8px 8px 0 0;
 }
 
 /* A Bell pair: a dashed pink line between Mario's half and Luigi's. */
@@ -168,4 +175,63 @@
 
 .lesson-luigi {
     display: block;
+}
+
+/* ---------- The one-pair circuit, drawn as the paper's Fig. 4 (src/teleported_cnot/fig4_picture.js) ---------- */
+
+.fig4-circuit {
+    width: 100%;
+    height: auto;
+}
+
+/* Dashed boxes: the Bell pair (blue), each CNOT (orange), the measure-and-fix (green), as in the paper. */
+.fig4-box {
+    fill: none;
+    stroke-width: 2;
+    stroke-dasharray: 6 4;
+}
+
+.fig4-box.is-pair {
+    fill: #c4dafc55;
+    stroke: var(--qubit-dark-blue);
+}
+
+.fig4-box.is-cnot {
+    stroke: var(--block-orange);
+}
+
+.fig4-box.is-fix {
+    stroke: var(--pipe-dark-green);
+}
+
+.fig4-brace {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 2;
+}
+
+.qec-circuit .fig4-owner,
+.qec-circuit .fig4-bit {
+    font-size: 10px;
+}
+
+.qec-circuit .fig4-pair-state {
+    font-family: system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.fig4-meter polygon {
+    fill: var(--cloud-white);
+    stroke: var(--ink);
+    stroke-width: 2;
+}
+
+.fig4-classical line {
+    stroke: var(--ink);
+    stroke-width: 1.5;
+}
+
+.fig4-fix rect {
+    fill: var(--pipe-green);
 }

@@ -202,23 +202,34 @@ touches qubit $i$), so one faulty gate can damage at most one qubit per block.
 
 ![Level 3](docs/images/steane-block.png)
 
-**You play:** Mario's 7 qubits are the wires of a circuit, and the Steane diagram beside it has one circle per
-check. **Space** puts $H$ on qubits 1, 2 and 4. Then, one $H$ qubit at a time (4, then 2, then 1), pick a target
-with **↑↓** and place a CNOT with **Enter**; **Backspace** undoes one. A CNOT onto a qubit outside the circle (or a
-second one onto the same qubit) turns red and holds the round until it is undone. After every CNOT the backend runs
-the circuit in Stim and says which checks hold, and a circle lights once its check reads $+1$. With all three lit the
-block is $\lvert\bar 0\rangle$, and Goto's ancilla check (below) accepts it. Then a cloud turtle zaps the block three
-times, with $X$, then $Z$, then $Y$, each on a random qubit: measure the six checks, read each syndrome as a binary
-number, and fix the qubit it names (**↑↓** picks the qubit, **←→** the Pauli, **Enter** applies it). A wrong fix is
-undone and explained.
+**You play:** Mario's 7 qubits q0–q6 are the wires of the Steane encoder from the Error Correction Zoo
+([errorcorrectionzoo.org/c/steane](https://errorcorrectionzoo.org/c/steane)), and the Steane diagram beside it has
+one circle per check. q0 holds the state to encode, $\lvert\psi\rangle$ ($\lvert 0\rangle$ here); **Space** puts $H$
+on q4, q5 and q6. Then pick targets with **↑↓** and place CNOTs with **Enter** (**Backspace** undoes one), round by
+round: q0 copies $\lvert\psi\rangle$ onto q1 and q2, then q6, q5 and q4 each spread along their circle. A CNOT onto
+a qubit outside the circle (or a second one onto the same qubit) turns red and holds the round until it is undone.
+After every CNOT the backend runs the circuit in Stim and says which checks hold, and a circle lights once its check
+reads $+1$. With all three lit the block is $\lvert\bar 0\rangle$, and an ancilla measuring $\bar Z = Z_0Z_1Z_2$
+accepts it. Then a cloud turtle zaps the block three times, with $X$, then $Z$, then $Y$, each on a random qubit:
+measure the six checks and fix the qubit inside exactly the circles that fired (**↑↓** picks the qubit, **←→** the
+Pauli, **Enter** applies it). A wrong fix is undone and explained.
 
-The game builds the textbook encoder. Each $H$ qubit is the one qubit of its check that no other check contains, and
-CNOTs from it to the other three qubits of its circle copy its $X$:
+The encoder, with 11 CNOTs:
 
-$$X_4 \to X_4X_5X_6X_7,\qquad X_2 \to X_2X_3X_6X_7,\qquad X_1 \to X_1X_3X_5X_7 ,$$
+| Step | Gates | Effect |
+|---|---|---|
+| 1 | $H$ on q4, q5, q6 | each becomes $\lvert +\rangle$ and will seed one $X$ check |
+| 2 | CNOT q0→q1, q0→q2 | copies $\lvert\psi\rangle$: $X_0 \to X_0X_1X_2 = \bar X$ |
+| 3 | CNOT q6→q0, q1, q3 | $X_6 \to X_0X_1X_3X_6$ (circle 0136) |
+| 4 | CNOT q5→q0, q2, q3 | $X_5 \to X_0X_2X_3X_5$ (circle 0235) |
+| 5 | CNOT q4→q1, q2, q3 | $X_4 \to X_1X_2X_3X_4$ (circle 1234) |
 
-exactly the rows of $H$. That is 9 CNOTs. The $Z$-type checks and $\bar Z = +1$ come for free from the
-$\lvert 0\rangle$ inputs. The paper does the same job with 8:
+The $Z$ checks on the same three circles and $\bar Z = Z_0Z_1Z_2$ come from the $\lvert 0\rangle$ inputs; a backend
+test checks that $\lvert\psi\rangle = \lvert 1\rangle$ gives $\bar Z = -1$, so the circuit encodes any
+$\lvert\psi\rangle$. It is the same $[7,4,3]$ Hamming code as the table above with the qubits numbered differently,
+so each qubit still sits in its own set of circles: a flipped qubit fires exactly the circles that hold it (q3 all
+three, q0, q1 and q2 two each, q4, q5 and q6 one each). Levels 4–6 keep the textbook numbering. To make
+$\lvert\bar 0\rangle$ alone the two copy CNOTs can go, and the paper does it with 8:
 
 ### The paper's encoder: Paetznick–Reichardt
 
@@ -316,7 +327,13 @@ the Steane code corrects it.
 **You play:** each tower holds 7 communication qubits and a 7-qubit Steane block. **Space** plays the protocol one
 phase at a time: herald 7 pairs, encode the blocks, run the teleported CNOT, then check the pair. **R** starts a new
 run. Every step is played back from a stabilizer simulation run by the backend. It puts Levels 1, 3 and 4
-together: phase 1 below, then phase 2 (Level 3) and phase 3 (Level 4) on all 7 pairs at once.
+together: phase 1 below, then phase 2 (Level 3) and phase 3 (Level 4) on all 7 pairs at once. Each tower's 7 data
+qubits are framed as one block and named once, as the single logical qubit they hold: $\lvert\tilde +\rangle$ for
+Alice, $\lvert\tilde 0\rangle$ for Bob. After the teleported CNOT neither block is $\lvert\tilde +\rangle$ or
+$\lvert\tilde 0\rangle$ any more: together they are the logical Bell pair $\lvert\tilde\Phi^+\rangle$, and both
+blocks say so. The check reads both blocks in the same basis (Z or X). Each tower shows its own result (0/1 or +/−),
+and the banner says whether the blocks agree in that basis. On a match it says that the logical Bell pair
+$\lvert\tilde\Phi^+\rangle$ has been made.
 
 ### Phase 1: Seven physical pairs
 
@@ -332,13 +349,14 @@ the two logical bits are random but always equal, and the game shows them side b
 
 ![Level 6](docs/images/level3.png)
 
-**You play:** Mario stands by Alice and Luigi by David, the two ends of the chain Alice – Bob – Charlie – David.
-Type a message and send it classically (Q / I), encrypted with a quantum key (W / O), or as teleported qubits
-(E / P). Turn on the cloud turtles to eavesdrop and watch the key check catch them.
+**You play:** Mario stands by Alice and Peach by David, the two ends of the chain Alice – Bob – David: one repeater
+(Bob) in the middle, with a telecom BSM tower standing in the water on each link. (The paper's Fig. 2 chain has two
+repeaters; the game uses one so the scene stays readable, and the simulation follows the same chain.) Type a message
+and send it classically (Q / I), encrypted with a quantum key (W / O), or as teleported qubits (E / P). Turn on the cloud turtles to eavesdrop and watch the key check catch them.
 
 ### Phase 4: Encoded swapping with classical error correction
 
-Each link now holds a logical Bell pair. A middle repeater (Bob, Charlie) joins its left and right pairs: it applies
+Each link now holds a logical Bell pair. The middle repeater (Bob) joins its left and right pairs: it applies
 a transversal CNOT from its left block to its right block, measures the left block in the $X$ basis and the right
 block in the $Z$ basis, and gets two raw 7-bit strings $\mathbf m_X, \mathbf m_Z$. Instead of quantum error
 correction, it corrects the **bits** [2]: for each string it computes $\mathbf s = H\mathbf m \bmod 2$, flips the

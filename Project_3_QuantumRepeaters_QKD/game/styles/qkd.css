@@ -8,7 +8,7 @@
 
 :root {
     --mario-red: #d82800;
-    --luigi-green: #00a800;
+    --peach-pink: #fc74b4;
     --station-width: 96px;
     --qkd-link-height: 260px;
     --fiber-height: 120px;
@@ -153,22 +153,59 @@
     height: var(--qkd-link-height);
 }
 
+/* Over the BSM tower: the coins (one per physical pair), then the label. */
 .qkd-link .coin-row {
-    bottom: 156px;
+    bottom: 172px;
 }
 
 .bsm-label {
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 140px;
+    bottom: 196px;
     text-align: center;
     font-size: 11px;
     text-shadow: 1px 1px 0 var(--ink);
 }
 
-.qkd-track[data-phase="heralding"] .question-block {
+.qkd-track[data-phase="heralding"] .qkd-bsm-tower {
     animation: bump 0.25s ease-out 4;
+}
+
+/* ---------- Water between the castles, and the BSM tower on its pier ---------- */
+
+/* The span between two castles is water: deep blue with white wave crests along its top edge. */
+.qkd-water {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 38px;
+    background:
+        radial-gradient(circle at 8px 0, transparent 7px, #fcfcfc 7px 9px, transparent 9px) 0 -2px / 16px 10px repeat-x,
+        linear-gradient(180deg, #3cbcfc 0 30%, #0058f8 30%);
+    border-top: 2px solid var(--ink);
+}
+
+/* A concrete pier from the water up to the tower's feet; the tower's crossarm then sits on the fiber. */
+.qkd-bsm-pier {
+    position: absolute;
+    z-index: 1;
+    left: 50%;
+    bottom: 0;
+    translate: -50% 0;
+    width: 44px;
+    height: 46px;
+    background: var(--idle-gray);
+    border: 2px solid var(--ink);
+}
+
+.qkd-bsm-tower {
+    position: absolute;
+    z-index: 1;
+    left: 50%;
+    bottom: 46px;
+    translate: -50% 0;
 }
 
 .qkd-track[data-phase="heralding"] .coin {
@@ -209,7 +246,7 @@
 .cloud-turtle {
     position: absolute;
     left: 50%;
-    bottom: 186px;
+    bottom: 212px;
     translate: -50% 0;
     display: none;
     animation: turtle-bob 2.4s ease-in-out infinite;
@@ -295,7 +332,7 @@
     right: var(--beam-inset);
     bottom: calc(var(--fiber-height) + 12px);
     height: 6px;
-    background: linear-gradient(90deg, var(--mario-red), var(--coin-gold), var(--luigi-green));
+    background: linear-gradient(90deg, var(--mario-red), var(--coin-gold), var(--peach-pink));
     box-shadow: 0 0 10px var(--coin-gold);
     opacity: 0;
     scale: 0 1;
@@ -370,7 +407,7 @@
 }
 
 .plumber-panel.is-mario { background: color-mix(in srgb, var(--mario-red) 35%, transparent); }
-.plumber-panel.is-luigi { background: color-mix(in srgb, var(--luigi-green) 35%, transparent); }
+.plumber-panel.is-peach { background: color-mix(in srgb, var(--peach-pink) 35%, transparent); }
 
 .action-row {
     display: flex;
@@ -399,5 +436,5 @@
 .toggle-field input {
     width: 18px;
     height: 18px;
-    accent-color: var(--luigi-green);
+    accent-color: var(--peach-pink);
 }

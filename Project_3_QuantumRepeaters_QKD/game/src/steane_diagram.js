@@ -3,10 +3,13 @@
  * the circles are the rows of the Hamming [7,4,3] parity-check matrix). Toad's QEC hut shows it as a picture; Level 3
  * lights its circles and moves a cursor over its qubits, so the elements come back for the caller to style.
  *
+ * A qubit's spot depends only on which circles hold it, so the same picture serves any numbering of the qubits: the
+ * hut's (circles 4567, 2367, 1357) and Level 3's Error Correction Zoo layout (0136, 0235, 1234).
+ *
  * Writes only the elements it returns; the caller gives the SVG its aria-label.
  */
 
-import { STEANE_DIAGRAM } from "./hut/qec_codes.js";
+import { STEANE_DIAGRAM, listSteaneCheckPositions } from "./hut/qec_codes.js";
 
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 // The diagram's drawing area, in the units of STEANE_DIAGRAM.
@@ -40,9 +43,10 @@ export function drawSteaneDiagram(checkPositions) {
         svgElement.append(circleParts.circleElement, circleParts.labelElement);
     }
     const dotElements = {};
-    for (const [positionText, spot] of Object.entries(STEANE_DIAGRAM.qubitSpots)) {
-        const dotElement = drawQubitDot(positionText, spot);
-        dotElements[Number(positionText)] = dotElement;
+    const spotByRegion = findSpotsByRegion();
+    for (const position of listPositions(checkPositions)) {
+        const dotElement = drawQubitDot(String(position), spotByRegion[regionKey(position, checkPositions)]);
+        dotElements[position] = dotElement;
         svgElement.append(dotElement);
     }
     return { svgElement, circleElements, labelElements, dotElements };
@@ -57,7 +61,37 @@ export function drawSteaneDiagram(checkPositions) {
  */
 export function describeSteaneDiagram(checkPositions) {
     const circleTexts = checkPositions.map((positions, i) => `circle ${i + 1} holds qubits ${positions.join(", ")}`);
-    return `Three overlapping circles, one per check: ${circleTexts.join("; ")}. Qubit 7 sits in all three.`;
+    const centre = listPositions(checkPositions).find((position) => regionKey(position, checkPositions) === "111");
+    return `Three overlapping circles, one per check: ${circleTexts.join("; ")}. Qubit ${centre} sits in all three.`;
+}
+
+
+/**
+ * Every qubit position in the checks, sorted.
+ */
+function listPositions(checkPositions) {
+    return [...new Set(checkPositions.flat())].sort((first, second) => first - second);
+}
+
+
+/**
+ * Which circles hold a qubit, e.g. "110" for the first two.
+ */
+function regionKey(position, checkPositions) {
+    return checkPositions.map((positions) => (positions.includes(position) ? "1" : "0")).join("");
+}
+
+
+/**
+ * Each region's spot (by regionKey), read off STEANE_DIAGRAM's spots for the hut's numbering.
+ */
+function findSpotsByRegion() {
+    const hutChecks = listSteaneCheckPositions();
+    const spots = {};
+    for (const [positionText, spot] of Object.entries(STEANE_DIAGRAM.qubitSpots)) {
+        spots[regionKey(Number(positionText), hutChecks)] = spot;
+    }
+    return spots;
 }
 
 

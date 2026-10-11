@@ -28,7 +28,8 @@ const ERRORS_API_PATH = "/api/steane-errors";
 const NEXT_STOP_URL = "start.html#map-teleported-cnot";
 const CHECK_TOTAL = 2 * CHECK_COUNT_PER_TYPE;
 const HUD_DIGIT_COUNT = 2;
-const INTRO_MESSAGE = "Mario's 7 qubits start in |0⟩. First, H on q1, q2 and q4 puts each of them in |+⟩.";
+const INTRO_MESSAGE = "Mario's q0 holds |ψ⟩ = |0⟩ and q1-q6 start in |0⟩. First, H on q4, q5 and q6 puts each of "
+    + "them in |+⟩.";
 
 
 /**
@@ -152,7 +153,7 @@ function handleEnter(game, scene) {
 
 
 /**
- * H on q1, q2 and q4, then the first round.
+ * H on q4, q5 and q6, then the first round.
  */
 async function applyHadamards(game, scene) {
     game.isBusy = true;
@@ -174,10 +175,21 @@ function startRound(game, scene, roundIndex) {
     game.roundStartIndex = game.cnots.length;
     game.wrongCnotIndex = null;
     game.cursorTarget = listTargetChoices(round.control)[0];
-    const checkName = nameCheck(round.checkPositions);
-    showMessage(scene, `q${round.control} spreads along circle ${checkName}: put a CNOT from q${round.control} onto `
-        + "each other qubit in that circle.");
+    showMessage(scene, describeRoundStart(round));
     render(game, scene);
+}
+
+
+/**
+ * What a round asks for: copy |ψ⟩ onto q1 and q2, or spread an H qubit along its circle.
+ */
+function describeRoundStart(round) {
+    if (round.checkPositions === null) {
+        return "First q0 copies |ψ⟩ onto q1 and q2: put a CNOT from q0 onto each of them.";
+    }
+    const circle = nameCheck(round.checkPositions);
+    return `q${round.control} spreads along circle ${circle}: put a CNOT from q${round.control} onto each other `
+        + "qubit in that circle.";
 }
 
 
@@ -287,7 +299,8 @@ async function refreshChecks(game, scene) {
 
 
 /**
- * The paper's ancilla check: CNOTs from q1, q6 and q7 onto the ancilla, then measure it. The backend already ran it.
+ * The ancilla check of logical Z: CNOTs from q0, q1 and q2 onto the ancilla, then measure it. The backend already ran
+ * it.
  */
 function runVerification(game, scene) {
     game.hasVerification = true;
@@ -385,8 +398,8 @@ function finishErrorRound(game, scene) {
     }
     game.phase = CLEAR_PHASE;
     showBanner(scene, "LEVEL CLEAR!");
-    showMessage(scene, "You built a Steane block, checked it like the paper does, and fixed an X, a Z and a Y."
-        + " Next, Level 4: link two blocks with a teleported CNOT.");
+    showMessage(scene, "You built a Steane block with the Error Correction Zoo's encoder, checked it with an ancilla, "
+        + "and fixed an X, a Z and a Y. Next, Level 4: link two blocks with a teleported CNOT.");
     render(game, scene);
 }
 
@@ -423,7 +436,8 @@ function renderBuildPart(game, scene) {
     };
     renderEncoderCard(scene, buildEncoderCircuit(buildState), buildState);
     const xChecks = game.report === null ? null : game.report.x_checks;
-    renderBuildCircles(scene, xChecks, isBuilding ? game.roundIndex : null);
+    const activeCircle = isBuilding ? listBuildRounds()[game.roundIndex].checkIndex : null;
+    renderBuildCircles(scene, xChecks, activeCircle);
     renderCursorDot(scene, null);
     const wrongTarget = game.wrongCnotIndex === null ? null : game.cnots[game.wrongCnotIndex][1];
     renderWrongDot(scene, wrongTarget);
