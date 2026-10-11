@@ -6,6 +6,7 @@
  */
 
 import { findPictureScale } from "./fit_picture.js";
+import { callSimulator } from "./simulator_bridge.js";
 
 // The board is SVG and text, which stay sharp when enlarged, so on a big window it grows up to this much.
 const MAX_BOARD_SCALE = 1.5;
@@ -115,13 +116,5 @@ export function hideSkyProblem(statusElement) {
  * @throws {Error} when the backend is not running or refuses the request.
  */
 export async function postToSimulator(apiPath, body) {
-    const response = await fetch(apiPath, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-    });
-    if (!response.ok) {
-        throw new Error(`the simulator answered ${response.status}`);
-    }
-    return response.json();
+    return callSimulator(apiPath, body);
 }

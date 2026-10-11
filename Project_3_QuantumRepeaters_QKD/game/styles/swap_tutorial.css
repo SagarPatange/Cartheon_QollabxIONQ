@@ -1,0 +1,286 @@
+/*
+ * Level 6's qubit slots and swap tutorial on top of world.css, towers.css, qkd.css and qubit_tower.css: the card in
+ * the sky, each castle's rack of qubit slots (one column of 3 per register of the 3-qubit repetition code, in the
+ * tutorial and the messages), the slot looks the tutorial adds, the Bell pairs on the fiber, the bits riding it and
+ * the end-to-end beam.
+ *
+ * src/qkd/render_swap_tutorial.js sets is-tutorial, has-end-to-end-pair on the track, has-bell-pairs,
+ * has-logical-pair, is-heralding on a link, and the is-<look> classes on the slots; src/qkd/step_card.js fills the card.
+ */
+
+/* ---------- The card in the sky ---------- */
+
+/* Level 6's sky holds a card as well as the goal, so the panel sits higher and its key hints are smaller, keeping both
+   clear of the castles and the BSM towers. */
+.qkd-page .sky-panel {
+    top: 8px;
+    gap: 10px;
+}
+
+.qkd-page .sky-status {
+    padding: 10px 18px;
+    font-size: 15px;
+    border-width: 3px;
+}
+
+.qkd-page .key-hints {
+    font-size: 12px;
+}
+
+.qkd-page .key-hints .keycap {
+    min-width: 32px;
+    height: 30px;
+    font-size: 12px;
+}
+
+/* The goal line and the card share one spot: the goal types itself out, then the card takes its place. Stacking them
+   in one grid cell keeps the key hints under them from jumping when one replaces the other. */
+.sky-slot {
+    display: grid;
+    justify-items: center;
+    max-width: 100%;
+}
+
+.sky-slot > * {
+    grid-area: 1 / 1;
+}
+
+.sky-slot > .sky-status {
+    position: static;
+    translate: none;
+    max-width: 100%;
+}
+
+.step-card {
+    visibility: hidden;
+    width: max-content;
+    max-width: min(1240px, 94vw);
+    padding: 8px 16px 10px;
+    color: var(--ink);
+    background: var(--cloud-white);
+    border: 3px solid var(--ink);
+}
+
+.step-card.is-visible {
+    visibility: visible;
+}
+
+/* The counter and the title share one line, so the card stays short and clear of the scene below. */
+.step-card-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 6px;
+}
+
+.step-card-counter {
+    flex-shrink: 0;
+    margin: 0;
+    font-size: 10px;
+    color: var(--brick-dark);
+}
+
+/* A message's result: gold when it arrived, red when the turtles were caught and the key thrown away. */
+.step-card.is-win {
+    background: var(--coin-gold);
+}
+
+.step-card.is-lose {
+    color: var(--text-light);
+    background: var(--error-red);
+}
+
+.step-card.is-win .step-card-counter,
+.step-card.is-lose .step-card-counter {
+    font-size: 11px;
+    color: inherit;
+}
+
+/* A lesson note: the game waits, and says so like an NES pause screen. */
+.step-card.is-paused .step-card-counter {
+    color: var(--error-red);
+    animation: paused-blink 1s steps(2) infinite;
+}
+
+@keyframes paused-blink {
+    50% { opacity: 0.25; }
+}
+
+.step-card-title {
+    margin: 0;
+    font-size: 13px;
+    font-weight: normal;
+    line-height: 1.4;
+}
+
+.step-card-line {
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.8;
+}
+
+/* ---------- Qubit slots in the castles ---------- */
+
+/* Every castle holds its slots, in the tutorial and in the messages; the tutorial keeps the turtles away. Bob holds
+   four registers (12 slots), so his castle is wider. */
+.qkd-track.is-tutorial .cloud-turtle {
+    display: none;
+}
+
+.qkd-tower[data-role="middle"] {
+    width: 156px;
+}
+
+.swap-rack {
+    display: flex;
+    gap: 12px;
+    padding: 6px 8px 4px;
+    background:
+        repeating-linear-gradient(0deg, rgba(60, 188, 252, 0.08) 0 2px, transparent 2px 6px),
+        #0b1030;
+    border: 2px solid var(--ink);
+    box-shadow: inset 0 0 0 2px #3cbcfc55, 0 0 8px #3cbcfc66;
+}
+
+.swap-group {
+    display: flex;
+    gap: 6px;
+}
+
+/* One register: its 3 slots top to bottom (row i is qubit i, so a transversal gate acts along a row), name below. */
+.swap-register {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.swap-register-name {
+    margin-top: 1px;
+    font-size: 9px;
+    line-height: 1.4;
+    color: var(--text-light);
+}
+
+.swap-rack .swap-orb {
+    width: 22px;
+    height: 22px;
+    font-size: 12px;
+}
+
+/* Data blocks are square: each column of 3 holds ONE logical qubit of the code. */
+.swap-register.is-data .swap-orb {
+    border-radius: 4px;
+}
+
+/* ---------- Slot looks the tutorial adds to qubit_tower.css's ---------- */
+
+.swap-orb.is-waiting {
+    opacity: 0.5;
+}
+
+/* The bit that came out wrong after the flip: still the measured white, rimmed in red. */
+.swap-orb.is-flipped {
+    color: var(--error-red);
+    background: var(--cloud-white);
+    box-shadow: inset 0 0 0 2px var(--error-red), 0 0 8px var(--error-red);
+}
+
+/* The decoder flipped it back. */
+.swap-orb.is-fixed {
+    color: var(--ink);
+    background: var(--pipe-green);
+    box-shadow: inset -3px -3px 0 var(--pipe-dark-green), 0 0 10px var(--pipe-green);
+}
+
+/* The registers a page talks about glow gold around their slots. */
+.swap-orb.is-focused {
+    outline: 2px solid var(--coin-gold);
+    outline-offset: 2px;
+    animation: focus-pulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes focus-pulse {
+    to { outline-color: var(--cloud-white); }
+}
+
+/* A correction or an error lands: the slot shows its letter, in red for a Pauli applied by the protocol or by noise,
+   in green for the bit the decoder flips back. */
+.swap-orb.is-flashing {
+    animation: slot-flash 0.3s steps(2) 3;
+}
+
+.swap-orb.is-flashing.is-correction,
+.swap-orb.is-flashing.is-error {
+    color: var(--text-light);
+    background: var(--mario-red);
+    box-shadow: 0 0 12px var(--mario-red);
+}
+
+.swap-orb.is-flashing.is-fix {
+    color: var(--ink);
+    background: var(--pipe-green);
+    box-shadow: 0 0 12px var(--pipe-green);
+}
+
+@keyframes slot-flash {
+    50% { scale: 1.3; }
+}
+
+/* ---------- Links ---------- */
+
+/* Physical Bell pairs live on the fiber: it turns gold while they exist. */
+.qkd-link.has-bell-pairs .fiber {
+    border-top-color: var(--coin-gold);
+    opacity: 1;
+}
+
+.qkd-link.is-heralding .qkd-bsm-tower {
+    animation: bump 0.25s ease-out 4;
+}
+
+/* Measured bits riding the fiber, in either direction. */
+.swap-packet {
+    position: absolute;
+    z-index: 2;
+    bottom: 132px;
+    left: 0;
+    padding: 3px 5px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--ink);
+    background: var(--cloud-white);
+    border: 2px solid var(--ink);
+    opacity: 0;
+}
+
+.swap-packet.is-to-right {
+    animation: swap-packet-right 1.1s linear forwards;
+}
+
+.swap-packet.is-to-left {
+    animation: swap-packet-left 1.1s linear forwards;
+}
+
+@keyframes swap-packet-right {
+    from { opacity: 1; left: 0; }
+    to { opacity: 1; left: calc(100% - 90px); }
+}
+
+@keyframes swap-packet-left {
+    from { opacity: 1; left: calc(100% - 90px); }
+    to { opacity: 1; left: 0; }
+}
+
+/* After Charlie's frame correction, Alice and Charlie share the pair: the beam the messages use spans the chain. */
+.qkd-track.is-tutorial.has-end-to-end-pair .pair-beam {
+    opacity: 1;
+    scale: 1 1;
+}
+
+/* ---------- Settings ---------- */
+
+/* 0.01% steps up to 2%: a longer track so each step is about a pixel wide. */
+#error-slider {
+    width: 220px;
+}

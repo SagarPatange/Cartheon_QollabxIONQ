@@ -1,6 +1,7 @@
 /**
  * The glowing qubit tower used by Levels 1 and 2: a tower with a glass window holding vertical stacks of qubit orbs,
- * and a readout badge over its battlements. Looks live in styles/qubit_tower.css.
+ * and a readout badge over its battlements; and the logical ket (|+̃⟩, |Φ̃⁺⟩) Levels 5 and 6 write. Looks live in
+ * styles/qubit_tower.css.
  *
  * Reads and writes nothing; returns new elements.
  */
@@ -51,4 +52,27 @@ export function buildQubitTower(towerName, stackSpecs) {
         nameElement,
     );
     return { towerElement, readoutElement, stacks, labels };
+}
+
+
+/**
+ * A ket with a tilde over its symbol, |+̃⟩ or |Φ̃⁺⟩: the tilde is drawn by CSS (.ket-tilde), so it never depends on
+ * the pixel font having combining marks.
+ *
+ * @param {{symbol: string, superscript?: string}} label
+ * @returns {HTMLElement}
+ */
+export function buildKet(label) {
+    const ketElement = createElement("span", "ket");
+    const symbolElement = createElement("span", "ket-tilde");
+    symbolElement.textContent = label.symbol;
+    ketElement.append("|", symbolElement);
+    if (label.superscript) {
+        const superscriptElement = createElement("sup", "ket-superscript");
+        superscriptElement.textContent = label.superscript;
+        ketElement.append(superscriptElement);
+    }
+    ketElement.append("⟩");
+    ketElement.setAttribute("aria-hidden", "true");
+    return ketElement;
 }

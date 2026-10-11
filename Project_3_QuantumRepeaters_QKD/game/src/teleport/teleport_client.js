@@ -4,6 +4,7 @@
  */
 
 import { checkTeleportResponse } from "./teleport_rules.js";
+import { callSimulator } from "../simulator_bridge.js";
 
 const TELEPORT_API_PATH = "/api/teleport";
 // The backend accepts 1 to 16 states per request.
@@ -22,20 +23,22 @@ export async function requestTeleports(states) {
     if (states.length < 1 || states.length > MAX_STATES_PER_REQUEST) {
         throw new Error(`ask for 1 to ${MAX_STATES_PER_REQUEST} states, got ${states.length}`);
     }
-    let response;
+    let teleportResponse;
     try {
-        response = await fetch(TELEPORT_API_PATH, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ states }),
+        teleportResponse = await callSimulator(TELEPORT_API_PATH, { states }, async (response) => {
+            if (!response.ok) {
+                const httpError = new Error(`${BACKEND_HINT} (the simulator answered ${response.status})`);
+                httpError.isHttpError = true;
+                throw httpError;
+            }
+            return response.json();
         });
-    } catch (networkError) {
-        throw new Error(`${BACKEND_HINT} (${networkError.message})`);
+    } catch (error) {
+        if (error.isHttpError || error.fromQollab) {
+            throw error;
+        }
+        throw new Error(`${BACKEND_HINT} (${error.message})`);
     }
-    if (!response.ok) {
-        throw new Error(`${BACKEND_HINT} (the simulator answered ${response.status})`);
-    }
-    const teleportResponse = await response.json();
     checkTeleportResponse(teleportResponse, states);
     return teleportResponse;
 }

@@ -10,6 +10,8 @@ requires-python = ">=3.11"
 # Pinned: stim's random streams are part of what a seed reproduces.
 dependencies = [
     "stim==1.16.0",
+    # Pinned to what Qollab (browser Pyodide) provides; QiskitStabilizerBackend runs where Stim cannot.
+    "qiskit==2.5.2",
     "fastapi==0.142.4",
     "uvicorn[standard]>=0.30",
 ]

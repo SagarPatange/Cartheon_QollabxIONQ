@@ -1,11 +1,11 @@
-"""Level 6's swap tutorial: QRECEC_3QubitRepetition.ipynb, Steps 1-11, run on the chain Alice ─ Bob ─ David with the
+"""Level 6's swap tutorial: QRECEC_3QubitRepetition.ipynb, Steps 1-11, run on the chain Alice ─ Bob ─ Charlie with the
 3-qubit repetition (bit-flip) code, so every block is 3 qubits the page can draw one by one. Noiseless, except for
 one bit flip on Bob's a2 block before the swap, so the classical error correction of Step 9 has something to fix.
 
 The notebook's registers, and where they sit in the chain:
 
     link 1 (Alice–Bob):  a (Alice's data), b (Alice's communication), c (Bob's communication), d (Bob's data)
-    link 2 (Bob–David):  a2 (Bob's data), b2 (Bob's communication), c2 (David's communication), d2 (David's data)
+    link 2 (Bob–Charlie):  a2 (Bob's data), b2 (Bob's communication), c2 (Charlie's communication), d2 (Charlie's data)
 
 The repetition code writes α|0⟩ + β|1⟩ as α|000⟩ + β|111⟩: logical X̄ = XXX, logical Z̄ = Z on any one qubit. It
 corrects one bit flip (X), never a phase flip (Z).
@@ -19,7 +19,7 @@ Steps (notebook numbering):
 8.   The swap, a logical Bell measurement at Bob: CNOT d → a2 on each row, d read in X, a2 read in Z.
 9.   Classical error correction: a2's 3 bits are decoded (syndrome s1 = m0⊕m1, s2 = m1⊕m2), then each string's
      parity gives the logical bits m_x (from d) and m_z (from a2). d's X-basis bits cannot be corrected.
-10.  Pauli frame on David's block: X̄ if m_z, Z̄ if m_x.
+10.  Pauli frame on Charlie's block: X̄ if m_z, Z̄ if m_x.
 11.  The fidelity with Φ̄⁺, F = (1 + ⟨X̄X̄⟩ − ⟨ȲȲ⟩ + ⟨Z̄Z̄⟩)/4. The notebook estimates the correlators from 1000 shots;
      a tableau simulator reads them exactly, so here they are ±1.
 """
@@ -28,17 +28,19 @@ import random
 from dataclasses import dataclass
 
 from quantum_bros.backends.quantum_backend import QuantumBackend
-from quantum_bros.protocol import qre_cec
+from quantum_bros.protocol import qre_cec, repetition_code
 from quantum_bros.protocol.noise import NoiseModel
+from quantum_bros.protocol.repetition_code import (
+    QUBITS_PER_BLOCK,
+    SYNDROME_TO_FLIPPED_BIT,
+    compute_parity,
+    compute_syndrome,
+)
 
 NOISELESS = NoiseModel()
 
-# n in the notebook: qubits per block, so each link has 4n = 12 qubits.
-QUBITS_PER_BLOCK = 3
+# The notebook's registers in order; n = QUBITS_PER_BLOCK = 3, so each link has 4n = 12 qubits.
 REGISTER_NAMES = ["a", "b", "c", "d", "a2", "b2", "c2", "d2"]
-
-# Step 9's lookup: the syndrome (s1, s2) names the one flipped bit (0-based); (0, 0) means none.
-SYNDROME_TO_FLIPPED_BIT = {(1, 0): 0, (1, 1): 1, (0, 1): 2}
 
 # Logical Paulis of one block, as {position in the block: Pauli}. Ȳ = iX̄Z̄ = Y on the first qubit, X on the others.
 LOGICAL_X = {0: "X", 1: "X", 2: "X"}
@@ -81,7 +83,7 @@ class SwapReport:
 
 @dataclass(frozen=True)
 class Correlators:
-    """⟨X̄X̄⟩, ⟨ȲȲ⟩, ⟨Z̄Z̄⟩ on Alice's a and David's d2 (each +1, -1 or 0), and the fidelity with Φ̄⁺ they give."""
+    """⟨X̄X̄⟩, ⟨ȲȲ⟩, ⟨Z̄Z̄⟩ on Alice's a and Charlie's d2 (each +1, -1 or 0), and the fidelity with Φ̄⁺ they give."""
 
     xx: int
     yy: int
@@ -126,9 +128,8 @@ def run_swap_tutorial(backend: QuantumBackend, rng: random.Random) -> SwapTutori
 def build_link(backend: QuantumBackend, left_data: str, left_half: str, right_half: str, right_data: str) -> LinkReport:
     """Steps 1-5 on one link: Bell pairs on the communication qubits, encode |+̄⟩ ⊗ |0̄⟩, teleported CNOT."""
     make_bell_pairs(backend, find_register(left_half), find_register(right_half))
-    backend.h([find_register(left_data)[0]])
-    encode_repetition(backend, find_register(left_data))
-    encode_repetition(backend, find_register(right_data))
+    repetition_code.encode_logical_plus(backend, find_register(left_data), NOISELESS)
+    repetition_code.encode_logical_zero(backend, find_register(right_data), NOISELESS)
     m_bits, n_bits = qre_cec.teleport_cnot(
         backend,
         find_register(left_data),
@@ -146,11 +147,6 @@ def make_bell_pairs(backend: QuantumBackend, left_qubits: list[int], right_qubit
     """Step 2: Φ⁺ = (|00⟩ + |11⟩)/√2 on each (left, right) pair. Level 1 taught heralding; here the pairs arrive."""
     backend.h(left_qubits)
     backend.cnot(list(zip(left_qubits, right_qubits, strict=True)))
-
-
-def encode_repetition(backend: QuantumBackend, block: list[int]) -> None:
-    """Step 3: α|0⟩ + β|1⟩ on the first qubit becomes α|000⟩ + β|111⟩ (CNOT from it onto the other two)."""
-    backend.cnot([(block[0], block[1]), (block[0], block[2])])
 
 
 def swap_at_bob(backend: QuantumBackend, flipped_qubit: int) -> SwapReport:
@@ -172,15 +168,10 @@ def swap_at_bob(backend: QuantumBackend, flipped_qubit: int) -> SwapReport:
         syndrome=syndrome,
         fixed_qubit=fixed_qubit,
         fixed_z_bits=fixed_z_bits,
-        m_x=xor_all(x_bits),
-        m_z=xor_all(fixed_z_bits),
-        m_z_without_fix=xor_all(z_bits),
+        m_x=compute_parity(x_bits),
+        m_z=compute_parity(fixed_z_bits),
+        m_z_without_fix=compute_parity(z_bits),
     )
-
-
-def compute_syndrome(bits: list[int]) -> list[int]:
-    """Step 9: [s1, s2] = [m0 ⊕ m1, m1 ⊕ m2]. Both 0 means the bits agree (a codeword)."""
-    return [bits[0] ^ bits[1], bits[1] ^ bits[2]]
 
 
 def flip_bit(bits: list[int], position: int | None) -> list[int]:
@@ -191,21 +182,13 @@ def flip_bit(bits: list[int], position: int | None) -> list[int]:
     return flipped_bits
 
 
-def xor_all(bits: list[int]) -> int:
-    """The parity of the bits."""
-    parity = 0
-    for bit in bits:
-        parity ^= bit
-    return parity
-
-
 def correct_frame(backend: QuantumBackend, m_x: int, m_z: int) -> None:
-    """Step 10: X̄ = XXX on David's d2 when m_z is 1, Z̄ = Z on its first qubit when m_x is 1."""
+    """Step 10: X̄ = XXX on Charlie's d2 when m_z is 1, Z̄ = Z on its first qubit when m_x is 1."""
     d2_block = find_register("d2")
     if m_z == 1:
-        backend.x(d2_block)
+        repetition_code.apply_logical_x(backend, d2_block)
     if m_x == 1:
-        backend.z([d2_block[0]])
+        repetition_code.apply_logical_z(backend, d2_block)
 
 
 def read_correlators(backend: QuantumBackend) -> Correlators:
@@ -218,7 +201,7 @@ def read_correlators(backend: QuantumBackend) -> Correlators:
 
 
 def read_correlators_without_fix(backend: QuantumBackend, swap: SwapReport) -> Correlators:
-    """What Step 11 would read had Bob sent the undecoded parity: David's X̄ would differ by m_z_without_fix ⊕ m_z.
+    """What Step 11 would read had Bob sent the undecoded parity: Charlie's X̄ would differ by m_z_without_fix ⊕ m_z.
 
     Applies that extra X̄ to d2, reads, and undoes it (X̄X̄ = 1), so the state is left as it was.
     """

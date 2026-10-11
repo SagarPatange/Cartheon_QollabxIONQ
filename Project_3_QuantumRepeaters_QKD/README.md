@@ -349,24 +349,49 @@ the two logical bits are random but always equal, and the game shows them side b
 
 ![Level 6](docs/images/level3.png)
 
-**You play:** Mario stands by Alice and Peach by David, the two ends of the chain Alice – Bob – David: one repeater
+**You play:** Mario stands by Alice and Peach by Charlie, the two ends of the chain Alice – Bob – Charlie: one repeater
 (Bob) in the middle, with a telecom BSM tower standing in the water on each link. (The paper's Fig. 2 chain has two
-repeaters; the game uses one so the scene stays readable, and the simulation follows the same chain.) Type a message
-and send it classically (Q / I), encrypted with a quantum key (W / O), or as teleported qubits (E / P). Turn on the cloud turtles to eavesdrop and watch the key check catch them.
+repeaters; the game uses one so the scene stays readable, and the simulation follows the same chain.) The whole chain
+runs on the **3-qubit repetition code** of `QRECEC_3QubitRepetition.ipynb`, so each castle shows its qubit slots:
+Alice 6 (data block a, communication qubits b), Bob 12 (c, d for the left link and a2, b2 for the right) and Charlie 6
+(c2, d2).
+
+The level opens on a **swap tutorial**: Space walks through the notebook's 11 steps on a fresh simulator run, one per
+press, and pauses on lesson notes about the repetition code (what it stores, how its two parities find a bit flip,
+what it cannot fix, why Bob swaps, and a "spot the flip" question before the correction). Bit flips flash on the slots
+they hit, the decoder's fix turns the slot green, and the last step reads the fidelity of the Alice–Charlie pair.
+**R** starts a new run and **Esc** skips to the messages; **T** brings the tutorial back.
+
+Then type a message and send it classically (Q / I), encrypted with a quantum key (W / O), or as teleported qubits
+(E / P). Each step of the message plays with a card in the sky saying what happened, while the castles' slots show
+what one logical pair goes through. Turn on the cloud turtles to eavesdrop and watch the key check catch them. The
+physical error slider runs from 0 to 2 % in 0.01 % steps.
+
+### The 3-qubit repetition code
+
+One logical qubit is spread over three physical ones, $\alpha\lvert 0\rangle + \beta\lvert 1\rangle \to
+\alpha\lvert 000\rangle + \beta\lvert 111\rangle$, with logical $\bar X = XXX$ and $\bar Z = Z$ on any one qubit. A
+$Z$-basis readout $\mathbf m = (m_0, m_1, m_2)$ is checked with two parities,
+
+$$s_1 = m_0 \oplus m_1, \qquad s_2 = m_1 \oplus m_2 ,$$
+
+which say where neighbouring bits disagree, never which logical bit they hold: $(1,0)$ flips $m_0$, $(1,1)$ flips
+$m_1$, $(0,1)$ flips $m_2$, and $(0,0)$ means no flip. One bit flip is always corrected. A phase flip ($Z$) is never
+seen, so an $X$-basis readout (the parity of the three bits) cannot be corrected. The paper [1] uses the Steane code,
+which catches both; Levels 3 to 5 teach it, and Level 6 shows the same five phases on the smaller code.
 
 ### Phase 4: Encoded swapping with classical error correction
 
 Each link now holds a logical Bell pair. The middle repeater (Bob) joins its left and right pairs: it applies
-a transversal CNOT from its left block to its right block, measures the left block in the $X$ basis and the right
-block in the $Z$ basis, and gets two raw 7-bit strings $\mathbf m_X, \mathbf m_Z$. Instead of quantum error
-correction, it corrects the **bits** [2]: for each string it computes $\mathbf s = H\mathbf m \bmod 2$, flips the
-bit the syndrome names, and takes the parity of the corrected string $\mathbf m'$:
+a transversal CNOT from its left block (d) to its right block (a2), measures d in the $X$ basis and a2 in the $Z$
+basis, and gets two raw 3-bit strings $\mathbf m_X, \mathbf m_Z$. Instead of quantum error correction, it corrects the
+**bits** [2]: it decodes $\mathbf m_Z$ with the syndrome above and takes the parity of each string:
 
-$$b_x = \bigoplus_{i=1}^{7} (m'_x)_i, \qquad b_z = \bigoplus_{i=1}^{7} (m'_z)_i .$$
+$$b_x = \bigoplus_{i=0}^{2} (m_x)_i, \qquad b_z = \bigoplus_{i=0}^{2} (m'_z)_i .$$
 
-The $Z$-basis parity says whether the end of the chain needs a logical $\bar X$, and the $X$-basis parity whether it
-needs a logical $\bar Z$. A single wrong bit in either string is caught by the syndrome. Without this step, that one
-bit would flip the frame and leave the wrong Bell pair.
+The $Z$-basis bit says whether the end of the chain needs a logical $\bar X$, and the $X$-basis bit whether it needs a
+logical $\bar Z$. A single wrong bit in $\mathbf m_Z$ is caught by the syndrome; without this step, that one bit would
+flip the frame and leave the wrong Bell pair (the tutorial shows $F = 0$ instead of $F = 1$).
 
 ### Phase 5: One Pauli-frame correction
 
@@ -382,7 +407,7 @@ confirms second-order error suppression for every noise source, and reports a lo
 
 ### The secret key: BBM92
 
-With logical Bell pairs between the ends, Alice and David run **BBM92** quantum key distribution [8]:
+With logical Bell pairs between the ends, Alice and Charlie run **BBM92** quantum key distribution [8]:
 
 1. For each pair, both sides measure in a randomly chosen basis, $Z$ or $X$.
 2. They announce the bases (not the results) and keep only the rounds where the bases matched (**sifting**). For

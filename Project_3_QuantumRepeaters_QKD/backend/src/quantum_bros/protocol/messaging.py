@@ -1,7 +1,7 @@
 """Mario and Peach send a text message three ways: in the clear, one-time-pad encrypted with a QKD key, or teleported
 bit by bit over logical Bell pairs.
 
-Mario stands at Alice's end of the chain and Peach at David's. Either one can send. Peach's sender id is still
+Mario stands at Alice's end of the chain and Peach at Charlie's. Either one can send. Peach's sender id is still
 "luigi" (LUIGI below), so the page's requests and the API did not change when she took Luigi's place.
 
 Simplification for quantum messages: Stim only simulates Clifford circuits, so a quantum message carries each text
@@ -10,7 +10,7 @@ bit as a logical |0̄⟩ or |1̄⟩. Teleporting arbitrary qubit states needs a 
 
 from dataclasses import dataclass
 
-from quantum_bros.protocol import qkd, qre_cec, steane
+from quantum_bros.protocol import qkd, qre_cec, repetition_code
 from quantum_bros.protocol.network import QuantumNetwork
 
 MARIO = "mario"
@@ -143,29 +143,31 @@ def teleport_bit(network: QuantumNetwork, message_bit: int, sender: str) -> tupl
     backend = network.backend
     layout = network.layout
     message_block = layout.message_block
-    steane.encode_logical_zero(backend, message_block, layout.ancilla, network.noise, qre_cec.MAX_ENCODING_ATTEMPTS)
+    repetition_code.encode_logical_zero(backend, message_block, network.noise)
     if message_bit == 1:
-        steane.apply_logical_x(backend, message_block)
+        repetition_code.apply_logical_x(backend, message_block)
 
     network.distribute_pair()
     sender_half, receiver_half = pick_halves(layout, sender)
-    steane.apply_transversal_cnot(backend, message_block, sender_half, network.noise)
-    z_correction_bit = steane.measure_logical(backend, message_block, steane.X_BASIS, network.noise).logical_bit
-    x_correction_bit = steane.measure_logical(backend, sender_half, steane.Z_BASIS, network.noise).logical_bit
+    repetition_code.apply_transversal_cnot(backend, message_block, sender_half, network.noise)
+    x_basis = repetition_code.X_BASIS
+    z_basis = repetition_code.Z_BASIS
+    z_correction_bit = repetition_code.measure_logical(backend, message_block, x_basis, network.noise).logical_bit
+    x_correction_bit = repetition_code.measure_logical(backend, sender_half, z_basis, network.noise).logical_bit
     qre_cec.correct_pauli_frame(backend, receiver_half, x_correction_bit, z_correction_bit)
-    received_bit = steane.measure_logical(backend, receiver_half, steane.Z_BASIS, network.noise).logical_bit
+    received_bit = repetition_code.measure_logical(backend, receiver_half, z_basis, network.noise).logical_bit
     return received_bit, [z_correction_bit, x_correction_bit]
 
 
 def pick_halves(layout: qre_cec.QubitLayout, sender: str) -> tuple[list[int], list[int]]:
-    """(sender's block, receiver's block): Mario holds Alice's half, Peach holds David's."""
+    """(sender's block, receiver's block): Mario holds Alice's half, Peach holds Charlie's."""
     if sender == MARIO:
         return layout.alice_block, layout.david_block
     return layout.david_block, layout.alice_block
 
 
 def pick_keys(qkd_report: qkd.QkdReport, sender: str) -> tuple[list[int], list[int]]:
-    """(sender's key, receiver's key): Mario's key is Alice's, Peach's is David's."""
+    """(sender's key, receiver's key): Mario's key is Alice's, Peach's is Charlie's."""
     if sender == MARIO:
         return qkd_report.alice_key, qkd_report.david_key
     return qkd_report.david_key, qkd_report.alice_key

@@ -1,6 +1,6 @@
 /*
  * Messaging world additions on top of world.css and towers.css: plumber stations, cloud turtles, speech bubbles,
- * the envelope, the Alice–David beam, the banner, the round cards and the control panels.
+ * the envelope, the Alice–Charlie beam, the round cards and the control panels.
  *
  * src/qkd/render_qkd_state.js sets, on the track: data-phase (the current backend step, for one-off animations),
  * data-direction ("to-luigi" or "to-mario"), data-kind, and a reached-<phase> class for every step played so far.
@@ -106,45 +106,17 @@
 
 /* ---------- Towers ---------- */
 
-.tower-window {
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    font-size: 16px;
-    color: var(--coin-gold);
-    background: var(--panel-black);
-    border: 2px solid var(--ink);
-    border-radius: 22px 22px 0 0;
-    transition: box-shadow 300ms;
+/* Each castle's qubit slots (styles/swap_tutorial.css) show one logical pair's journey; the phase that is playing
+   makes the slots it acts on pulse: the data blocks while encoding, Bob's two blocks while he swaps, and the end
+   blocks while Alice and Charlie measure. */
+.qkd-track[data-phase="encoding"] .swap-register.is-data .swap-orb,
+.qkd-track[data-phase="encoded_swapping"] .qkd-tower[data-role="middle"] .swap-register.is-data .swap-orb,
+.qkd-track[data-phase="qkd_measure"] .qkd-tower[data-role="end"] .swap-register.is-data .swap-orb {
+    animation: slot-pulse 0.5s ease-in-out 3;
 }
 
-.qkd-track.reached-encoding .tower-window {
-    box-shadow: 0 0 10px var(--qubit-blue), inset 0 0 8px var(--qubit-blue);
-}
-
-.qkd-track[data-phase="encoding"] .tower-window {
-    animation: window-pulse 0.5s ease-in-out 3;
-}
-
-@keyframes window-pulse {
-    50% { box-shadow: 0 0 20px var(--qubit-blue), inset 0 0 16px var(--qubit-blue); }
-}
-
-.qkd-track.reached-encoded_swapping .qkd-tower[data-role="middle"] .tower-window::after {
-    content: "⇄";
-}
-
-.qkd-track[data-phase="encoded_swapping"] .qkd-tower[data-role="middle"] .tower-window {
-    animation: repeater-flash 0.3s steps(2) 5;
-}
-
-@keyframes repeater-flash {
-    50% { background: var(--cloud-white); }
-}
-
-.qkd-track.reached-qkd_measure .qkd-tower[data-role="end"] .tower-window::after {
-    content: "+×";
+@keyframes slot-pulse {
+    50% { box-shadow: 0 0 16px var(--cloud-white); scale: 1.15; }
 }
 
 /* ---------- Links and BSM nodes ---------- */
@@ -243,10 +215,11 @@
 
 /* ---------- Cloud turtles ---------- */
 
+/* Floats clear above the "BSM Node" label. */
 .cloud-turtle {
     position: absolute;
     left: 50%;
-    bottom: 212px;
+    bottom: 226px;
     translate: -50% 0;
     display: none;
     animation: turtle-bob 2.4s ease-in-out infinite;
@@ -276,7 +249,7 @@
 }
 
 .qkd-track.has-turtles[data-phase="heralding"] .turtle-line {
-    height: 48px;
+    height: 62px;
 }
 
 @keyframes turtle-bob {
@@ -324,7 +297,7 @@
     to { opacity: 1; left: calc(var(--station-width) / 2); }
 }
 
-/* ---------- Alice–David beam and banner ---------- */
+/* ---------- Alice–Charlie beam ---------- */
 
 .pair-beam {
     position: absolute;
@@ -350,32 +323,6 @@
 
 @keyframes beam-pulse {
     to { box-shadow: 0 0 24px var(--cloud-white); height: 10px; }
-}
-
-.qkd-banner {
-    position: absolute;
-    top: 8px;
-    left: var(--beam-inset);
-    right: var(--beam-inset);
-    padding: 8px;
-    text-align: center;
-    font-size: 12px;
-    color: var(--ink);
-    background: var(--coin-gold);
-    border: 2px solid var(--ink);
-    opacity: 0;
-    scale: 0.6 1;
-    transition: opacity 500ms, scale 500ms;
-}
-
-.qkd-banner.is-visible {
-    opacity: 1;
-    scale: 1 1;
-}
-
-.qkd-banner.is-aborted {
-    color: var(--text-light);
-    background: var(--error-red);
 }
 
 /* ---------- Controls ---------- */

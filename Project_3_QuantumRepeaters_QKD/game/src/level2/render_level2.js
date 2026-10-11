@@ -16,7 +16,7 @@ import { buildBsmLink, showDetectorClick } from "../bsm_link.js";
 import { createElement } from "../page_helpers.js";
 import { LUIGI_SPRITE, MARIO_SPRITE } from "../pixel_sprites.js";
 import { buildStation } from "../qkd/render_qkd_world.js";
-import { buildQubitTower } from "../qubit_tower.js";
+import { buildKet, buildQubitTower } from "../qubit_tower.js";
 
 const REJECT_FLASH_MS = 600;
 const CELL_FILL_MS = 70;
@@ -78,26 +78,6 @@ function showBlockLabel(rack, stage) {
     }
     rack.blockLabel.replaceChildren(buildKet(label));
     rack.blockLabel.setAttribute("aria-label", label.text);
-}
-
-
-/**
- * A ket with a tilde over its symbol, |+̃⟩ or |Φ̃⁺⟩: the tilde is drawn by CSS (.ket-tilde), so it never depends on
- * the pixel font having combining marks.
- */
-function buildKet(label) {
-    const ketElement = createElement("span", "ket");
-    const symbolElement = createElement("span", "ket-tilde");
-    symbolElement.textContent = label.symbol;
-    ketElement.append("|", symbolElement);
-    if (label.superscript) {
-        const superscriptElement = createElement("sup", "ket-superscript");
-        superscriptElement.textContent = label.superscript;
-        ketElement.append(superscriptElement);
-    }
-    ketElement.append("⟩");
-    ketElement.setAttribute("aria-hidden", "true");
-    return ketElement;
 }
 
 

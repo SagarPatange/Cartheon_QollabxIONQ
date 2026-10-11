@@ -1,14 +1,17 @@
-"""QRE-CEC (paper §III): distribute one logical Steane Bell pair Φ̄⁺ from Alice to David over one repeater.
+"""QRE-CEC (paper §III): distribute one logical Bell pair Φ̄⁺ from Alice to Charlie over one repeater.
 
-Nodes in a line: Alice ─ Bob ─ David, one fiber link between each neighbour pair (the paper's Fig. 2 chain has two
+Nodes in a line: Alice ─ Bob ─ Charlie, one fiber link between each neighbour pair (the paper's Fig. 2 chain has two
 repeaters; the game uses one, so the scene stays readable). Everything below follows NODE_NAMES, so a longer chain
-only means adding names. Each pair goes through:
+only means adding names. Every block is the 3-qubit repetition code (repetition_code.py), as in
+QRECEC_3QubitRepetition.ipynb, so Alice holds 6 qubits (a data block and its communication qubits), Bob 12 (one of
+each per link) and Charlie 6. The paper uses the Steane code; the phases are the same. Each pair goes through:
 
-1. Heralded generation: 7 physical Bell pairs per link, on communication qubits (c_left[i], c_right[i]).
-2. Encoding: the left end of every link gets a verified |+̄⟩, the right end a verified |0̄⟩.
+1. Heralded generation: 3 physical Bell pairs per link, on communication qubits (c_left[i], c_right[i]).
+2. Encoding: the left end of every link gets |+̄⟩ = (|000⟩ + |111⟩)/√2, the right end |0̄⟩ = |000⟩.
 3. Transversal teleported CNOT (Fig. 4): consumes the physical pairs and leaves Φ̄⁺ on every link.
-4. Encoded swapping at every repeater (here Bob): a logical Bell measurement, decoded with the Steane decoder.
-5. Pauli-frame correction on David's block. Alice's and David's blocks then hold Φ̄⁺.
+4. Encoded swapping at every repeater (here Bob): a logical Bell measurement whose Z-basis bits are decoded
+   classically (one flipped bit is fixed); its X-basis bits cannot be corrected by this code.
+5. Pauli-frame correction on Charlie's block. Alice's and Charlie's blocks then hold Φ̄⁺.
 
 Cloud turtles may tap photons in step 1: an intercept-resend measurement of c_right[i] in a random basis.
 
@@ -20,18 +23,15 @@ import random
 from dataclasses import dataclass
 
 from quantum_bros.backends.quantum_backend import QuantumBackend
-from quantum_bros.protocol import steane
+from quantum_bros.protocol import repetition_code
 from quantum_bros.protocol.noise import NoiseModel
 
-NODE_NAMES = ["Alice", "Bob", "David"]
+NODE_NAMES = ["Alice", "Bob", "Charlie"]
 LINK_COUNT = len(NODE_NAMES) - 1
 REPEATER_COUNT = LINK_COUNT - 1
 
 # Toy: chance that one heralded attempt on a link succeeds. Real links are far below this.
 TOY_HERALD_SUCCESS_PROBABILITY = 0.35
-
-# Verification rarely rejects at the page's error rates; this many rejections in a row means something is broken.
-MAX_ENCODING_ATTEMPTS = 50
 
 LEFT_SIDE = 0
 RIGHT_SIDE = 1
@@ -40,13 +40,13 @@ SIDE_COUNT = 2
 
 @dataclass(frozen=True)
 class QubitLayout:
-    """Where every qubit lives. One data block per link end, 7 communication qubits per link end, one verification
-    ancilla, and one spare block that holds the payload of a quantum message."""
+    """Where every qubit lives. One data block per link end, 3 communication qubits per link end, and one spare
+    block that holds the payload of a quantum message."""
 
     def data_block(self, block_number: int) -> list[int]:
-        """Block 0 is Alice R, then Bob L, Bob R, Charlie L, Charlie R, David L."""
-        first_qubit = block_number * steane.QUBITS_PER_BLOCK
-        return list(range(first_qubit, first_qubit + steane.QUBITS_PER_BLOCK))
+        """Block 0 is Alice R, then Bob L, Bob R, Charlie L."""
+        first_qubit = block_number * repetition_code.QUBITS_PER_BLOCK
+        return list(range(first_qubit, first_qubit + repetition_code.QUBITS_PER_BLOCK))
 
     def left_data_block(self, link: int) -> list[int]:
         """The data block at the left end of a link (it ends up holding the |+̄⟩ side of the link's pair)."""
@@ -57,21 +57,16 @@ class QubitLayout:
         return self.data_block(2 * link + 1)
 
     def communication_qubits(self, link: int, side: int) -> list[int]:
-        """The 7 communication qubits on one side of a link."""
-        data_qubit_count = 2 * LINK_COUNT * steane.QUBITS_PER_BLOCK
-        first_qubit = data_qubit_count + (link * SIDE_COUNT + side) * steane.QUBITS_PER_BLOCK
-        return list(range(first_qubit, first_qubit + steane.QUBITS_PER_BLOCK))
-
-    @property
-    def ancilla(self) -> int:
-        """The verification ancilla, right after the last communication qubit."""
-        return 4 * LINK_COUNT * steane.QUBITS_PER_BLOCK
+        """The 3 communication qubits on one side of a link."""
+        data_qubit_count = 2 * LINK_COUNT * repetition_code.QUBITS_PER_BLOCK
+        first_qubit = data_qubit_count + (link * SIDE_COUNT + side) * repetition_code.QUBITS_PER_BLOCK
+        return list(range(first_qubit, first_qubit + repetition_code.QUBITS_PER_BLOCK))
 
     @property
     def message_block(self) -> list[int]:
-        """The spare block for quantum messages, after the ancilla."""
-        first_qubit = self.ancilla + 1
-        return list(range(first_qubit, first_qubit + steane.QUBITS_PER_BLOCK))
+        """The spare block for quantum messages, right after the last communication qubit."""
+        first_qubit = 4 * LINK_COUNT * repetition_code.QUBITS_PER_BLOCK
+        return list(range(first_qubit, first_qubit + repetition_code.QUBITS_PER_BLOCK))
 
     @property
     def alice_block(self) -> list[int]:
@@ -80,7 +75,7 @@ class QubitLayout:
 
     @property
     def david_block(self) -> list[int]:
-        """David's half of the end-to-end pair."""
+        """Charlie's half of the end-to-end pair."""
         return self.right_data_block(LINK_COUNT - 1)
 
 
@@ -89,7 +84,6 @@ class PairReport:
     """What happened while distributing one logical pair, for statistics and for the page's animation."""
 
     heralding_attempts: list[int]
-    encoding_attempts: list[int]
     decoder_corrections: list[int]
     frame_x_bit: int
     frame_z_bit: int
@@ -117,14 +111,13 @@ def distribute_logical_pair(
         heralding_attempts.append(herald_link(backend, layout, link, noise, rng))
         if tap_link(backend, layout, link, rng, tap_fraction):
             tapped_links.append(link)
-    encoding_attempts = encode_all_links(backend, layout, noise)
+    encode_all_links(backend, layout, noise)
     for link in range(LINK_COUNT):
         teleport_cnot_across_link(backend, layout, link, noise)
     frame_x_bit, frame_z_bit, decoder_corrections = swap_at_repeaters(backend, layout, noise)
     correct_pauli_frame(backend, layout.david_block, frame_x_bit, frame_z_bit)
     return PairReport(
         heralding_attempts=heralding_attempts,
-        encoding_attempts=encoding_attempts,
         decoder_corrections=decoder_corrections,
         frame_x_bit=frame_x_bit,
         frame_z_bit=frame_z_bit,
@@ -133,7 +126,7 @@ def distribute_logical_pair(
 
 
 def herald_link(backend: QuantumBackend, layout: QubitLayout, link: int, noise: NoiseModel, rng: random.Random) -> int:
-    """Phase 1: make 7 noisy physical Φ⁺ pairs on the link; return how many toy heralding attempts that took."""
+    """Phase 1: make 3 noisy physical Φ⁺ pairs on the link; return how many toy heralding attempts that took."""
     left_qubits = layout.communication_qubits(link, LEFT_SIDE)
     right_qubits = layout.communication_qubits(link, RIGHT_SIDE)
     bell_pairs = list(zip(left_qubits, right_qubits, strict=True))
@@ -176,19 +169,11 @@ def tap_link(backend: QuantumBackend, layout: QubitLayout, link: int, rng: rando
     return is_link_tapped
 
 
-def encode_all_links(backend: QuantumBackend, layout: QubitLayout, noise: NoiseModel) -> list[int]:
-    """Phase 2: |+̄⟩ on every link's left block, |0̄⟩ on its right block. Returns attempts per block, in block order."""
-    encoding_attempts = []
+def encode_all_links(backend: QuantumBackend, layout: QubitLayout, noise: NoiseModel) -> None:
+    """Phase 2: |+̄⟩ on every link's left block, |0̄⟩ on its right block."""
     for link in range(LINK_COUNT):
-        left_block = layout.left_data_block(link)
-        right_block = layout.right_data_block(link)
-        encoding_attempts.append(
-            steane.encode_logical_plus(backend, left_block, layout.ancilla, noise, MAX_ENCODING_ATTEMPTS)
-        )
-        encoding_attempts.append(
-            steane.encode_logical_zero(backend, right_block, layout.ancilla, noise, MAX_ENCODING_ATTEMPTS)
-        )
-    return encoding_attempts
+        repetition_code.encode_logical_plus(backend, layout.left_data_block(link), noise)
+        repetition_code.encode_logical_zero(backend, layout.right_data_block(link), noise)
 
 
 def teleport_cnot_across_link(backend: QuantumBackend, layout: QubitLayout, link: int, noise: NoiseModel) -> None:
@@ -220,12 +205,12 @@ def teleport_cnot(
     left_pairs = list(zip(left_data, left_communication, strict=True))
     backend.cnot(left_pairs)
     backend.depolarize2(left_pairs, noise.gate_error_2q)
-    z_outcomes = measure_physical(backend, left_communication, steane.Z_BASIS, noise)
+    z_outcomes = measure_physical(backend, left_communication, repetition_code.Z_BASIS, noise)
 
     right_pairs = list(zip(right_communication, right_data, strict=True))
     backend.cnot(right_pairs)
     backend.depolarize2(right_pairs, noise.gate_error_2q)
-    x_outcomes = measure_physical(backend, right_communication, steane.X_BASIS, noise)
+    x_outcomes = measure_physical(backend, right_communication, repetition_code.X_BASIS, noise)
 
     backend.x(select_where_set(right_data, z_outcomes))
     backend.z(select_where_set(left_data, x_outcomes))
@@ -234,7 +219,7 @@ def teleport_cnot(
 
 def measure_physical(backend: QuantumBackend, qubits: list[int], basis: str, noise: NoiseModel) -> list[int]:
     """Measure bare qubits in the Z or X basis, with a measurement bit-flip error."""
-    if basis == steane.X_BASIS:
+    if basis == repetition_code.X_BASIS:
         backend.h(qubits)
         backend.depolarize1(qubits, noise.gate_error_1q)
     backend.x_error(qubits, noise.measurement_error)
@@ -262,9 +247,9 @@ def swap_at_repeaters(backend: QuantumBackend, layout: QubitLayout, noise: Noise
     for repeater in range(REPEATER_COUNT):
         incoming_block = layout.right_data_block(repeater)
         outgoing_block = layout.left_data_block(repeater + 1)
-        steane.apply_transversal_cnot(backend, incoming_block, outgoing_block, noise)
-        x_basis_result = steane.measure_logical(backend, incoming_block, steane.X_BASIS, noise)
-        z_basis_result = steane.measure_logical(backend, outgoing_block, steane.Z_BASIS, noise)
+        repetition_code.apply_transversal_cnot(backend, incoming_block, outgoing_block, noise)
+        x_basis_result = repetition_code.measure_logical(backend, incoming_block, repetition_code.X_BASIS, noise)
+        z_basis_result = repetition_code.measure_logical(backend, outgoing_block, repetition_code.Z_BASIS, noise)
         frame_z_bit ^= x_basis_result.logical_bit
         frame_x_bit ^= z_basis_result.logical_bit
         decoder_corrections.append(int(x_basis_result.was_corrected) + int(z_basis_result.was_corrected))
@@ -274,6 +259,6 @@ def swap_at_repeaters(backend: QuantumBackend, layout: QubitLayout, noise: Noise
 def correct_pauli_frame(backend: QuantumBackend, block: list[int], frame_x_bit: int, frame_z_bit: int) -> None:
     """Phase 5: apply X̄^frame_x Z̄^frame_z to the far end's block so the end-to-end pair is Φ̄⁺."""
     if frame_x_bit == 1:
-        steane.apply_logical_x(backend, block)
+        repetition_code.apply_logical_x(backend, block)
     if frame_z_bit == 1:
-        steane.apply_logical_z(backend, block)
+        repetition_code.apply_logical_z(backend, block)

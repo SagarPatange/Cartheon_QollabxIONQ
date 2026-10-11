@@ -1,11 +1,12 @@
 """Level 6's swap tutorial (QRECEC_3QubitRepetition.ipynb): both links hold Φ̄⁺, the decoder finds the flipped a2
-qubit, the Pauli frame restores Φ̄⁺ between Alice and David, and skipping the decoding breaks it."""
+qubit, the Pauli frame restores Φ̄⁺ between Alice and Charlie, and skipping the decoding breaks it."""
 
 import random
 
 import pytest
 
 from quantum_bros.backends.stim_backend import StimBackend
+from quantum_bros.protocol import repetition_code
 from quantum_bros.protocol import repetition_swap as swap_tutorial
 
 SEED_COUNT = 40
@@ -27,8 +28,8 @@ def run(seed: int) -> swap_tutorial.SwapTutorialReport:
     ],
 )
 def test_the_syndrome_names_the_one_flipped_bit(bits, syndrome, fixed_qubit):
-    assert swap_tutorial.compute_syndrome(bits) == syndrome
-    assert swap_tutorial.SYNDROME_TO_FLIPPED_BIT.get(tuple(syndrome)) == fixed_qubit
+    assert repetition_code.compute_syndrome(bits) == syndrome
+    assert repetition_code.SYNDROME_TO_FLIPPED_BIT.get(tuple(syndrome)) == fixed_qubit
 
 
 def test_registers_follow_the_notebook_order():
@@ -41,7 +42,7 @@ def test_every_link_holds_the_logical_bell_pair_after_the_teleported_cnot():
     for seed in range(SEED_COUNT):
         for link in run(seed).links:
             assert (link.zz, link.xx) == (1, 1)
-            assert len(link.m_bits) == len(link.n_bits) == swap_tutorial.QUBITS_PER_BLOCK
+            assert len(link.m_bits) == len(link.n_bits) == repetition_code.QUBITS_PER_BLOCK
 
 
 def test_the_decoder_flips_back_exactly_the_qubit_the_bit_flip_hit():

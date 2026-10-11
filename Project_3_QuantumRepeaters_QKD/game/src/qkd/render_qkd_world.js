@@ -1,7 +1,7 @@
 /**
- * Build the messaging world once: Mario on the ground left of Alice, three towers (Alice, Bob, David) with water
- * between them, a BSM telecom tower on a pier and a cloud turtle on every link, Peach on the ground right of David,
- * plus the envelope, the end-to-end beam and the banner.
+ * Build the messaging world once: Mario on the ground left of Alice, three towers (Alice, Bob, Charlie) with water
+ * between them, a BSM telecom tower on a pier and a cloud turtle on every link, Peach on the ground right of Charlie,
+ * plus the envelope and the end-to-end beam. (A message's result goes in the card in the sky, not over the scene.)
  *
  * render_qkd_state.js changes classes and text on these elements later. Fills the empty #track container from
  * qkd.html.
@@ -17,8 +17,8 @@ const TURTLE_PIXEL_SIZE = 3;
 // The BSM telecom tower over the water: 15×27 sprite pixels at 4 screen pixels; its crossarm meets the fiber when it
 // stands on its pier (styles/qkd.css).
 const BSM_TOWER_PIXEL_SIZE = 4;
-// How many coins a link shows while heralding: one per physical Bell pair of a Steane block.
-const COINS_SHOWN_PER_LINK = 7;
+// How many coins a link shows while heralding: one per physical Bell pair of a 3-qubit repetition block.
+const COINS_SHOWN_PER_LINK = 3;
 
 
 /**
@@ -26,7 +26,7 @@ const COINS_SHOWN_PER_LINK = 7;
  *
  * @param {HTMLElement} trackElement - the empty track container.
  * @returns {{towerElements: HTMLElement[], linkElements: HTMLElement[], stationElements: Object<string, HTMLElement>,
- *            envelopeElement: HTMLElement, beamElement: HTMLElement, bannerElement: HTMLElement}}
+ *            envelopeElement: HTMLElement, beamElement: HTMLElement}}
  */
 export function buildQkdTrack(trackElement) {
     const stationElements = {
@@ -55,9 +55,8 @@ export function buildQkdTrack(trackElement) {
     const envelopeElement = createElement("div", "envelope");
     envelopeElement.textContent = "✉";
     const beamElement = createElement("div", "pair-beam");
-    const bannerElement = createElement("div", "qkd-banner");
-    trackElement.append(envelopeElement, beamElement, bannerElement);
-    return { towerElements, linkElements, stationElements, envelopeElement, beamElement, bannerElement };
+    trackElement.append(envelopeElement, beamElement);
+    return { towerElements, linkElements, stationElements, envelopeElement, beamElement };
 }
 
 
@@ -81,7 +80,8 @@ export function buildStation(displayName, plumberSprite, plumberId) {
 
 
 /**
- * One tower on a pipe. End towers (Alice, David) measure; the middle tower (Bob) swaps.
+ * One tower on a pipe. End towers (Alice, Charlie) measure; the middle tower (Bob) swaps. Its body holds the qubit
+ * slots render_swap_tutorial.js adds.
  *
  * @param {string} towerName - shown on the pipe.
  * @param {boolean} isEndTower
@@ -91,9 +91,7 @@ export function buildQkdTower(towerName, isEndTower) {
     towerElement.dataset.role = isEndTower ? "end" : "middle";
     towerElement.append(createElement("div", "tower-battlements"));
 
-    const bodyElement = createElement("div", "tower-body");
-    bodyElement.append(createElement("div", "tower-window"), createElement("div", "tower-badge"));
-    towerElement.append(bodyElement);
+    towerElement.append(createElement("div", "tower-body"));
 
     towerElement.append(createElement("div", "tower-pipe"));
     const nameElement = createElement("div", "tower-name");

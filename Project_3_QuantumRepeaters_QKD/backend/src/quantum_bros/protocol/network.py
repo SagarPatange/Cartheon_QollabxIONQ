@@ -1,4 +1,4 @@
-"""One simulation run of the Alice–David repeater chain: the backend, the noise, the classical generator and the
+"""One simulation run of the Alice–Charlie repeater chain: the backend, the noise, the classical generator and the
 running statistics of every logical pair distributed so far.
 
 QKD and messaging ask the network for pairs; they never build the chain themselves.
@@ -19,7 +19,6 @@ class PairStatistics:
     pair_count: int = 0
     heralding_attempts: list[int] = field(default_factory=lambda: [0] * qre_cec.LINK_COUNT)
     encoded_block_count: int = 0
-    encoding_attempts: int = 0
     decoder_corrections: list[int] = field(default_factory=lambda: [0] * qre_cec.REPEATER_COUNT)
     frame_corrected_pair_count: int = 0
     tapped_pair_count: int = 0
@@ -29,9 +28,8 @@ class PairStatistics:
         self.pair_count += 1
         for link in range(qre_cec.LINK_COUNT):
             self.heralding_attempts[link] += report.heralding_attempts[link]
-        self.encoded_block_count += len(report.encoding_attempts)
-        for attempt_count in report.encoding_attempts:
-            self.encoding_attempts += attempt_count
+        # Every pair encodes two blocks per link: |+̄⟩ on the left, |0̄⟩ on the right.
+        self.encoded_block_count += 2 * qre_cec.LINK_COUNT
         for repeater in range(qre_cec.REPEATER_COUNT):
             self.decoder_corrections[repeater] += report.decoder_corrections[repeater]
         needed_frame_correction = report.frame_x_bit == 1 or report.frame_z_bit == 1

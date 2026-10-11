@@ -5,8 +5,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { findKeyAction } from "../../src/qkd/key_actions.js";
-import { CLASSICAL, ENCRYPTED, LUIGI, MARIO, QUANTUM } from "../../src/qkd/qkd_constants.js";
+import { findKeyAction, findTutorialCommand } from "../../src/qkd/key_actions.js";
+import {
+    CLASSICAL, ENCRYPTED, LUIGI, MARIO, NEW_RUN, NEXT_STEP, QUANTUM, REPLAY_TUTORIAL, SKIP_TUTORIAL,
+} from "../../src/qkd/qkd_constants.js";
 
 const PLAIN_PRESS = { ctrlKey: false, metaKey: false, altKey: false, repeat: false };
 
@@ -37,4 +39,15 @@ test("other keys, modifiers and auto-repeat do nothing", () => {
     assert.equal(findKeyAction(press("ArrowLeft"), "BODY"), null);
     assert.equal(findKeyAction({ ...press("w"), metaKey: true }, "BODY"), null);
     assert.equal(findKeyAction({ ...press("w"), repeat: true }, "BODY"), null);
+});
+
+
+test("the swap tutorial's keys: Space, R, Esc and T, never while typing", () => {
+    assert.equal(findTutorialCommand(press(" "), "BODY"), NEXT_STEP);
+    assert.equal(findTutorialCommand(press("R"), "BODY"), NEW_RUN);
+    assert.equal(findTutorialCommand(press("Escape"), "BODY"), SKIP_TUTORIAL);
+    assert.equal(findTutorialCommand(press("t"), "BODY"), REPLAY_TUTORIAL);
+    assert.equal(findTutorialCommand(press(" "), "INPUT"), null);
+    assert.equal(findTutorialCommand(press("x"), "BODY"), null);
+    assert.equal(findTutorialCommand({ ...press(" "), repeat: true }, "BODY"), null);
 });

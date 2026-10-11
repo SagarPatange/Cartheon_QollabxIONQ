@@ -1,12 +1,16 @@
 /**
- * Draw one playback step of a backend response onto the elements built by render_qkd_world.js.
+ * Draw one playback step of a backend response onto the elements built by render_qkd_world.js: the castles' qubit
+ * slots show what one logical pair has been through, and the card in the sky gives the step's title and detail.
  *
  * The track gets data-phase (the current step, which drives the one-off animations), data-direction and a
  * reached-<phase> class for every step played so far (which drives what stays on screen). The look of each lives in
  * styles/qkd.css.
  */
 
+import { describeMessageSlots } from "./chain_slots.js";
 import { ENCRYPTED, LUIGI, MARIO } from "./qkd_constants.js";
+import { drawSlots } from "./render_swap_tutorial.js";
+import { showStepCard } from "./step_card.js";
 import { formatPercent } from "../page_helpers.js";
 
 // Every phase the backend can send (PHASES in backend/src/quantum_bros/protocol/steps.py).
@@ -37,7 +41,8 @@ export function renderIdle(elements) {
     for (const linkElement of elements.linkElements) {
         showBubble(linkElement.querySelector(".turtle-bubble"), null);
     }
-    renderBanner(elements.bannerElement, null);
+    showStepCard(elements.stepCard, null);
+    drawSlots(elements.tutorialScene, describeMessageSlots(new Set()), []);
     elements.stepElement.textContent = "--";
 }
 
@@ -56,9 +61,10 @@ export function renderStep(response, stepIndex, elements) {
         reachedPhases.add(response.steps[i].phase);
     }
     renderTrack(elements.trackElement, response, currentStep.phase, reachedPhases);
+    drawSlots(elements.tutorialScene, describeMessageSlots(reachedPhases), []);
     renderBubbles(response, reachedPhases, elements);
-    renderBanner(elements.bannerElement, findBannerResult(response, reachedPhases));
     renderQkdHud(response, stepIndex, reachedPhases, elements);
+    showResultCard(elements.stepCard, response, stepIndex, findResult(response, reachedPhases));
 }
 
 
@@ -111,34 +117,42 @@ function showBubble(bubbleElement, text) {
 
 
 /**
- * What the banner should say, or null while the message is still on its way.
+ * How the message ended, once it has: the line the card leads with, and whether the turtles stopped it. Null while
+ * the message is still on its way.
  *
  * @returns {{isAborted: boolean, text: string} | null}
  */
-function findBannerResult(response, reachedPhases) {
+function findResult(response, reachedPhases) {
     if (reachedPhases.has("abort")) {
         const qberText = formatPercent(response.qkd.qber);
-        return { isAborted: true, text: `✖ TURTLE DETECTED! QBER ${qberText}: key thrown away` };
+        return { isAborted: true, text: `✖ TURTLE DETECTED! QBER ${qberText}` };
     }
     if (!reachedPhases.has("deliver")) {
         return null;
     }
     const receiverName = response.receiver === LUIGI ? "PEACH" : "MARIO";
-    return { isAborted: false, text: `★ MESSAGE FOR ${receiverName}! ${response.bit_errors} bits wrong ★` };
+    return { isAborted: false, text: `★ MESSAGE FOR ${receiverName}! ★` };
 }
 
 
 /**
- * The result banner over the towers.
+ * The card in the sky for the current step. Once the message has ended, the card leads with the result instead of
+ * the step counter, in gold for a delivered message and in red when the turtles were caught.
  *
- * @param {HTMLElement} bannerElement
- * @param {{isAborted: boolean, text: string} | null} bannerResult
+ * @param {object} card - the step card's elements.
+ * @param {object} response
+ * @param {number} stepIndex
+ * @param {{isAborted: boolean, text: string} | null} result - from findResult.
  */
-function renderBanner(bannerElement, bannerResult) {
-    const isVisible = bannerResult !== null;
-    bannerElement.classList.toggle("is-visible", isVisible);
-    bannerElement.classList.toggle("is-aborted", isVisible && bannerResult.isAborted);
-    bannerElement.textContent = isVisible ? bannerResult.text : "";
+function showResultCard(card, response, stepIndex, result) {
+    const currentStep = response.steps[stepIndex];
+    let counter = `STEP ${stepIndex + 1}/${response.steps.length}`;
+    let tone = null;
+    if (result !== null) {
+        counter = result.text;
+        tone = result.isAborted ? "lose" : "win";
+    }
+    showStepCard(card, { counter, title: currentStep.title, lines: [[currentStep.detail]], tone });
 }
 
 

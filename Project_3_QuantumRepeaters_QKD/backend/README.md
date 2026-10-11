@@ -17,7 +17,9 @@ No `__init__.py` files: folders are namespace packages.
 | `src/quantum_bros/backends/stim_backend.py` | `StimBackend`: seeded `stim.TableauSimulator` |
 | `src/quantum_bros/protocol/noise.py` | `NoiseModel` error probabilities, `make_uniform_noise` |
 | `src/quantum_bros/protocol/steane.py` | Verified \|0̄⟩/\|+̄⟩ encoding, logical Paulis, logical measurement and decoding |
-| `src/quantum_bros/protocol/qre_cec.py` | Qubit layout and the five QRE-CEC phases for one Alice–David pair |
+| `src/quantum_bros/protocol/repetition_code.py` | The 3-qubit repetition code Level 6 runs on: encoding, logical Paulis, decoding |
+| `src/quantum_bros/protocol/qre_cec.py` | Qubit layout (6-12-6) and the five QRE-CEC phases for one Alice–Charlie pair |
+| `src/quantum_bros/protocol/repetition_swap.py` | Level 6's swap tutorial: QRECEC_3QubitRepetition.ipynb Steps 1-11 on Stim |
 | `src/quantum_bros/protocol/network.py` | One run: backend, noise, generator, tap fraction and pair statistics |
 | `src/quantum_bros/protocol/qkd.py` | BBM92: random bases, sifting, sampled QBER check, key |
 | `src/quantum_bros/protocol/messaging.py` | Classical, encrypted and quantum (teleported) messages |

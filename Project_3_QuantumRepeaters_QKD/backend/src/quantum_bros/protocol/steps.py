@@ -4,7 +4,7 @@ Each step is {phase, title, detail}. phase is one of PHASES; the page maps it to
 detail come from what the simulation actually ran.
 """
 
-from quantum_bros.protocol import messaging, qkd, qre_cec
+from quantum_bros.protocol import messaging, qkd, qre_cec, repetition_code
 from quantum_bros.protocol.network import PairStatistics
 
 PHASES = [
@@ -65,17 +65,17 @@ def make_step(phase: str, title: str, detail: str) -> dict:
 def build_pair_steps(statistics: PairStatistics) -> list[dict]:
     """The five QRE-CEC phases, summed over every logical pair the message used."""
     pair_count = statistics.pair_count
-    rejected_count = statistics.encoding_attempts - statistics.encoded_block_count
+    block_size = repetition_code.QUBITS_PER_BLOCK
     return [
         make_step("heralding", "Heralding: BSM nodes make physical Bell pairs", describe_heralding(statistics)),
         make_step(
             "encoding",
-            "Encoding: every tower prepares verified Steane blocks",
-            f"{statistics.encoded_block_count} blocks (|+̄⟩ left, |0̄⟩ right); the Z̄ check rejected {rejected_count}.",
+            f"Encoding: every tower writes {block_size}-qubit repetition blocks",
+            f"{statistics.encoded_block_count} blocks: |+̄⟩ = |000⟩ + |111⟩ left of each link, |0̄⟩ = |000⟩ right.",
         ),
         make_step(
             "teleported_cnot",
-            "Teleported CNOT: 7 Bell pairs → one logical Φ̄⁺ per link",
+            f"Teleported CNOT: {block_size} Bell pairs → one logical Φ̄⁺ per link",
             f"{pair_count * qre_cec.LINK_COUNT} transversal CNOTs teleported across the links.",
         ),
         make_step(
@@ -106,7 +106,8 @@ def describe_heralding(statistics: PairStatistics) -> str:
         attempt_texts.append(f"{LINK_NAMES[link]} {statistics.heralding_attempts[link]}")
     toy_percent = round(qre_cec.TOY_HERALD_SUCCESS_PROBABILITY * PERCENT)
     return (
-        f"{statistics.pair_count} logical pairs × 7 photons per link. Attempts: {', '.join(attempt_texts)} "
+        f"{statistics.pair_count} logical pairs × {repetition_code.QUBITS_PER_BLOCK} photons per link. "
+        f"Attempts: {', '.join(attempt_texts)} "
         f"(toy success {toy_percent}%). Turtles touched {statistics.tapped_pair_count} pairs."
     )
 
@@ -122,7 +123,7 @@ def build_qkd_steps(qkd_report: qkd.QkdReport) -> list[dict]:
     return [
         make_step(
             "qkd_measure",
-            "BBM92: Alice and David measure in random bases",
+            "BBM92: Alice and Charlie measure in random bases",
             f"{qkd_report.round_count} rounds, each one logical pair measured in Z̄ or X̄ on both ends.",
         ),
         make_step(

@@ -1,6 +1,6 @@
 """BBM92 key distribution on logical Bell pairs delivered by QRE-CEC.
 
-Each round Alice and David measure their halves of one Φ̄⁺ in a random basis, Z or X. Rounds where the bases match
+Each round Alice and Charlie measure their halves of one Φ̄⁺ in a random basis, Z or X. Rounds where the bases match
 (sifting) give correlated bits. A random sample of those is compared in public to estimate the error rate (QBER);
 too high an error rate means someone tampered with the photons, and the key is thrown away.
 
@@ -11,7 +11,7 @@ still differ between the two sides instead of hiding them.
 import math
 from dataclasses import dataclass
 
-from quantum_bros.protocol import steane
+from quantum_bros.protocol import repetition_code
 from quantum_bros.protocol.network import QuantumNetwork
 
 # Share of sifted bits read out loud for the error check; they leave the key.
@@ -113,13 +113,13 @@ def measure_rounds(network: QuantumNetwork, target_sifted_count: int) -> list[Qk
 
 
 def measure_one_round(network: QuantumNetwork) -> QkdRound:
-    """Distribute one logical pair; Alice and David each pick a random basis and measure their block."""
+    """Distribute one logical pair; Alice and Charlie each pick a random basis and measure their block."""
     pair_report = network.distribute_pair()
-    alice_basis = network.rng.choice(steane.BASES)
-    david_basis = network.rng.choice(steane.BASES)
+    alice_basis = network.rng.choice(repetition_code.BASES)
+    david_basis = network.rng.choice(repetition_code.BASES)
     layout = network.layout
-    alice_result = steane.measure_logical(network.backend, layout.alice_block, alice_basis, network.noise)
-    david_result = steane.measure_logical(network.backend, layout.david_block, david_basis, network.noise)
+    alice_result = repetition_code.measure_logical(network.backend, layout.alice_block, alice_basis, network.noise)
+    david_result = repetition_code.measure_logical(network.backend, layout.david_block, david_basis, network.noise)
     return QkdRound(
         alice_basis=alice_basis,
         david_basis=david_basis,

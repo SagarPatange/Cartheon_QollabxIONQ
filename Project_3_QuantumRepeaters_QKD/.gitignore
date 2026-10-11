@@ -30,3 +30,7 @@ node_modules/
 
 # Agent screenshots while checking the UI
 .screenshots/
+
+# Qollab build output
+qollab_build/
+qollab_build_test/

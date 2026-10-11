@@ -155,7 +155,8 @@ export function readSeed(seedInput, defaultSeed) {
  *
  * @param {HTMLInputElement} slider
  * @param {HTMLElement} label - shows the value as a percent.
- * @param {{max: number, step: number, value: number}} range
+ * @param {{max: number, step: number, value: number, decimalCount?: number}} range - decimalCount is how many
+ *     decimals the label shows (1 by default).
  */
 export function setUpPercentSlider(slider, label, range) {
     slider.min = "0";
@@ -164,7 +165,7 @@ export function setUpPercentSlider(slider, label, range) {
     slider.value = String(range.value);
 
     function showSliderValue() {
-        label.textContent = formatPercent(Number(slider.value));
+        label.textContent = formatPercent(Number(slider.value), range.decimalCount);
     }
     slider.addEventListener("input", showSliderValue);
     showSliderValue();
@@ -172,8 +173,8 @@ export function setUpPercentSlider(slider, label, range) {
 
 
 /**
- * 0.034 → "3.4%".
+ * 0.034 → "3.4%"; with decimalCount 2, 0.0025 → "0.25%".
  */
-export function formatPercent(probability) {
-    return `${(probability * PERCENT).toFixed(1)}%`;
+export function formatPercent(probability, decimalCount = 1) {
+    return `${(probability * PERCENT).toFixed(decimalCount)}%`;
 }

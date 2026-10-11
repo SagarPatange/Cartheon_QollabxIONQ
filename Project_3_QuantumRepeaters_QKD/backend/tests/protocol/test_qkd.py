@@ -36,8 +36,8 @@ def test_turtles_tapping_every_photon_push_qber_past_the_threshold_and_abort():
     assert aborted_count == SEED_COUNT
 
 
-def test_the_steane_code_absorbs_rare_taps_at_low_noise():
-    # Loose on purpose: a block survives one tapped photon, so a light tap rate should mostly pass the check.
+def test_rare_taps_at_low_noise_mostly_pass_the_check():
+    # Loose on purpose: a light tap rate touches few pairs, so the error rate should mostly stay under the bound.
     passed_count = 0
     for seed in range(SEED_COUNT):
         report = qkd.run_qkd(make_network(seed, make_uniform_noise(0.0005), 0.02), KEY_BITS)

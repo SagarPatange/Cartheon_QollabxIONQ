@@ -50,6 +50,38 @@ shows, for each load, what was decided and why. **Compare objectives** runs the 
 (`GET /api/compare?start=…&seed=…`) and marks the best value in each column. SciPy is bundled on Qollab; OR-Tools is not. Design and defaults:
 `docs/superpowers/specs/2026-10-10-dispatch-simulator-design.md`.
 
+## Bounded quantum experiment (QAOA on a contested dispatch decision)
+
+Following Project 1's QAOA study, `freight_sim/quantum/` takes a small, contested piece of one real decision epoch
+(a few loads competing for the same trucks, at most 8 load–truck pairs, one qubit each) and builds an exact table of
+every possible assignment: valid ones score the objective's total, ones that use a truck or a load twice get a
+penalty. The table's best assignment is checked against the MILP. QAOA (exact diagonal cost, RX mixers) is tuned
+locally on a statevector, then sampled with uniform sampling in **one backend job** (a joint circuit on disjoint
+qubit blocks); one-bit search gets the same candidate budget classically.
+
+Week of 2022-03-07, Monday 09:00 (157 open loads, 92 free trucks): three loads compete for one truck, 8 pairs, 256
+assignments of which 39 are valid. 1,000 shots each on a noiseless simulator (depth 1):
+
+| Method | Valid samples | Optimal samples | Best found |
+|---|---|---|---|
+| Uniform sampling | 14.5% | 1.4% | optimal |
+| One-bit search | 17.4% | 1.2% | optimal |
+| QAOA | 42.2% | 4.8% | optimal |
+
+QAOA concentrates samples on valid and optimal assignments, but building the table takes 2⁸ classical evaluations and
+tuning is classical too, so this is no speedup; the exact-diagonal circuit is also deep (thousands of CNOTs at depth
+2), which noisy hardware would not tolerate. One run is not statistical proof.
+
+```sh
+python tools/build_quantum_oracle.py --start 2022-03-07 --objective profit   # → data/quantum/freight_oracle.json
+python tools/build_qollab_quantum.py                                          # → build/qollab-quantum.zip
+```
+
+The ZIP holds `main.py`, the two quantum modules and the table. In a Qollab project use **Code → Files → Browse**,
+pick the ZIP, choose **Unpack**, and check that `main.py` sits at the root next to `data/` and `freight_sim/`.
+Qollab supplies `backend` and calls `main()` with the Run settings (shots, seed, depth, restarts, maxiter). The
+quantum tests (`tests/freight_sim/test_quantum_qaoa.py`) skip where Qiskit is not installed.
+
 ## Rebuild the data
 
 ```sh
@@ -60,7 +92,9 @@ python tools/build_lane_routes.py                                              #
 
 ## Disclosures
 
-**Prior work:** none. All code was written during the build window (first code commit Oct 10, 2026).
+**Prior work:** none. All code was written during the build window (first code commit Oct 10, 2026). The QAOA
+circuit, tuning, scoring, one-bit search and joint one-job comparison in `freight_sim/quantum/` are ported from our
+team's Project 1 (`Project_1_EnergyGridOptimization/quantum/`, same repository, MIT) and adapted to dispatch.
 
 **Open data used:**
 
@@ -72,7 +106,8 @@ python tools/build_lane_routes.py                                              #
 - **Road paths and drive distances** (`data/osm_routes/`, **ODbL, not MIT**) and the map tiles: © OpenStreetMap
   contributors, routed with the public OSRM demo server. See `data/osm_routes/NOTICE.md`.
 
-**Libraries:** SciPy 1.14.1 (BSD-3-Clause) for the MILP policy (HiGHS solver), Leaflet 1.9.4 (BSD-2-Clause) from
-the jsDelivr CDN for the map, and pytest and Ruff (MIT) for tests and linting.
+**Libraries:** SciPy 1.14.1 (BSD-3-Clause) for the MILP policy (HiGHS solver) and QAOA tuning (COBYLA), Qiskit
+2.5.2 (Apache-2.0) and NumPy (BSD-3-Clause) for the quantum experiment, Leaflet 1.9.4 (BSD-2-Clause) from the jsDelivr
+CDN for the map, and pytest and Ruff (MIT) for tests and linting.
 
 **AI tools:** Claude Code (Anthropic) was used to research datasets, write code and tests, and draft documentation.

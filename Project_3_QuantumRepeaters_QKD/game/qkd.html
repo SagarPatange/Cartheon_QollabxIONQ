@@ -1,8 +1,9 @@
 <!doctype html>
 <!--
-  Level 6 (map id "level3"): Mario and Peach send messages across the Alice–Bob–David repeater
-  chain while cloud turtles try to eavesdrop. The simulation runs in the Python backend: run `npm run backend` and open
-  http://localhost:8001/qkd.html (or http://localhost:8001 for the title screen).
+  Level 6 (map id "level3"): first a swap tutorial, QRECEC_3QubitRepetition.ipynb's 11 steps with the 3-qubit
+  repetition code (one Space press per step, with lesson notes between them), then Mario and Peach send messages across
+  the Alice–Bob–Charlie repeater chain while cloud turtles try to eavesdrop. The simulation runs in the Python backend:
+  run `npm run backend` and open http://localhost:8001/qkd.html (or http://localhost:8001 for the title screen).
 -->
 <html lang="en">
 <head>
@@ -14,9 +15,11 @@
     <link rel="stylesheet" href="styles/world.css">
     <link rel="stylesheet" href="styles/towers.css">
     <link rel="stylesheet" href="styles/qkd.css">
+    <link rel="stylesheet" href="styles/qubit_tower.css">
+    <link rel="stylesheet" href="styles/swap_tutorial.css">
     <script type="module" src="src/qkd/qkd_main.js"></script>
 </head>
-<body class="level-page">
+<body class="level-page qkd-page">
     <header class="hud">
         <div class="hud-item"><span class="hud-label">KEY</span><span id="hud-key">000</span></div>
         <div class="hud-item"><span class="hud-label">WORLD</span><span>1-6</span></div>
@@ -31,7 +34,19 @@
         <div class="cloud cloud-three"></div>
         <div class="hill hill-left"></div>
         <div class="hill hill-right"></div>
-        <p id="status-banner" class="sky-status" aria-live="polite">Share a quantum key. Send a secret message!</p>
+        <div class="sky-panel">
+            <div class="sky-slot">
+                <p id="status-banner" class="sky-status" aria-live="polite">Watch Bob link two towers, then send Peach a secret!</p>
+                <section id="step-card" class="step-card" aria-live="polite" aria-labelledby="step-card-title">
+                    <header class="step-card-heading">
+                        <p id="step-card-counter" class="step-card-counter"></p>
+                        <h2 id="step-card-title" class="step-card-title"></h2>
+                    </header>
+                    <div id="step-card-body" class="step-card-body"></div>
+                </section>
+            </div>
+            <p id="key-hints" class="key-hints" aria-live="polite"></p>
+        </div>
         <div class="track-scroller">
             <div id="track" class="track qkd-track"></div>
         </div>
@@ -63,7 +78,7 @@
                 <input id="tap-slider" type="range">
             </label>
             <label class="control-field">
-                Physical error p <span id="error-label">0.1%</span>
+                Physical error p <span id="error-label">0.10%</span>
                 <input id="error-slider" type="range">
             </label>
             <label class="control-field">

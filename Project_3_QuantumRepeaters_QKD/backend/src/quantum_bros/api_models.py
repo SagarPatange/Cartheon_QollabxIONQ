@@ -237,7 +237,7 @@ class SwapModel(BaseModel):
 
 
 class CorrelatorsModel(BaseModel):
-    """⟨X̄X̄⟩, ⟨ȲȲ⟩, ⟨Z̄Z̄⟩ on Alice's and David's blocks and the fidelity with Φ̄⁺."""
+    """⟨X̄X̄⟩, ⟨ȲȲ⟩, ⟨Z̄Z̄⟩ on Alice's and Charlie's blocks and the fidelity with Φ̄⁺."""
 
     xx: int
     yy: int

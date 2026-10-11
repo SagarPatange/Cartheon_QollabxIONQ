@@ -1,10 +1,12 @@
 /**
- * Talk to the Python simulator: build the POST /api/send body and return the parsed response.
+ * Talk to the Python simulator: build the POST /api/send body and return the parsed response, and fetch a run of the
+ * swap tutorial (POST /api/repetition-swap).
  *
  * The page must be served by the backend (npm run backend) for the relative API path to work.
  */
 
-import { MAX_MESSAGE_BYTES, SEND_API_PATH } from "./qkd_constants.js";
+import { MAX_MESSAGE_BYTES, SEND_API_PATH, SWAP_TUTORIAL_API_PATH } from "./qkd_constants.js";
+import { callSimulator } from "../simulator_bridge.js";
 
 
 /**
@@ -42,16 +44,37 @@ export function buildSendRequest(action, text, settings) {
  * @returns {Promise<object>} the SendResponse JSON.
  */
 export async function sendMessage(requestBody) {
-    const response = await fetch(SEND_API_PATH, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody),
+    return postJson(SEND_API_PATH, requestBody, "the message");
+}
+
+
+/**
+ * Run the swap tutorial's chain (QRECEC_3QubitRepetition.ipynb, Steps 1-11) on the simulator.
+ *
+ * @param {number | null} seed - null lets the server pick one.
+ * @returns {Promise<object>} the RepetitionSwapResponse JSON.
+ */
+export async function requestSwapTutorial(seed) {
+    return postJson(SWAP_TUTORIAL_API_PATH, { seed }, "the tutorial run");
+}
+
+
+/**
+ * POST a JSON body and return the JSON answer. A non-2xx answer becomes an Error carrying its detail.
+ *
+ * @param {string} apiPath
+ * @param {object} requestBody
+ * @param {string} whatWasSent - for the error, e.g. "the message".
+ * @returns {Promise<object>}
+ */
+async function postJson(apiPath, requestBody, whatWasSent) {
+    return callSimulator(apiPath, requestBody, async (response) => {
+        const responseBody = await response.json();
+        if (!response.ok) {
+            throw new Error(`The simulator refused ${whatWasSent} (${response.status}): ${describeError(responseBody)}`);
+        }
+        return responseBody;
     });
-    const responseBody = await response.json();
-    if (!response.ok) {
-        throw new Error(`The simulator refused the message (${response.status}): ${describeError(responseBody)}`);
-    }
-    return responseBody;
 }
 
 
