@@ -42,13 +42,17 @@ class DispatchRequestHandler(SimpleHTTPRequestHandler):
             self.send_json(400, {"error": str(error)})
             return
         if url.path == "/api/quantum":
-            from qiskit.providers.basic_provider import BasicSimulator
-            from qollab_app.bridge import prepare_oracle
-            from freight_sim.quantum.comparison import run_comparison
             try:
+                from qiskit.providers.basic_provider import BasicSimulator
+                from qollab_app.bridge import prepare_oracle
+                from freight_sim.quantum.comparison import run_comparison
                 oracle = prepare_oracle(start_date, seed, objective_key)
                 result = run_comparison(BasicSimulator(), oracle, shots=256, seed=2026, depth=1, restarts=1, maxiter=40)
                 self.send_json(200, {"oracle": oracle, "comparison": result})
+            except ImportError as error:
+                self.send_json(500, {"error": "Quantum dependencies are unavailable in the server's Python environment. "
+                                "Install requirements-local.txt with that Python, then restart tools/serve.py. "
+                                f"Details: {error}"})
             except Exception as error:
                 self.send_json(500, {"error": str(error)})
             return
