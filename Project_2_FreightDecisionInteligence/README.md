@@ -1,8 +1,8 @@
 # Freight Decision Intelligence
 
-A truckload dispatch simulator: loads are tendered over time across US lanes, and different dispatch policies,
-classical and quantum, decide which loads to accept and which truck hauls each. Every policy runs on the same
-stream of loads and is scored the same way.
+A truckload dispatch simulator: loads are tendered over time across US lanes, and classical dispatch policies
+decide which loads to accept and which truck hauls each. A separate Qiskit QAOA experiment compares three sampling
+methods on a small contested assignment from the selected week's MILP run; it does not dispatch the entire fleet.
 
 This effort is supported by Qollab & IonQ.
 
@@ -14,6 +14,34 @@ made to them are in `data/kaggle_logistics/README.md`; what the data contains an
 `docs/data_profile.md`.
 
 ## Run the dispatch simulator
+
+### Qollab visual submission
+
+Build with `python tools/build_qollab_submission.py`, then upload and unpack **build/qollab-submission.zip** in
+[the Qollab trucking project](https://qollab.xyz/u/ytazoui/trucking). Check that `index.html`, `main.js` and `main.css`
+are at the root. Select the **free built-in BasicSimulator** and press **Run**. The preview displays the full
+interface, computes the default week, and automatically runs one quantum comparison (256 candidates per method,
+depth 1, one restart, 40 tuning evaluations). The self-contained map uses bundled city coordinates and OSRM road
+paths without external tiles. All 2022–2024 weeks remain selectable for classical simulation.
+
+Only one quantum backend job is submitted per Qollab Run, using at most 16 qubits. Classical controls remain usable
+afterward; quantum results are labeled with their source week and must not be attributed to a different week.
+See [the project card](docs/QOLLAB_PROJECT_CARD.md) for judge-facing usage, result interpretation, disclosures and
+the video-link placeholder. On October 11, 2026, the owner confirmed that the uploaded Qollab version displays
+the map and all three comparison cards after Run on the free built-in simulator.
+
+### Local application
+
+Use Python 3.12 and a project-local environment. On Windows:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements-local.txt
+.\.venv\Scripts\python.exe tools\serve.py
+```
+
+Open http://127.0.0.1:8022/. **Run quantum comparison** uses a free local BasicSimulator and the selected week's
+contested assignment. The local application permits repeated comparisons; Qollab permits one job per Run.
 
 ```sh
 npm run serve        # starts tools/serve.py; open http://localhost:8022, pick a month and week, press "Simulate week"
@@ -110,4 +138,4 @@ team's Project 1 (`Project_1_EnergyGridOptimization/quantum/`, same repository, 
 2.5.2 (Apache-2.0) and NumPy (BSD-3-Clause) for the quantum experiment, Leaflet 1.9.4 (BSD-2-Clause) from the jsDelivr
 CDN for the map, and pytest and Ruff (MIT) for tests and linting.
 
-**AI tools:** Claude Code (Anthropic) was used to research datasets, write code and tests, and draft documentation.
+**AI tools:** Claude Code (Anthropic) and OpenAI Codex assisted with research, code, tests, browser packaging and documentation.

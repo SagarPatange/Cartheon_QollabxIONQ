@@ -33,13 +33,24 @@ class DispatchRequestHandler(SimpleHTTPRequestHandler):
 
     def do_GET(self) -> None:
         url = urlsplit(self.path)
-        if url.path not in (SIMULATE_PATH, COMPARE_PATH):
+        if url.path not in (SIMULATE_PATH, COMPARE_PATH, "/api/quantum"):
             super().do_GET()
             return
         try:
             start_date, policy_name, objective_key, seed = parse_simulation_request(url.query)
         except ValueError as error:
             self.send_json(400, {"error": str(error)})
+            return
+        if url.path == "/api/quantum":
+            from qiskit.providers.basic_provider import BasicSimulator
+            from qollab_app.bridge import prepare_oracle
+            from freight_sim.quantum.comparison import run_comparison
+            try:
+                oracle = prepare_oracle(start_date, seed, objective_key)
+                result = run_comparison(BasicSimulator(), oracle, shots=256, seed=2026, depth=1, restarts=1, maxiter=40)
+                self.send_json(200, {"oracle": oracle, "comparison": result})
+            except Exception as error:
+                self.send_json(500, {"error": str(error)})
             return
         if url.path == COMPARE_PATH:
             self.send_json(200, {"start_date": start_date, "seed": seed, "runs": compare_objectives(start_date, seed)})

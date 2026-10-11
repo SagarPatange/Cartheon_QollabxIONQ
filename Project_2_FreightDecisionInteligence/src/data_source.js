@@ -44,3 +44,9 @@ export function runSimulation(startDate, policyName, objectiveKey, seed) {
     });
     return fetchJson(`/api/simulate?${query}`);
 }
+
+/** Local free simulator; the upload builder replaces this adapter with Qollab's selected backend. */
+export function runQuantumComparison(startDate, seed, objective) {
+    const query = new URLSearchParams({start: startDate, seed: String(seed), objective});
+    return fetchJson(`/api/quantum?${query}`);
+}

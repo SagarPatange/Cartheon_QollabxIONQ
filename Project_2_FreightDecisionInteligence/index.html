@@ -105,6 +105,17 @@
         </aside>
     </main>
 
+    <section class="quantum-panel" aria-labelledby="quantum-heading">
+        <div class="section-header">
+            <h2 id="quantum-heading">Classical / QAOA comparison</h2>
+            <button id="quantum-button" type="button" class="primary-button">Run quantum comparison</button>
+        </div>
+        <p id="quantum-status" aria-live="polite"></p>
+        <p id="quantum-context">A small load–truck assignment from the selected week's MILP dispatch.</p>
+        <div id="quantum-cards" class="quantum-cards"></div>
+        <details><summary>Settings, timing &amp; scope</summary><p id="quantum-details">Each method uses the same candidate table. QAOA is a bounded sampling experiment, not a quantum fleet policy.</p></details>
+    </section>
+
     <section class="epoch-card" aria-labelledby="epoch-heading">
         <div class="epoch">
             <div class="epoch-header">

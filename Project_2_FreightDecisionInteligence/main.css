@@ -986,3 +986,11 @@ input[type="date"] {
 *::-webkit-scrollbar {
     display: none;
 }
+/* The quantum comparison remains readable and scrolls in narrow Qollab previews. */
+.quantum-panel { margin: 20px; padding: 20px; border: 1px solid #555; border-radius: 10px; }
+.quantum-cards { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; }
+.quantum-method { padding: 18px; background: #171722; border: 1px solid #666; border-radius: 8px; }
+.quantum-hit { display: block; font-size: 24px; color: #c1a7ff; margin: 16px 0; }
+.assignment-line { font-family: monospace; overflow-wrap: anywhere; }
+.quantum-panel details { margin-top: 18px; line-height: 1.6; }
+@media(max-width:850px) { .quantum-cards { grid-template-columns: 1fr; } }

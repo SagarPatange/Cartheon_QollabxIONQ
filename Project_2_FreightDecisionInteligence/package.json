@@ -4,6 +4,6 @@
   "type": "module",
   "scripts": {
     "test": "node --test tests/web/*.test.js",
-    "serve": "../.venv-project2/bin/python tools/serve.py"
+    "serve": "python tools/serve.py"
   }
 }

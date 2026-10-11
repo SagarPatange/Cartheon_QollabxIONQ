@@ -6,7 +6,8 @@
 
 import { CompareView } from "./src/compare_view.js";
 import { EpochView } from "./src/epoch_view.js";
-import { compareObjectives, loadCities, loadLanes, loadRoutePaths, runSimulation } from "./src/data_source.js";
+import { compareObjectives, loadCities, loadLanes, loadRoutePaths, runSimulation, runQuantumComparison } from "./src/data_source.js";
+import { showQuantum } from "./src/quantum_view.js";
 import { PanelView } from "./src/panel_view.js";
 import { advanceTime } from "./src/playback.js";
 import { metricsUntil } from "./src/run_metrics.js";
@@ -103,6 +104,22 @@ function showObjectiveForPolicy() {
 }
 
 function connectControls(views) {
+    const quantumButton = document.getElementById('quantum-button');
+    quantumButton.addEventListener('click', async () => {
+        const replay = playback.replay;
+        if (!replay) return;
+        quantumButton.disabled = true;
+        document.getElementById('quantum-status').textContent = 'Preparing freight assignment and tuning QAOA…';
+        try {
+            const result = await runQuantumComparison(replay.start_date, replay.seed, replay.objective);
+            showQuantum(result);
+            console.log(JSON.stringify(result));
+        } catch (error) {
+            document.getElementById('quantum-status').textContent = `Comparison failed: ${error.message}`;
+        } finally {
+            quantumButton.disabled = false; // LOCAL_QUANTUM_REPEAT
+        }
+    });
     elements.monthSelect.addEventListener("change", fillWeekChoices);
     elements.policySelect.addEventListener("change", showObjectiveForPolicy);
     showObjectiveForPolicy();
@@ -132,6 +149,9 @@ async function simulateWeek(views) {
             weekStart, elements.policySelect.value, elements.objectiveSelect.value, Number(elements.seedInput.value),
         );
         playback.replay = replay;
+        document.getElementById('quantum-context').textContent = 'Run the comparison for this week; results describe one contested MILP decision, not the entire weekly policy.';
+        document.getElementById('quantum-cards').replaceChildren();
+        document.getElementById('quantum-status').textContent = '';
         playback.minute = 0;
         elements.timeSlider.max = String(replay.days * MINUTES_PER_DAY);
         views.mapView.clearTrucks();
