@@ -280,6 +280,17 @@
 
 /* ---------- Settings ---------- */
 
+/* The page's heading, for screen readers and the heading order; the scene itself is the visible title. */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
 /* 0.01% steps up to 2%: a longer track so each step is about a pixel wide. */
 #error-slider {
     width: 220px;

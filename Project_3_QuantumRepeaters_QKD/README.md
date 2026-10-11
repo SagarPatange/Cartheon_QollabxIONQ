@@ -365,7 +365,8 @@ they hit, the decoder's fix turns the slot green, and the last step reads the fi
 Then type a message and send it classically (Q / I), encrypted with a quantum key (W / O), or as teleported qubits
 (E / P). Each step of the message plays with a card in the sky saying what happened, while the castles' slots show
 what one logical pair goes through. Turn on the cloud turtles to eavesdrop and watch the key check catch them. The
-physical error slider runs from 0 to 2 % in 0.01 % steps.
+physical error slider runs from 0 to 2 % in 0.01 % steps and starts at 0.02 %; tick **Noiseless** for an ideal
+chain (p = 0). At 0.1 % and above, a few key bits differ: the repetition code cannot fix phase flips.
 
 ### The 3-qubit repetition code
 

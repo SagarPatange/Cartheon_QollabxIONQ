@@ -29,6 +29,7 @@
     </header>
 
     <main class="world">
+        <h1 class="visually-hidden">Level 6: A secret key across a repeater chain</h1>
         <div class="cloud cloud-one"></div>
         <div class="cloud cloud-two"></div>
         <div class="cloud cloud-three"></div>
@@ -78,8 +79,12 @@
                 <input id="tap-slider" type="range">
             </label>
             <label class="control-field">
-                Physical error p <span id="error-label">0.10%</span>
+                Physical error p <span id="error-label">0.02%</span>
                 <input id="error-slider" type="range">
+            </label>
+            <label class="toggle-field">
+                <input id="noiseless-toggle" type="checkbox">
+                Noiseless (p = 0)
             </label>
             <label class="control-field">
                 Seed

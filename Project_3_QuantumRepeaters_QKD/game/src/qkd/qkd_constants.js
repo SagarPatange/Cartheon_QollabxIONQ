@@ -43,9 +43,11 @@ export const TUTORIAL_KEYS = {
 export const MAX_MESSAGE_BYTES = 24;
 
 
-// Per-gate error rate p for every error source. Above about 1% the Steane chain fails most pairs, so the slider
-// stops at 2% and moves in 0.01% steps (200 of them), where the interesting range is.
-export const DEFAULT_PHYSICAL_ERROR = 0.001;
+// Per-gate error rate p for every error source. The chain runs on the 3-qubit repetition code, which cannot fix phase
+// flips: at 0.1% about 2% of key bits differ and a short message arrives with a few wrong characters, while at 0.02%
+// it almost always arrives intact. Above about 1% most keys abort, so the slider stops at 2% and moves in 0.01% steps
+// (200 of them), where the interesting range is. The Noiseless box sets p to exactly 0.
+export const DEFAULT_PHYSICAL_ERROR = 0.0002;
 export const MAX_PHYSICAL_ERROR = 0.02;
 export const PHYSICAL_ERROR_STEP = 0.0001;
 // 0.01% steps need two decimals in the label ("0.25%").

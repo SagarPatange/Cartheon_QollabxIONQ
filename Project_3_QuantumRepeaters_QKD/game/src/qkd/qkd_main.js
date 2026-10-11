@@ -36,7 +36,9 @@ import { showStepCard } from "./step_card.js";
 import {
     createTutorial, isTutorialBusy, isTutorialFinished, loadTutorialRun, showNextPage,
 } from "./swap_tutorial_controller.js";
-import { findElementsById, playGoalIntro, readSeed, renderKeyHints, setUpPercentSlider } from "../page_helpers.js";
+import {
+    findElementsById, formatPercent, playGoalIntro, readSeed, renderKeyHints, setUpPercentSlider,
+} from "../page_helpers.js";
 
 // Until the goal has typed itself out nothing works; then the tutorial runs; then the messages.
 const INTRO_MODE = "intro";
@@ -69,6 +71,7 @@ function startQkdApp() {
         });
     }
     elements.turtleToggle.addEventListener("change", () => showTurtles(elements));
+    elements.noiselessToggle.addEventListener("change", () => showNoiseSetting(elements));
     document.addEventListener("keydown", (keyEvent) => handleKey(game, elements, keyEvent));
     showTurtles(elements);
     renderIdle(elements);
@@ -91,6 +94,7 @@ function findQkdElements() {
         tapLabel: "tap-label",
         errorSlider: "error-slider",
         errorLabel: "error-label",
+        noiselessToggle: "noiseless-toggle",
         seedInput: "seed-input",
         statusElement: "status-banner",
         keyHintsElement: "key-hints",
@@ -140,10 +144,32 @@ function readQkdSeed(elements) {
 function readSettings(elements) {
     return {
         seed: readQkdSeed(elements),
-        physicalError: Number(elements.errorSlider.value),
+        physicalError: readPhysicalError(elements),
         areTurtlesOn: elements.turtleToggle.checked,
         tapFraction: Number(elements.tapSlider.value),
     };
+}
+
+
+/**
+ * The error rate p every send uses: exactly 0 while Noiseless is ticked, otherwise the slider's value.
+ */
+function readPhysicalError(elements) {
+    if (elements.noiselessToggle.checked) {
+        return 0;
+    }
+    return Number(elements.errorSlider.value);
+}
+
+
+/**
+ * Noiseless locks the slider and says p = 0; unticking it gives the slider's value back.
+ */
+function showNoiseSetting(elements) {
+    const isNoiseless = elements.noiselessToggle.checked;
+    elements.errorSlider.disabled = isNoiseless;
+    const shownError = isNoiseless ? 0 : Number(elements.errorSlider.value);
+    elements.errorLabel.textContent = formatPercent(shownError, PHYSICAL_ERROR_DECIMALS);
 }
 
 
