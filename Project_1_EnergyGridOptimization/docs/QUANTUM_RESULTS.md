@@ -60,3 +60,10 @@ Five trials per method, 256 candidate occurrences per trial, seed2026, depth1, o
 Preparation: 0.4955 s, 16 algebraic candidate-pricing evaluations; QAOA tuning: 0.1419 s, 40 evaluations, converged=False. Preparation already enumerates all candidates; other methods do not pay QAOA tuning cost. Actual counts, source hashes, frozen dispatch, selected levels, costs, conditional prices, settings and timing are retained in ignored results/market-runs/339fb0c2de7247c5be4e7e75d1318c3a/ and results/spp-qaoa-development/spp-trial.json. These development artifacts are not committed.
 
 A first trial with an endpoint-distance selection bug was retained as spp-trial-before-ranking-fix.json; it had 13.828% QAOA hits. The corrected interval-distance rule changes selected rows and the finite table, so the final implementation was rerun once rather than choosing the better outcome from unchanged trials. The earlier synthetic Qollab $410 trial remains a separate experiment; it has not been replaced on the platform.
+
+
+## Updated actual-SPP visual Qollab package
+
+The latest qollab-upload.zip now contains root index.html/main.js/main.py, a Python runner, QAOA code, a compact actual-SPP cost/price table and visual comparison/resource inspector. No raw CSVs are included. Earlier synthetic package preserved as legacy-synthetic-upload.zip. An isolated package-directory execution verified the bundled QAOA import, one BasicSimulator backend job and all three 64-candidate totals; all selected best costs had zero gap. Real DOM rendering displayed three method cards, five resource nodes, price10.64 and correct inspector selection. No remote job was used. This is local verification only; the actual Qollab JS/Python bridge has not been run by the agent.
+
+Current-run scores are distinct from the separately labeled recorded five-trial benchmark. The full-auction price remains a classical reference, and the graph/conditional prices replay a frozen dispatch neighborhood. Full native uploads and auction solving remain local.

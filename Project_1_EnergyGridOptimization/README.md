@@ -201,3 +201,16 @@ For commitment, continue with [unit_commitment.py](optimizer/unit_commitment.py)
 OpenAI Codex assisted with research, data auditing, implementation and verification. The model uses NumPy/SciPy (BSD licenses), OSQP and Clarabel (Apache-2.0), with their own licenses. Network QPs use Clarabel; block-only network LPs use HiGHS through SciPy. The bounded experiment executes Qiskit circuits on the local BasicSimulator. The owner supplied a corrected Qollab run excerpt; its marginal scores were checked against the preserved oracle, while backend identity and joint counts remain unverified. See [quantum results](docs/QUANTUM_RESULTS.md).
 
 This effort is supported by Qollab & IonQ.
+
+
+## Updated actual-SPP Qollab upload
+
+The updated `results/quantum-export/qollab-upload.zip` contains the actual-SPP finite-table replay and a browser comparison/resource inspector. Locally verified, with one selected-backend job; one owner-run Qollab check remains. Full CSV reoptimization stays local. The earlier synthetic ZIP is preserved as `legacy-synthetic-upload.zip`.
+
+After retaining a certified July1 comparison report, rebuild with:
+
+```powershell
+.\.venv\Scripts\python.exe -m quantum.qollab_spp_export --report results/market-runs/<comparison-run-id>/report.json
+```
+
+This exporter currently verifies the source hashes against the original July1 default datasets. It does not export arbitrary uploaded days. See [PROJECT_CARD.md](docs/PROJECT_CARD.md) and the bundled README for upload/run/result interpretation instructions.

@@ -135,3 +135,8 @@ The balancing submission's interior derivative gives a conditional marginal ener
 ### Q-SPP04: local execution and provenance cache
 
 Explicit comparison runs reuse the market worker and use installed Qiskit BasicSimulator only. Settings: seed 2026, depth1, one restart, maxiter40, five trials of 256 candidates. Cache keys include dataset hashes, UTC interval, baseline run identity/awards/demand/price, encoding version and settings. Including baseline run identity conservatively prevents cross-run reuse despite numerically equal awards; repeat requests on the same baseline reuse completed results. Cache is in-process; ignored original provenance/oracle/report artifacts stay project-local.
+
+
+### Q-SPP05: browser-portable replay
+
+The updated Qollab package carries a compact 16-state numerical output table, selected/balancing resource quantities, frozen totals and source hashes from the verified original July1 run. It excludes raw SPP CSVs and source offer curves. The full-auction model price is a recorded classical reference; the selected backend newly samples a single eight-qubit circuit (uniform and QAOA disjoint four-qubit blocks), while one-bit search runs locally at the same sample budget. Previously recorded five-trial results are labeled separately from the current single backend run. Native CSV reoptimization is not bundled. The JS/Python callPromising bridge follows Qollab's official API but still requires an owner platform check. Project code MIT licensing does not relicense original SPP data.

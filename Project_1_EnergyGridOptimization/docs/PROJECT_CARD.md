@@ -27,9 +27,9 @@ A separate QAOA action builds a small neighborhood from the selected SPP hour. U
 
 ## Where each version runs
 
-**Current Qollab version:** the uploaded Python project runs a separate synthetic four-decision commitment demo with a $410 default optimum. It is not the actual-SPP comparison described above. Open the project, press Run, choose the free local BasicSimulator and use the defaults. main.py must be at the project root. This runs in Qollab without installing local software. Hardware is unnecessary.
+**Updated Qollab upload:** `results/quantum-export/qollab-upload.zip` now contains an actual-SPP four-decision visual replay: recorded full-auction model price, live QAOA/random/one-bit comparison, selectable resources and an inspector. It runs one injected-backend job on eight qubits using a precomputed 16-state table. Upload/unpack with root index.html/main.js/main.py, press Run and choose the free local BasicSimulator. The package and interface are locally verified; the platform bridge still needs one owner-run check before publication. The earlier synthetic demo is preserved separately as legacy-synthetic-upload.zip.
 
-**Full actual-SPP interface:** currently runs locally. It is not hosted inside the current Qollab project. Qollab supports custom HTML/JS interfaces with Python imports, so a browser-native port is possible, but the local HTTP server and native optimizer cannot be uploaded unchanged. Its platform run has not been verified. The video should show the full interface and clearly identify which version is running. Do not present a localhost URL as a public website.
+**Full actual-SPP interface:** the complete CSV-upload/Run Hour/Run Day optimizer still runs locally. Those native dependencies and the local HTTP server are not included in the Qollab replay. The replay uses computed experimental outputs and source hashes, not raw SPP datasets; it does not solve another uploaded operating day. Do not present a localhost URL as a public website.
 
 ## How to run it: full application
 
