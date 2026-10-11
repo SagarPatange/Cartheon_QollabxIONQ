@@ -70,20 +70,65 @@ function toHash(href) {
     return match[2] ? `#${match[1]}/${match[2]}` : `#${match[1]}`;
 }
 
+// Pages change without a reload: on Qollab a reload restarts the whole project (Python and Qiskit included), which
+// leaves the player on Qollab's loading screen. So what a page leaves running is recorded while it runs and stopped
+// before the next page starts: its keyboard and resize listeners on window and document, its intervals, its resize
+// observers and the QPU panel. Only those: other listeners (e.g. "message") and one-shot timeouts may belong to
+// Pyodide or Qollab, and a page's leftover timeouts only touch its own, already detached, elements.
+const PAGE_EVENT_TYPES = new Set(['keydown', 'keyup', 'resize']);
+const pageCleanups = [];
+let isPageRunning = false;
+
+function addPageCleanup(cleanup) {
+    if (isPageRunning) {
+        pageCleanups.push(cleanup);
+    }
+}
+
+function stopCurrentPage() {
+    isPageRunning = false;
+    for (const cleanup of pageCleanups.splice(0)) {
+        cleanup();
+    }
+}
+
+for (const target of [window, document]) {
+    const addListener = target.addEventListener.bind(target);
+    target.addEventListener = (type, listener, options) => {
+        addListener(type, listener, options);
+        if (PAGE_EVENT_TYPES.has(type)) {
+            addPageCleanup(() => target.removeEventListener(type, listener, options));
+        }
+    };
+}
+const nativeSetInterval = window.setInterval.bind(window);
+window.setInterval = (callback, delay, ...args) => {
+    const id = nativeSetInterval(callback, delay, ...args);
+    addPageCleanup(() => clearInterval(id));
+    return id;
+};
+const NativeResizeObserver = window.ResizeObserver;
+window.ResizeObserver = class extends NativeResizeObserver {
+    constructor(callback) {
+        super(callback);
+        addPageCleanup(() => this.disconnect());
+    }
+};
+
 function navigate(href) {
     const hash = toHash(String(href)) ?? String(href);
     if (location.hash === hash) {
-        location.reload();
+        showPage();
         return;
     }
     location.hash = hash;
-    // hashchange reloads the page, so each level module starts fresh.
+    // hashchange shows the new page.
 }
 
 globalThis.qollabToHash = (href) => toHash(href) ?? href;
 globalThis.qollabNavigate = navigate;
 
-window.addEventListener('hashchange', () => location.reload());
+window.addEventListener('hashchange', () => showPage());
 
 document.addEventListener('click', (event) => {
     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey) {
@@ -108,7 +153,8 @@ function readRoute() {
     return PAGES[name] ? { name, anchor } : { name: DEFAULT_PAGE, anchor: '' };
 }
 
-async function showPage() {
+function showPage() {
+    stopCurrentPage();
     const { name, anchor } = readRoute();
     const page = PAGES[name];
     globalThis.qollabAnchorHash = anchor;
@@ -116,6 +162,8 @@ async function showPage() {
     document.documentElement.lang = page.lang;
     document.body.className = page.bodyClass;
     document.getElementById('app').innerHTML = page.bodyHtml;
+    window.scrollTo(0, 0);
+    isPageRunning = true;
     for (const startPage of PAGE_STARTERS[name]) {
         startPage();
     }
@@ -154,6 +202,7 @@ function mountQpuPanel() {
     });
     panel.append(button, output);
     document.body.append(panel);
+    addPageCleanup(() => panel.remove());
 }
 
 // On Qollab the game runs in a frame, and after Run the keyboard focus can stay on Qollab's own page, so key presses
@@ -184,8 +233,9 @@ function mountFocusPrompt() {
     setTimeout(showIfUnfocused, 300);
 }
 
-showPage();
+// The focus prompt stays across pages, so it is mounted before any page runs (and records nothing to stop).
 mountFocusPrompt();
+showPage();
 """
 
 INDEX_HTML = """<!doctype html>
