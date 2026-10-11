@@ -116,6 +116,41 @@ async function showPage() {
     for (const entry of page.entries) {
         await import(entry);
     }
+    if (name === DEFAULT_PAGE) {
+        mountQpuPanel();
+    }
+}
+
+// The one experiment that runs on the backend picked in Select QPU: the 13-qubit repetition-code repeater, one job.
+function mountQpuPanel() {
+    const panel = document.createElement('aside');
+    panel.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:50;max-width:340px;padding:12px 14px;'
+        + 'background:#1d1d2b;color:#f4f4f4;border:3px solid #000;box-shadow:4px 4px 0 #000;'
+        + 'font:10px/1.7 "Press Start 2P",monospace;';
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = 'Run repeater on QPU';
+    button.style.cssText = 'font:inherit;padding:8px 10px;background:#7b4dff;color:#fff;border:2px solid #000;'
+        + 'cursor:pointer;';
+    const output = document.createElement('div');
+    output.style.marginTop = '8px';
+    output.textContent = '13 qubits, one job on your Select QPU backend.';
+    button.addEventListener('click', async () => {
+        button.disabled = true;
+        output.textContent = 'Running 1000 shots...';
+        try {
+            const result = await globalThis.qollabSimulator('/api/qpu-repeater', { shots: 1000 });
+            output.innerHTML = `Backend: ${result.backend_name}<br>`
+                + `ZZ = ${result.zz_correlation.toFixed(3)}, XX = ${result.xx_correlation.toFixed(3)}<br>`
+                + `Fidelity &ge; ${result.fidelity_lower_bound.toFixed(3)}`;
+        } catch (error) {
+            output.textContent = `Could not run: ${error.message}`;
+        }
+        button.disabled = false;
+        button.blur();
+    });
+    panel.append(button, output);
+    document.body.append(panel);
 }
 
 showPage();
@@ -345,9 +380,14 @@ def build(output_dir: Path = DEFAULT_OUTPUT_DIR, extra_head: str = "", extra_fil
     write_pages_module(output_dir)
     copy_python(output_dir)
     (output_dir / "requirements.txt").write_text("", encoding="utf-8")
+    # The project card: QOLLAB_README.md. The full tutorial goes along as GUIDE.md, without its images (not shipped).
+    card = (PROJECT_DIR / "QOLLAB_README.md").read_text(encoding="utf-8")
+    (output_dir / "README.md").write_text(card, encoding="utf-8")
     readme = (PROJECT_DIR / "README.md").read_text(encoding="utf-8")
     title, _, rest = readme.partition("\n")
-    (output_dir / "README.md").write_text(f"{title}\n\n{README_INTRO}{rest.lstrip()}", encoding="utf-8")
+    guide = f"{title}\n\n{README_INTRO}{rest.lstrip()}"
+    guide = re.sub(r"^!\[.*\]\([^)]*\)\n\n?", "", guide, flags=re.MULTILINE)
+    (output_dir / "GUIDE.md").write_text(guide, encoding="utf-8")
     for name, content in (extra_files or {}).items():
         (output_dir / name).write_text(content, encoding="utf-8")
     check_limits(output_dir)
