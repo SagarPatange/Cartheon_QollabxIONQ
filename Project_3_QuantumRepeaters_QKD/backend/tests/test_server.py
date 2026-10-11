@@ -152,3 +152,14 @@ def test_teleported_cnot_returns_four_rounds_and_repeats_with_a_seed():
 def test_the_two_new_level_pages_are_listed():
     assert "steane_block.html" in PAGE_NAMES
     assert "teleported_cnot.html" in PAGE_NAMES
+
+
+def test_a_repetition_swap_run_ends_in_the_logical_bell_pair_and_repeats_with_its_seed():
+    body = client.post("/api/repetition-swap", json={"seed": 5}).json()
+    assert len(body["links"]) == 2
+    assert body["swap"]["fixed_qubit"] == body["swap"]["flipped_qubit"]
+    assert body["after_frame"]["fidelity"] == 1
+    assert body["without_fix"]["fidelity"] == 0
+    assert client.post("/api/repetition-swap", json={"seed": 5}).json() == body
+    assert client.post("/api/repetition-swap", json={}).status_code == 200
+    assert client.post("/api/repetition-swap", json={"seed": -1}).status_code == 422

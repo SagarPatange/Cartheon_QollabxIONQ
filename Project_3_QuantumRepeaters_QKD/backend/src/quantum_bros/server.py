@@ -1,5 +1,5 @@
 """HTTP server: every level's simulator calls (POST /api/send, /api/logical-pair, /api/teleport, /api/steane-block,
-/api/steane-errors and /api/teleported-cnot), with the pages served alongside them.
+/api/steane-errors, /api/teleported-cnot and /api/repetition-swap), with the pages served alongside them.
 
 Run from backend/:  .venv/bin/python -m uvicorn quantum_bros.server:app --port 8001
 then open http://localhost:8001. Only the pages, src/ and styles/ are served from the repo root.
@@ -17,6 +17,7 @@ from quantum_bros.api_models import (
     MAX_SEED,
     LogicalPairRequest,
     LogicalPairResponse,
+    RepetitionSwapResponse,
     SeededRequest,
     SendRequest,
     SendResponse,
@@ -28,7 +29,15 @@ from quantum_bros.api_models import (
     TeleportResponse,
 )
 from quantum_bros.backends.stim_backend import StimBackend
-from quantum_bros.protocol import logical_link, messaging, steane_block, steps, teleport, teleported_cnot_lesson
+from quantum_bros.protocol import (
+    logical_link,
+    messaging,
+    repetition_swap,
+    steane_block,
+    steps,
+    teleport,
+    teleported_cnot_lesson,
+)
 from quantum_bros.protocol.network import QuantumNetwork
 from quantum_bros.protocol.noise import make_uniform_noise
 
@@ -149,6 +158,14 @@ def run_teleported_cnot(request: SeededRequest) -> TeleportedCnotResponse:
     seed = pick_seed(request.seed)
     report = teleported_cnot_lesson.run_lesson(StimBackend, random.Random(seed))
     return TeleportedCnotResponse(seed=seed, **dataclasses.asdict(report))
+
+
+@app.post("/api/repetition-swap")
+def run_repetition_swap(request: SeededRequest) -> RepetitionSwapResponse:
+    """qkd.html's swap tutorial: the 3-qubit repetition-code chain of QRECEC_3QubitRepetition.ipynb, Steps 1-11."""
+    seed = pick_seed(request.seed)
+    report = repetition_swap.run_swap_tutorial(StimBackend(seed), random.Random(seed))
+    return RepetitionSwapResponse(seed=seed, **dataclasses.asdict(report))
 
 
 def pick_seed(requested_seed: int | None) -> int:

@@ -1,6 +1,7 @@
 """Request and response shapes for POST /api/send (qkd.html), POST /api/logical-pair (level2.html), POST /api/teleport
-(teleport.html), POST /api/steane-block and /api/steane-errors (steane_block.html) and POST /api/teleported-cnot
-(teleported_cnot.html). Pydantic rejects a bad request with a 422 before any simulation."""
+(teleport.html), POST /api/steane-block and /api/steane-errors (steane_block.html), POST /api/teleported-cnot
+(teleported_cnot.html) and POST /api/repetition-swap (qkd.html's swap tutorial). Pydantic rejects a bad request with a
+422 before any simulation."""
 
 from typing import Literal
 
@@ -210,3 +211,47 @@ class TeleportedCnotResponse(BaseModel):
     classical_round: PairRoundModel
     bell_round: PairRoundModel
     block_rounds: list[BlockRoundModel]
+
+
+class SwapLinkModel(BaseModel):
+    """One link after notebook Steps 1-5: the teleported CNOT's bits and ⟨Z̄Z̄⟩, ⟨X̄X̄⟩ of its data blocks."""
+
+    m_bits: list[int]
+    n_bits: list[int]
+    zz: int
+    xx: int
+
+
+class SwapModel(BaseModel):
+    """Steps 8-9 at Bob: the flipped a2 qubit (0-2), d's X bits, a2's Z bits, the syndrome, the fix, logical bits."""
+
+    flipped_qubit: int
+    x_bits: list[int]
+    z_bits: list[int]
+    syndrome: list[int]
+    fixed_qubit: int | None
+    fixed_z_bits: list[int]
+    m_x: int
+    m_z: int
+    m_z_without_fix: int
+
+
+class CorrelatorsModel(BaseModel):
+    """⟨X̄X̄⟩, ⟨ȲȲ⟩, ⟨Z̄Z̄⟩ on Alice's and David's blocks and the fidelity with Φ̄⁺."""
+
+    xx: int
+    yy: int
+    zz: int
+    fidelity: float
+
+
+class RepetitionSwapResponse(BaseModel):
+    """qkd.html's swap tutorial (QRECEC_3QubitRepetition.ipynb): both links, the swap, and the Bell pair check
+    before the frame, after it, and as it would be without Bob's decoding; plus the seed to repeat the run."""
+
+    seed: int
+    links: list[SwapLinkModel]
+    swap: SwapModel
+    before_frame: CorrelatorsModel
+    after_frame: CorrelatorsModel
+    without_fix: CorrelatorsModel
