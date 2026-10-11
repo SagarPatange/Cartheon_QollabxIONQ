@@ -10,7 +10,7 @@
     --red: #a2372b;
     --blue: #345b70;
     --mono: Consolas,'Courier New',monospace;
-    font-family: Arial,Helvetica,sans-serif;
+    font-family: var(--mono);
     color: var(--ink);
     background: #a6a99e;
     font-synthesis: none
