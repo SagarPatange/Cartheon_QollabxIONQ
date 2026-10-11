@@ -13,6 +13,51 @@ The game is a teaching model, not a hardware-accurate repeater simulation. Level
 Pauli noise; photon loss, timing and memory decoherence are simplified. One experiment, the repetition-code repeater,
 runs as a real circuit on the backend you select in Qollab.
 
+## Why it matters
+
+A quantum internet would let two parties share a key whose secrecy rests on physics, not on how hard a math problem is.
+It needs entanglement between distant places, and that is hard to deliver. Optical fiber loses light exponentially
+with distance, and the no-cloning theorem forbids copying and amplifying a quantum signal the way a classical repeater
+does. A **quantum repeater** splits the distance into short links, makes entanglement on each link, and joins the links
+with entanglement swapping. Every step adds errors, so repeaters encode their qubits in error-correcting codes
+(QRE-CEC [1, 2]).
+
+These ideas sit behind a wall of notation. Quantum Bros turns each one into something you play: you fire the photons,
+place the encoder's CNOTs, choose the Pauli fix, and watch an eavesdropper get caught.
+
+## Data
+
+There is no external dataset. Every bit in the game comes from simulated quantum circuits, generated fresh on each
+run. The inputs that play the role of data are:
+
+| Input | Value | Source |
+| --- | --- | --- |
+| Protocol | Heralded Bell pairs → encoded blocks → encoded swap → Pauli frame → BBM92 key | QRE-CEC, our paper [1] |
+| Chain | Alice ─ Bob ─ Charlie: 2 links, 1 repeater | Kept small so the scene stays readable |
+| Code | 3-qubit repetition code on the chain; [[7,1,3]] Steane code in Levels 3–5 | [1, 4, 5] |
+| Noise | One physical error rate p for every gate and measurement, set with a slider in Level 6 (up to 0.1) | Pauli noise, as in [1] |
+| Eavesdropper | Qowser's turtles tap a chosen fraction of the photons (intercept-resend in a random basis) | BBM92 security check [8] |
+| Seeds | Every call takes a seed, so any run can be replayed exactly | |
+
+## Interface
+
+- **World map:** a Super Mario Bros. 3 style map. Walk with the arrow keys or W A S D and press Enter on a level. Toad's
+  huts explain BB84 and quantum error correction in illustrated panels.
+- **Every level** types its goal in the sky and shows, under it, the keys that work right now. Space moves on, Enter
+  confirms a choice.
+- **Level 1:** story mode. Press Space to zap the Rydberg atoms, watch the photons meet at the BSM Node, and see what
+  no click, one click and two clicks mean. The default settings cannot finish the round; the hint sends you to the
+  gear menu to tune them.
+- **Levels 2–5:** each one draws the circuit you are building. Pick a Pauli fix, place CNOTs into a 7-qubit block,
+  and follow the paper's Fig. 4 teleported CNOT, while the qubit towers show each qubit's state. In Level 2, B
+  reopens the lesson notes.
+- **Level 6:** Mario and Peach stand at the ends of a chain of telecom towers over water. A step-by-step swap tutorial
+  (Space, R for a new run, Esc to skip) comes first. Then Mario sends with **Q** (classical), **W** (one-time pad
+  with a quantum key) or **E** (teleported qubits), and Peach replies with **I / O / P**. Turtles can be switched on
+  to tap the fiber.
+- **Run repeater on QPU** (world map, bottom right): sends the 13-qubit repeater circuit to your Select QPU backend
+  and shows ⟨ZZ⟩, ⟨XX⟩ and the fidelity bound.
+
 ## What runs where on Qollab
 
 | Part | Runs on | Qubits |
@@ -78,6 +123,52 @@ cd backend && python3 -m venv .venv && .venv/bin/pip install -e '.[dev]' && cd .
 npm run backend          # http://localhost:8001
 python3 tools/build_qollab.py   # rebuilds this Qollab folder
 ```
+
+## Results
+
+**1. The repeater circuit under noise.** The 13-qubit circuit (3-qubit blocks) against the same chain without encoding
+(1-qubit blocks, 5 qubits). Aer, 40,000 shots each, depolarizing noise p on every CNOT, p/10 on 1-qubit gates and a
+bit-flip probability p on readout.
+
+| p | ⟨ZZ⟩ unencoded | ⟨ZZ⟩ encoded | ⟨XX⟩ unencoded | ⟨XX⟩ encoded | F ≥ unencoded | F ≥ encoded |
+| --- | --- | --- | --- | --- | --- | --- |
+| 0 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 |
+| 0.002 | 0.975 | **0.992** | **0.977** | 0.921 | **0.976** | 0.957 |
+| 0.005 | 0.940 | **0.983** | **0.941** | 0.809 | **0.941** | 0.896 |
+| 0.01 | 0.884 | **0.957** | **0.884** | 0.664 | **0.884** | 0.811 |
+| 0.02 | 0.777 | **0.895** | **0.778** | 0.443 | **0.777** | 0.669 |
+| 0.05 | 0.531 | **0.679** | **0.514** | 0.126 | **0.522** | 0.402 |
+
+The repetition code does what it promises: majority voting fixes single bit flips, so ⟨ZZ⟩ stays much closer to 1
+(error 0.008 vs 0.025 at p = 0.002). It cannot see phase flips, and three qubits collect about three times as many, so
+⟨XX⟩ falls faster and the overall fidelity is lower than without encoding. The encoded circuit also pays for 6
+controlled-H readouts instead of 2. This is why the game moves on to the Steane code, which corrects both kinds of
+error. The **Run repeater on QPU** button runs the same 13-qubit circuit on your chosen backend, so this trade-off
+can be measured on real noise.
+
+**2. The secret message (Level 6 pipeline).** Heralding → encoded swap → BBM92 → one-time pad, sending "QUANTUM!"
+(64 key bits). Stim, 40 seeds per row. The check aborts when the sampled error rate is above 11%.
+
+| p | Eavesdropper | Key bit error rate | Aborted | Message arrived exactly |
+| --- | --- | --- | --- | --- |
+| 0 | off | 0.0% | 0% | 100% |
+| 0.001 | off | 1.9% | 0% | 30% |
+| 0.005 | off | 8.6% | 25% | 0% |
+| 0.01 | off | 15.6% | 72% | 0% |
+| 0.02 | off | 24.8% | 88% | 0% |
+| 0.05 | off | 36.9% | 100% | 0% |
+| 0 | **on** | 38.3% | **100%** | 0% |
+| 0.001 | **on** | 38.9% | **100%** | 0% |
+
+- **An eavesdropper is always caught.** Measuring the pairs pushes the key error to about 38%, and every run aborts
+  before a single message bit is sent.
+- **Noise alone looks like an eavesdropper.** As p grows the key errors rise until the check aborts.
+- **The game has no key reconciliation.** At p = 0.001 the key error is only 1.9%, but one wrong bit in 64 corrupts
+  a character, so only 30% of messages arrive exactly. Real QKD adds error correction and privacy amplification
+  here; the game leaves them out so that the effect of noise stays visible.
+
+Both tables come from `tools/results_repeater_noise.py` and `tools/results_message_sweep.py`. They run the code in
+this project with fixed seeds, so every row can be reproduced.
 
 ## Verification
 
