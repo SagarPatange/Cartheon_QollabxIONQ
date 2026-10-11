@@ -20,16 +20,10 @@ const FACES: [number, string][] = [
 
 function candidates(): string[] {
   const home = os.homedir()
-  const tmpWorktree = path.join(
-    home,
-    'AppData/Local/Temp/claude/c--Users-andre-Documents-QuantumStartup-cartheon/eda44876-f315-4b2c-b890-9b16715922d0/scratchpad/cap',
-  )
   return [
     process.env.CARTHEON_FONTS,
     path.join(home, 'Documents/QuantumStartup/cartheon/packages/design-system/src/fonts'),
     path.join(home, 'Documents/QuantumStartup/cartheon/apps/portal/app/fonts'),
-    path.join(tmpWorktree, 'packages/design-system/src/fonts'),
-    path.join(tmpWorktree, 'apps/portal/app/fonts'),
   ].filter((d): d is string => !!d)
 }
 

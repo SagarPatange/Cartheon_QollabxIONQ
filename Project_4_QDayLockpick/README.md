@@ -25,7 +25,7 @@ runs the real circuit at a size the simulators accept.
 ## Disclosures
 
 - Built during the hackathon window by Team Cartheon.
-- AI tools: Claude Code (Anthropic) wrote and edited most of the code, styling and text under our direction.
+- AI coding tools were used to help write code, styling and text under our direction.
 - Libraries: React 19 (MIT), GSAP 3 (GreenSock standard licence, free), Vite (MIT), TypeScript (Apache-2.0),
   Vitest (MIT), Qiskit (Apache-2.0).
 - The controlled a^x mod 15 gates in `shor15.py` follow the Qiskit textbook construction for N = 15.

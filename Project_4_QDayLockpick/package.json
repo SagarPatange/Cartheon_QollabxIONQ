@@ -8,10 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint src",
     "preview": "vite preview",
-    "test": "vitest run",
-    "review:watch": "node tools/review/review.mjs watch",
-    "review:list": "node tools/review/review.mjs list",
-    "review:done": "node tools/review/review.mjs done"
+    "test": "vitest run"
   },
   "dependencies": {
     "gsap": "^3.12.5",

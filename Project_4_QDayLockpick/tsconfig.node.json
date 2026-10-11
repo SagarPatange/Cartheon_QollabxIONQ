@@ -21,7 +21,6 @@
   },
   "include": [
     "vite.config.ts",
-    "tools/review/vite-plugin.ts",
     "tools/cartheon-fonts.ts"
   ]
 }
