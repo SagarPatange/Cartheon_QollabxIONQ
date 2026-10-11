@@ -1,0 +1,2715 @@
+{
+  "interpretation": "Declared synthetic physical units and scaled SPP load profile; not operational SPP reconstruction.",
+  "assumptions": [
+    "P01",
+    "P05",
+    "N01",
+    "P06",
+    "P07"
+  ],
+  "source_network": "network_case9.json",
+  "load_source": "DA-MC-202607010100.csv",
+  "fixed_test_peak_mw": 200.0,
+  "actual_source_peak_mw": 49221.568,
+  "loss_model": "zero",
+  "network": {
+    "buses": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9"
+    ],
+    "branches": [
+      {
+        "name": "1-4",
+        "from_bus": "1",
+        "to_bus": "4",
+        "reactance_pu": 0.0576,
+        "limit_mw": 250.0
+      },
+      {
+        "name": "4-5",
+        "from_bus": "4",
+        "to_bus": "5",
+        "reactance_pu": 0.092,
+        "limit_mw": 50.0
+      },
+      {
+        "name": "5-6",
+        "from_bus": "5",
+        "to_bus": "6",
+        "reactance_pu": 0.17,
+        "limit_mw": 150.0
+      },
+      {
+        "name": "3-6",
+        "from_bus": "3",
+        "to_bus": "6",
+        "reactance_pu": 0.0586,
+        "limit_mw": 300.0
+      },
+      {
+        "name": "6-7",
+        "from_bus": "6",
+        "to_bus": "7",
+        "reactance_pu": 0.1008,
+        "limit_mw": 150.0
+      },
+      {
+        "name": "7-8",
+        "from_bus": "7",
+        "to_bus": "8",
+        "reactance_pu": 0.072,
+        "limit_mw": 250.0
+      },
+      {
+        "name": "8-2",
+        "from_bus": "8",
+        "to_bus": "2",
+        "reactance_pu": 0.0625,
+        "limit_mw": 250.0
+      },
+      {
+        "name": "8-9",
+        "from_bus": "8",
+        "to_bus": "9",
+        "reactance_pu": 0.161,
+        "limit_mw": 250.0
+      },
+      {
+        "name": "9-4",
+        "from_bus": "9",
+        "to_bus": "4",
+        "reactance_pu": 0.085,
+        "limit_mw": 250.0
+      }
+    ],
+    "reference": "1",
+    "base_mva": 100.0
+  },
+  "units": [
+    {
+      "unit_id": "test_base",
+      "node": "1",
+      "minimum_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "maximum_mw": [
+        90.0,
+        90.0,
+        90.0,
+        90.0,
+        90.0,
+        90.0,
+        90.0,
+        90.0,
+        90.0,
+        90.0,
+        90.0,
+        90.0,
+        90.0,
+        90.0,
+        90.0,
+        90.0,
+        90.0,
+        90.0,
+        90.0,
+        90.0,
+        90.0,
+        90.0,
+        90.0,
+        90.0
+      ],
+      "available": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "initial_dispatch_mw": 0.0,
+      "ramp_up_mw_per_hour": 15.0,
+      "ramp_down_mw_per_hour": 15.0,
+      "block_price": 10.0,
+      "commitment": {
+        "startup_cost_dollars": 600.0,
+        "no_load_dollars_per_hour": 100.0,
+        "minimum_up_hours": 3.0,
+        "minimum_down_hours": 2.0,
+        "initial_on": false,
+        "initial_status_hours": 12.0,
+        "minimum_output_mw": [
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ],
+        "startup_ramp_mw": 45.0,
+        "shutdown_ramp_mw": 45.0
+      },
+      "reserve": {
+        "zone": "north",
+        "eligible_mw": [
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0
+        ],
+        "price_dollars_per_mw_hour": [
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0
+        ],
+        "response_hours": 0.25
+      }
+    },
+    {
+      "unit_id": "test_mid",
+      "node": "3",
+      "minimum_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "maximum_mw": [
+        80.0,
+        80.0,
+        80.0,
+        80.0,
+        80.0,
+        80.0,
+        80.0,
+        80.0,
+        80.0,
+        80.0,
+        80.0,
+        80.0,
+        80.0,
+        80.0,
+        80.0,
+        80.0,
+        80.0,
+        80.0,
+        80.0,
+        80.0,
+        80.0,
+        80.0,
+        80.0,
+        80.0
+      ],
+      "available": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "initial_dispatch_mw": 0.0,
+      "ramp_up_mw_per_hour": 20.0,
+      "ramp_down_mw_per_hour": 20.0,
+      "block_price": 25.0,
+      "commitment": {
+        "startup_cost_dollars": 300.0,
+        "no_load_dollars_per_hour": 60.0,
+        "minimum_up_hours": 2.0,
+        "minimum_down_hours": 2.0,
+        "initial_on": false,
+        "initial_status_hours": 12.0,
+        "minimum_output_mw": [
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0
+        ],
+        "startup_ramp_mw": 40.0,
+        "shutdown_ramp_mw": 40.0
+      },
+      "reserve": {
+        "zone": "north",
+        "eligible_mw": [
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0,
+          15.0
+        ],
+        "price_dollars_per_mw_hour": [
+          3.0,
+          3.0,
+          3.0,
+          3.0,
+          3.0,
+          3.0,
+          3.0,
+          3.0,
+          3.0,
+          3.0,
+          3.0,
+          3.0,
+          3.0,
+          3.0,
+          3.0,
+          3.0,
+          3.0,
+          3.0,
+          3.0,
+          3.0,
+          3.0,
+          3.0,
+          3.0,
+          3.0
+        ],
+        "response_hours": 0.25
+      }
+    },
+    {
+      "unit_id": "test_peak",
+      "node": "7",
+      "minimum_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "maximum_mw": [
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0
+      ],
+      "available": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "initial_dispatch_mw": 0.0,
+      "ramp_up_mw_per_hour": 60.0,
+      "ramp_down_mw_per_hour": 60.0,
+      "block_price": 45.0,
+      "commitment": {
+        "startup_cost_dollars": 30.0,
+        "no_load_dollars_per_hour": 10.0,
+        "minimum_up_hours": 1.0,
+        "minimum_down_hours": 1.0,
+        "initial_on": false,
+        "initial_status_hours": 12.0,
+        "minimum_output_mw": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "startup_ramp_mw": 60.0,
+        "shutdown_ramp_mw": 60.0
+      },
+      "reserve": {
+        "zone": "south",
+        "eligible_mw": [
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ],
+        "price_dollars_per_mw_hour": [
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0,
+          4.0
+        ],
+        "response_hours": 0.25
+      }
+    },
+    {
+      "unit_id": "test_local",
+      "node": "9",
+      "minimum_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "maximum_mw": [
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0,
+        60.0
+      ],
+      "available": [
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "initial_dispatch_mw": 0.0,
+      "ramp_up_mw_per_hour": 60.0,
+      "ramp_down_mw_per_hour": 60.0,
+      "block_price": 80.0,
+      "commitment": {
+        "startup_cost_dollars": 10.0,
+        "no_load_dollars_per_hour": 5.0,
+        "minimum_up_hours": 1.0,
+        "minimum_down_hours": 1.0,
+        "initial_on": false,
+        "initial_status_hours": 12.0,
+        "minimum_output_mw": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "startup_ramp_mw": 60.0,
+        "shutdown_ramp_mw": 60.0
+      },
+      "reserve": {
+        "zone": "south",
+        "eligible_mw": [
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0,
+          20.0
+        ],
+        "price_dollars_per_mw_hour": [
+          6.0,
+          6.0,
+          6.0,
+          6.0,
+          6.0,
+          6.0,
+          6.0,
+          6.0,
+          6.0,
+          6.0,
+          6.0,
+          6.0,
+          6.0,
+          6.0,
+          6.0,
+          6.0,
+          6.0,
+          6.0,
+          6.0,
+          6.0,
+          6.0,
+          6.0,
+          6.0,
+          6.0
+        ],
+        "response_hours": 0.25
+      }
+    }
+  ],
+  "intervals": [
+    {
+      "end": "2026-07-01T06:00:00+00:00",
+      "duration_hours": 1.0,
+      "demand_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        43.52592981771151,
+        0.0,
+        48.36214424190167,
+        0.0,
+        60.45268030237709
+      ],
+      "submissions": [
+        {
+          "row_id": "test_base-hour-0",
+          "RCode": "1_test_base",
+          "side": 1,
+          "points": [
+            [
+              90.0,
+              10.0
+            ]
+          ],
+          "slope": false,
+          "node": "1",
+          "unit_id": "test_base",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_mid-hour-0",
+          "RCode": "1_test_mid",
+          "side": 1,
+          "points": [
+            [
+              80.0,
+              25.0
+            ]
+          ],
+          "slope": false,
+          "node": "3",
+          "unit_id": "test_mid",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_peak-hour-0",
+          "RCode": "1_test_peak",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              45.0
+            ]
+          ],
+          "slope": false,
+          "node": "7",
+          "unit_id": "test_peak",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_local-hour-0",
+          "RCode": "1_test_local",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              80.0
+            ]
+          ],
+          "slope": false,
+          "node": "9",
+          "unit_id": "test_local",
+          "type": "physical"
+        }
+      ]
+    },
+    {
+      "end": "2026-07-01T07:00:00+00:00",
+      "duration_hours": 1.0,
+      "demand_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        41.60430298708543,
+        0.0,
+        46.22700331898382,
+        0.0,
+        57.78375414872976
+      ],
+      "submissions": [
+        {
+          "row_id": "test_base-hour-1",
+          "RCode": "1_test_base",
+          "side": 1,
+          "points": [
+            [
+              90.0,
+              10.0
+            ]
+          ],
+          "slope": false,
+          "node": "1",
+          "unit_id": "test_base",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_mid-hour-1",
+          "RCode": "1_test_mid",
+          "side": 1,
+          "points": [
+            [
+              80.0,
+              25.0
+            ]
+          ],
+          "slope": false,
+          "node": "3",
+          "unit_id": "test_mid",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_peak-hour-1",
+          "RCode": "1_test_peak",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              45.0
+            ]
+          ],
+          "slope": false,
+          "node": "7",
+          "unit_id": "test_peak",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_local-hour-1",
+          "RCode": "1_test_local",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              80.0
+            ]
+          ],
+          "slope": false,
+          "node": "9",
+          "unit_id": "test_local",
+          "type": "physical"
+        }
+      ]
+    },
+    {
+      "end": "2026-07-01T08:00:00+00:00",
+      "duration_hours": 1.0,
+      "demand_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        40.3840075031452,
+        0.0,
+        44.871119447939115,
+        0.0,
+        56.08889930992389
+      ],
+      "submissions": [
+        {
+          "row_id": "test_base-hour-2",
+          "RCode": "1_test_base",
+          "side": 1,
+          "points": [
+            [
+              90.0,
+              10.0
+            ]
+          ],
+          "slope": false,
+          "node": "1",
+          "unit_id": "test_base",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_mid-hour-2",
+          "RCode": "1_test_mid",
+          "side": 1,
+          "points": [
+            [
+              80.0,
+              25.0
+            ]
+          ],
+          "slope": false,
+          "node": "3",
+          "unit_id": "test_mid",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_peak-hour-2",
+          "RCode": "1_test_peak",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              45.0
+            ]
+          ],
+          "slope": false,
+          "node": "7",
+          "unit_id": "test_peak",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_local-hour-2",
+          "RCode": "1_test_local",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              80.0
+            ]
+          ],
+          "slope": false,
+          "node": "9",
+          "unit_id": "test_local",
+          "type": "physical"
+        }
+      ]
+    },
+    {
+      "end": "2026-07-01T09:00:00+00:00",
+      "duration_hours": 1.0,
+      "demand_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        39.45253198179883,
+        0.0,
+        43.83614664644315,
+        0.0,
+        54.79518330805393
+      ],
+      "submissions": [
+        {
+          "row_id": "test_base-hour-3",
+          "RCode": "1_test_base",
+          "side": 1,
+          "points": [
+            [
+              90.0,
+              10.0
+            ]
+          ],
+          "slope": false,
+          "node": "1",
+          "unit_id": "test_base",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_mid-hour-3",
+          "RCode": "1_test_mid",
+          "side": 1,
+          "points": [
+            [
+              80.0,
+              25.0
+            ]
+          ],
+          "slope": false,
+          "node": "3",
+          "unit_id": "test_mid",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_peak-hour-3",
+          "RCode": "1_test_peak",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              45.0
+            ]
+          ],
+          "slope": false,
+          "node": "7",
+          "unit_id": "test_peak",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_local-hour-3",
+          "RCode": "1_test_local",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              80.0
+            ]
+          ],
+          "slope": false,
+          "node": "9",
+          "unit_id": "test_local",
+          "type": "physical"
+        }
+      ]
+    },
+    {
+      "end": "2026-07-01T10:00:00+00:00",
+      "duration_hours": 1.0,
+      "demand_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        38.98134480977352,
+        0.0,
+        43.3126053441928,
+        0.0,
+        54.140756680241
+      ],
+      "submissions": [
+        {
+          "row_id": "test_base-hour-4",
+          "RCode": "1_test_base",
+          "side": 1,
+          "points": [
+            [
+              90.0,
+              10.0
+            ]
+          ],
+          "slope": false,
+          "node": "1",
+          "unit_id": "test_base",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_mid-hour-4",
+          "RCode": "1_test_mid",
+          "side": 1,
+          "points": [
+            [
+              80.0,
+              25.0
+            ]
+          ],
+          "slope": false,
+          "node": "3",
+          "unit_id": "test_mid",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_peak-hour-4",
+          "RCode": "1_test_peak",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              45.0
+            ]
+          ],
+          "slope": false,
+          "node": "7",
+          "unit_id": "test_peak",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_local-hour-4",
+          "RCode": "1_test_local",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              80.0
+            ]
+          ],
+          "slope": false,
+          "node": "9",
+          "unit_id": "test_local",
+          "type": "physical"
+        }
+      ]
+    },
+    {
+      "end": "2026-07-01T11:00:00+00:00",
+      "duration_hours": 1.0,
+      "demand_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        39.39442156739095,
+        0.0,
+        43.771579519323275,
+        0.0,
+        54.71447439915409
+      ],
+      "submissions": [
+        {
+          "row_id": "test_base-hour-5",
+          "RCode": "1_test_base",
+          "side": 1,
+          "points": [
+            [
+              90.0,
+              10.0
+            ]
+          ],
+          "slope": false,
+          "node": "1",
+          "unit_id": "test_base",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_mid-hour-5",
+          "RCode": "1_test_mid",
+          "side": 1,
+          "points": [
+            [
+              80.0,
+              25.0
+            ]
+          ],
+          "slope": false,
+          "node": "3",
+          "unit_id": "test_mid",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_peak-hour-5",
+          "RCode": "1_test_peak",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              45.0
+            ]
+          ],
+          "slope": false,
+          "node": "7",
+          "unit_id": "test_peak",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_local-hour-5",
+          "RCode": "1_test_local",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              80.0
+            ]
+          ],
+          "slope": false,
+          "node": "9",
+          "unit_id": "test_local",
+          "type": "physical"
+        }
+      ]
+    },
+    {
+      "end": "2026-07-01T12:00:00+00:00",
+      "duration_hours": 1.0,
+      "demand_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        40.23902576320086,
+        0.0,
+        44.71002862577873,
+        0.0,
+        55.88753578222341
+      ],
+      "submissions": [
+        {
+          "row_id": "test_base-hour-6",
+          "RCode": "1_test_base",
+          "side": 1,
+          "points": [
+            [
+              90.0,
+              10.0
+            ]
+          ],
+          "slope": false,
+          "node": "1",
+          "unit_id": "test_base",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_mid-hour-6",
+          "RCode": "1_test_mid",
+          "side": 1,
+          "points": [
+            [
+              80.0,
+              25.0
+            ]
+          ],
+          "slope": false,
+          "node": "3",
+          "unit_id": "test_mid",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_peak-hour-6",
+          "RCode": "1_test_peak",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              45.0
+            ]
+          ],
+          "slope": false,
+          "node": "7",
+          "unit_id": "test_peak",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_local-hour-6",
+          "RCode": "1_test_local",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              80.0
+            ]
+          ],
+          "slope": false,
+          "node": "9",
+          "unit_id": "test_local",
+          "type": "physical"
+        }
+      ]
+    },
+    {
+      "end": "2026-07-01T13:00:00+00:00",
+      "duration_hours": 1.0,
+      "demand_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        41.82430990995074,
+        0.0,
+        46.47145545550082,
+        0.0,
+        58.08931931937603
+      ],
+      "submissions": [
+        {
+          "row_id": "test_base-hour-7",
+          "RCode": "1_test_base",
+          "side": 1,
+          "points": [
+            [
+              90.0,
+              10.0
+            ]
+          ],
+          "slope": false,
+          "node": "1",
+          "unit_id": "test_base",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_mid-hour-7",
+          "RCode": "1_test_mid",
+          "side": 1,
+          "points": [
+            [
+              80.0,
+              25.0
+            ]
+          ],
+          "slope": false,
+          "node": "3",
+          "unit_id": "test_mid",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_peak-hour-7",
+          "RCode": "1_test_peak",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              45.0
+            ]
+          ],
+          "slope": false,
+          "node": "7",
+          "unit_id": "test_peak",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_local-hour-7",
+          "RCode": "1_test_local",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              80.0
+            ]
+          ],
+          "slope": false,
+          "node": "9",
+          "unit_id": "test_local",
+          "type": "physical"
+        }
+      ]
+    },
+    {
+      "end": "2026-07-01T14:00:00+00:00",
+      "duration_hours": 1.0,
+      "demand_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        43.77069476070792,
+        0.0,
+        48.63410528967547,
+        0.0,
+        60.79263161209434
+      ],
+      "submissions": [
+        {
+          "row_id": "test_base-hour-8",
+          "RCode": "1_test_base",
+          "side": 1,
+          "points": [
+            [
+              90.0,
+              10.0
+            ]
+          ],
+          "slope": false,
+          "node": "1",
+          "unit_id": "test_base",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_mid-hour-8",
+          "RCode": "1_test_mid",
+          "side": 1,
+          "points": [
+            [
+              80.0,
+              25.0
+            ]
+          ],
+          "slope": false,
+          "node": "3",
+          "unit_id": "test_mid",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_peak-hour-8",
+          "RCode": "1_test_peak",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              45.0
+            ]
+          ],
+          "slope": false,
+          "node": "7",
+          "unit_id": "test_peak",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_local-hour-8",
+          "RCode": "1_test_local",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              80.0
+            ]
+          ],
+          "slope": false,
+          "node": "9",
+          "unit_id": "test_local",
+          "type": "physical"
+        }
+      ]
+    },
+    {
+      "end": "2026-07-01T15:00:00+00:00",
+      "duration_hours": 1.0,
+      "demand_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        45.86318513287276,
+        0.0,
+        50.959094592080845,
+        0.0,
+        63.698868240101056
+      ],
+      "submissions": [
+        {
+          "row_id": "test_base-hour-9",
+          "RCode": "1_test_base",
+          "side": 1,
+          "points": [
+            [
+              90.0,
+              10.0
+            ]
+          ],
+          "slope": false,
+          "node": "1",
+          "unit_id": "test_base",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_mid-hour-9",
+          "RCode": "1_test_mid",
+          "side": 1,
+          "points": [
+            [
+              80.0,
+              25.0
+            ]
+          ],
+          "slope": false,
+          "node": "3",
+          "unit_id": "test_mid",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_peak-hour-9",
+          "RCode": "1_test_peak",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              45.0
+            ]
+          ],
+          "slope": false,
+          "node": "7",
+          "unit_id": "test_peak",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_local-hour-9",
+          "RCode": "1_test_local",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              80.0
+            ]
+          ],
+          "slope": false,
+          "node": "9",
+          "unit_id": "test_local",
+          "type": "physical"
+        }
+      ]
+    },
+    {
+      "end": "2026-07-01T16:00:00+00:00",
+      "duration_hours": 1.0,
+      "demand_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        48.36627251347563,
+        0.0,
+        53.740302792750704,
+        0.0,
+        67.17537849093837
+      ],
+      "submissions": [
+        {
+          "row_id": "test_base-hour-10",
+          "RCode": "1_test_base",
+          "side": 1,
+          "points": [
+            [
+              90.0,
+              10.0
+            ]
+          ],
+          "slope": false,
+          "node": "1",
+          "unit_id": "test_base",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_mid-hour-10",
+          "RCode": "1_test_mid",
+          "side": 1,
+          "points": [
+            [
+              80.0,
+              25.0
+            ]
+          ],
+          "slope": false,
+          "node": "3",
+          "unit_id": "test_mid",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_peak-hour-10",
+          "RCode": "1_test_peak",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              45.0
+            ]
+          ],
+          "slope": false,
+          "node": "7",
+          "unit_id": "test_peak",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_local-hour-10",
+          "RCode": "1_test_local",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              80.0
+            ]
+          ],
+          "slope": false,
+          "node": "9",
+          "unit_id": "test_local",
+          "type": "physical"
+        }
+      ]
+    },
+    {
+      "end": "2026-07-01T17:00:00+00:00",
+      "duration_hours": 1.0,
+      "demand_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        50.64259054660173,
+        0.0,
+        56.26954505177971,
+        0.0,
+        70.33693131472464
+      ],
+      "submissions": [
+        {
+          "row_id": "test_base-hour-11",
+          "RCode": "1_test_base",
+          "side": 1,
+          "points": [
+            [
+              90.0,
+              10.0
+            ]
+          ],
+          "slope": false,
+          "node": "1",
+          "unit_id": "test_base",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_mid-hour-11",
+          "RCode": "1_test_mid",
+          "side": 1,
+          "points": [
+            [
+              80.0,
+              25.0
+            ]
+          ],
+          "slope": false,
+          "node": "3",
+          "unit_id": "test_mid",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_peak-hour-11",
+          "RCode": "1_test_peak",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              45.0
+            ]
+          ],
+          "slope": false,
+          "node": "7",
+          "unit_id": "test_peak",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_local-hour-11",
+          "RCode": "1_test_local",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              80.0
+            ]
+          ],
+          "slope": false,
+          "node": "9",
+          "unit_id": "test_local",
+          "type": "physical"
+        }
+      ]
+    },
+    {
+      "end": "2026-07-01T18:00:00+00:00",
+      "duration_hours": 1.0,
+      "demand_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        52.5110548518661,
+        0.0,
+        58.345616502073455,
+        0.0,
+        72.93202062759181
+      ],
+      "submissions": [
+        {
+          "row_id": "test_base-hour-12",
+          "RCode": "1_test_base",
+          "side": 1,
+          "points": [
+            [
+              90.0,
+              10.0
+            ]
+          ],
+          "slope": false,
+          "node": "1",
+          "unit_id": "test_base",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_mid-hour-12",
+          "RCode": "1_test_mid",
+          "side": 1,
+          "points": [
+            [
+              80.0,
+              25.0
+            ]
+          ],
+          "slope": false,
+          "node": "3",
+          "unit_id": "test_mid",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_peak-hour-12",
+          "RCode": "1_test_peak",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              45.0
+            ]
+          ],
+          "slope": false,
+          "node": "7",
+          "unit_id": "test_peak",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_local-hour-12",
+          "RCode": "1_test_local",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              80.0
+            ]
+          ],
+          "slope": false,
+          "node": "9",
+          "unit_id": "test_local",
+          "type": "physical"
+        }
+      ]
+    },
+    {
+      "end": "2026-07-01T19:00:00+00:00",
+      "duration_hours": 1.0,
+      "demand_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        54.27837998636231,
+        0.0,
+        60.30931109595812,
+        0.0,
+        75.38663886994765
+      ],
+      "submissions": [
+        {
+          "row_id": "test_base-hour-13",
+          "RCode": "1_test_base",
+          "side": 1,
+          "points": [
+            [
+              90.0,
+              10.0
+            ]
+          ],
+          "slope": false,
+          "node": "1",
+          "unit_id": "test_base",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_mid-hour-13",
+          "RCode": "1_test_mid",
+          "side": 1,
+          "points": [
+            [
+              80.0,
+              25.0
+            ]
+          ],
+          "slope": false,
+          "node": "3",
+          "unit_id": "test_mid",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_peak-hour-13",
+          "RCode": "1_test_peak",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              45.0
+            ]
+          ],
+          "slope": false,
+          "node": "7",
+          "unit_id": "test_peak",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_local-hour-13",
+          "RCode": "1_test_local",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              80.0
+            ]
+          ],
+          "slope": false,
+          "node": "9",
+          "unit_id": "test_local",
+          "type": "physical"
+        }
+      ]
+    },
+    {
+      "end": "2026-07-01T20:00:00+00:00",
+      "duration_hours": 1.0,
+      "demand_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        55.449662113277554,
+        0.0,
+        61.6107356814195,
+        0.0,
+        77.01341960177439
+      ],
+      "submissions": [
+        {
+          "row_id": "test_base-hour-14",
+          "RCode": "1_test_base",
+          "side": 1,
+          "points": [
+            [
+              90.0,
+              10.0
+            ]
+          ],
+          "slope": false,
+          "node": "1",
+          "unit_id": "test_base",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_mid-hour-14",
+          "RCode": "1_test_mid",
+          "side": 1,
+          "points": [
+            [
+              80.0,
+              25.0
+            ]
+          ],
+          "slope": false,
+          "node": "3",
+          "unit_id": "test_mid",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_peak-hour-14",
+          "RCode": "1_test_peak",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              45.0
+            ]
+          ],
+          "slope": false,
+          "node": "7",
+          "unit_id": "test_peak",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_local-hour-14",
+          "RCode": "1_test_local",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              80.0
+            ]
+          ],
+          "slope": false,
+          "node": "9",
+          "unit_id": "test_local",
+          "type": "physical"
+        }
+      ]
+    },
+    {
+      "end": "2026-07-01T21:00:00+00:00",
+      "duration_hours": 1.0,
+      "demand_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        56.559215203035734,
+        0.0,
+        62.84357244781749,
+        0.0,
+        78.55446555977186
+      ],
+      "submissions": [
+        {
+          "row_id": "test_base-hour-15",
+          "RCode": "1_test_base",
+          "side": 1,
+          "points": [
+            [
+              90.0,
+              10.0
+            ]
+          ],
+          "slope": false,
+          "node": "1",
+          "unit_id": "test_base",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_mid-hour-15",
+          "RCode": "1_test_mid",
+          "side": 1,
+          "points": [
+            [
+              80.0,
+              25.0
+            ]
+          ],
+          "slope": false,
+          "node": "3",
+          "unit_id": "test_mid",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_peak-hour-15",
+          "RCode": "1_test_peak",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              45.0
+            ]
+          ],
+          "slope": false,
+          "node": "7",
+          "unit_id": "test_peak",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_local-hour-15",
+          "RCode": "1_test_local",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              80.0
+            ]
+          ],
+          "slope": false,
+          "node": "9",
+          "unit_id": "test_local",
+          "type": "physical"
+        }
+      ]
+    },
+    {
+      "end": "2026-07-01T22:00:00+00:00",
+      "duration_hours": 1.0,
+      "demand_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        57.142857142857146,
+        0.0,
+        63.492063492063494,
+        0.0,
+        79.36507936507937
+      ],
+      "submissions": [
+        {
+          "row_id": "test_base-hour-16",
+          "RCode": "1_test_base",
+          "side": 1,
+          "points": [
+            [
+              90.0,
+              10.0
+            ]
+          ],
+          "slope": false,
+          "node": "1",
+          "unit_id": "test_base",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_mid-hour-16",
+          "RCode": "1_test_mid",
+          "side": 1,
+          "points": [
+            [
+              80.0,
+              25.0
+            ]
+          ],
+          "slope": false,
+          "node": "3",
+          "unit_id": "test_mid",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_peak-hour-16",
+          "RCode": "1_test_peak",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              45.0
+            ]
+          ],
+          "slope": false,
+          "node": "7",
+          "unit_id": "test_peak",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_local-hour-16",
+          "RCode": "1_test_local",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              80.0
+            ]
+          ],
+          "slope": false,
+          "node": "9",
+          "unit_id": "test_local",
+          "type": "physical"
+        }
+      ]
+    },
+    {
+      "end": "2026-07-01T23:00:00+00:00",
+      "duration_hours": 1.0,
+      "demand_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        56.99042686792446,
+        0.0,
+        63.322696519916065,
+        0.0,
+        79.1533706498951
+      ],
+      "submissions": [
+        {
+          "row_id": "test_base-hour-17",
+          "RCode": "1_test_base",
+          "side": 1,
+          "points": [
+            [
+              90.0,
+              10.0
+            ]
+          ],
+          "slope": false,
+          "node": "1",
+          "unit_id": "test_base",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_mid-hour-17",
+          "RCode": "1_test_mid",
+          "side": 1,
+          "points": [
+            [
+              80.0,
+              25.0
+            ]
+          ],
+          "slope": false,
+          "node": "3",
+          "unit_id": "test_mid",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_peak-hour-17",
+          "RCode": "1_test_peak",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              45.0
+            ]
+          ],
+          "slope": false,
+          "node": "7",
+          "unit_id": "test_peak",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_local-hour-17",
+          "RCode": "1_test_local",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              80.0
+            ]
+          ],
+          "slope": false,
+          "node": "9",
+          "unit_id": "test_local",
+          "type": "physical"
+        }
+      ]
+    },
+    {
+      "end": "2026-07-02T00:00:00+00:00",
+      "duration_hours": 1.0,
+      "demand_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        56.227735660223466,
+        0.0,
+        62.475261844692746,
+        0.0,
+        78.09407730586592
+      ],
+      "submissions": [
+        {
+          "row_id": "test_base-hour-18",
+          "RCode": "1_test_base",
+          "side": 1,
+          "points": [
+            [
+              90.0,
+              10.0
+            ]
+          ],
+          "slope": false,
+          "node": "1",
+          "unit_id": "test_base",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_mid-hour-18",
+          "RCode": "1_test_mid",
+          "side": 1,
+          "points": [
+            [
+              80.0,
+              25.0
+            ]
+          ],
+          "slope": false,
+          "node": "3",
+          "unit_id": "test_mid",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_peak-hour-18",
+          "RCode": "1_test_peak",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              45.0
+            ]
+          ],
+          "slope": false,
+          "node": "7",
+          "unit_id": "test_peak",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_local-hour-18",
+          "RCode": "1_test_local",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              80.0
+            ]
+          ],
+          "slope": false,
+          "node": "9",
+          "unit_id": "test_local",
+          "type": "physical"
+        }
+      ]
+    },
+    {
+      "end": "2026-07-02T01:00:00+00:00",
+      "duration_hours": 1.0,
+      "demand_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        55.372298814791336,
+        0.0,
+        61.52477646087927,
+        0.0,
+        76.90597057609908
+      ],
+      "submissions": [
+        {
+          "row_id": "test_base-hour-19",
+          "RCode": "1_test_base",
+          "side": 1,
+          "points": [
+            [
+              90.0,
+              10.0
+            ]
+          ],
+          "slope": false,
+          "node": "1",
+          "unit_id": "test_base",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_mid-hour-19",
+          "RCode": "1_test_mid",
+          "side": 1,
+          "points": [
+            [
+              80.0,
+              25.0
+            ]
+          ],
+          "slope": false,
+          "node": "3",
+          "unit_id": "test_mid",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_peak-hour-19",
+          "RCode": "1_test_peak",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              45.0
+            ]
+          ],
+          "slope": false,
+          "node": "7",
+          "unit_id": "test_peak",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_local-hour-19",
+          "RCode": "1_test_local",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              80.0
+            ]
+          ],
+          "slope": false,
+          "node": "9",
+          "unit_id": "test_local",
+          "type": "physical"
+        }
+      ]
+    },
+    {
+      "end": "2026-07-02T02:00:00+00:00",
+      "duration_hours": 1.0,
+      "demand_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        53.33754503716745,
+        0.0,
+        59.26393893018605,
+        0.0,
+        74.07992366273258
+      ],
+      "submissions": [
+        {
+          "row_id": "test_base-hour-20",
+          "RCode": "1_test_base",
+          "side": 1,
+          "points": [
+            [
+              90.0,
+              10.0
+            ]
+          ],
+          "slope": false,
+          "node": "1",
+          "unit_id": "test_base",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_mid-hour-20",
+          "RCode": "1_test_mid",
+          "side": 1,
+          "points": [
+            [
+              80.0,
+              25.0
+            ]
+          ],
+          "slope": false,
+          "node": "3",
+          "unit_id": "test_mid",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_peak-hour-20",
+          "RCode": "1_test_peak",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              45.0
+            ]
+          ],
+          "slope": false,
+          "node": "7",
+          "unit_id": "test_peak",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_local-hour-20",
+          "RCode": "1_test_local",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              80.0
+            ]
+          ],
+          "slope": false,
+          "node": "9",
+          "unit_id": "test_local",
+          "type": "physical"
+        }
+      ]
+    },
+    {
+      "end": "2026-07-02T03:00:00+00:00",
+      "duration_hours": 1.0,
+      "demand_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        51.53150284502459,
+        0.0,
+        57.257225383360655,
+        0.0,
+        71.57153172920081
+      ],
+      "submissions": [
+        {
+          "row_id": "test_base-hour-21",
+          "RCode": "1_test_base",
+          "side": 1,
+          "points": [
+            [
+              90.0,
+              10.0
+            ]
+          ],
+          "slope": false,
+          "node": "1",
+          "unit_id": "test_base",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_mid-hour-21",
+          "RCode": "1_test_mid",
+          "side": 1,
+          "points": [
+            [
+              80.0,
+              25.0
+            ]
+          ],
+          "slope": false,
+          "node": "3",
+          "unit_id": "test_mid",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_peak-hour-21",
+          "RCode": "1_test_peak",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              45.0
+            ]
+          ],
+          "slope": false,
+          "node": "7",
+          "unit_id": "test_peak",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_local-hour-21",
+          "RCode": "1_test_local",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              80.0
+            ]
+          ],
+          "slope": false,
+          "node": "9",
+          "unit_id": "test_local",
+          "type": "physical"
+        }
+      ]
+    },
+    {
+      "end": "2026-07-02T04:00:00+00:00",
+      "duration_hours": 1.0,
+      "demand_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        49.07341548206789,
+        0.0,
+        54.52601720229765,
+        0.0,
+        68.15752150287206
+      ],
+      "submissions": [
+        {
+          "row_id": "test_base-hour-22",
+          "RCode": "1_test_base",
+          "side": 1,
+          "points": [
+            [
+              90.0,
+              10.0
+            ]
+          ],
+          "slope": false,
+          "node": "1",
+          "unit_id": "test_base",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_mid-hour-22",
+          "RCode": "1_test_mid",
+          "side": 1,
+          "points": [
+            [
+              80.0,
+              25.0
+            ]
+          ],
+          "slope": false,
+          "node": "3",
+          "unit_id": "test_mid",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_peak-hour-22",
+          "RCode": "1_test_peak",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              45.0
+            ]
+          ],
+          "slope": false,
+          "node": "7",
+          "unit_id": "test_peak",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_local-hour-22",
+          "RCode": "1_test_local",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              80.0
+            ]
+          ],
+          "slope": false,
+          "node": "9",
+          "unit_id": "test_local",
+          "type": "physical"
+        }
+      ]
+    },
+    {
+      "end": "2026-07-02T05:00:00+00:00",
+      "duration_hours": 1.0,
+      "demand_mw": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        46.10660455653447,
+        0.0,
+        51.229560618371636,
+        0.0,
+        64.03695077296454
+      ],
+      "submissions": [
+        {
+          "row_id": "test_base-hour-23",
+          "RCode": "1_test_base",
+          "side": 1,
+          "points": [
+            [
+              90.0,
+              10.0
+            ]
+          ],
+          "slope": false,
+          "node": "1",
+          "unit_id": "test_base",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_mid-hour-23",
+          "RCode": "1_test_mid",
+          "side": 1,
+          "points": [
+            [
+              80.0,
+              25.0
+            ]
+          ],
+          "slope": false,
+          "node": "3",
+          "unit_id": "test_mid",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_peak-hour-23",
+          "RCode": "1_test_peak",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              45.0
+            ]
+          ],
+          "slope": false,
+          "node": "7",
+          "unit_id": "test_peak",
+          "type": "physical"
+        },
+        {
+          "row_id": "test_local-hour-23",
+          "RCode": "1_test_local",
+          "side": 1,
+          "points": [
+            [
+              60.0,
+              80.0
+            ]
+          ],
+          "slope": false,
+          "node": "9",
+          "unit_id": "test_local",
+          "type": "physical"
+        }
+      ]
+    }
+  ],
+  "terminal_policy": "complete_minimum_times_for_in_horizon_switches",
+  "reserve_requirements_mw": {
+    "north": [
+      5.0,
+      5.0,
+      5.0,
+      5.0,
+      5.0,
+      5.0,
+      5.0,
+      5.0,
+      5.0,
+      5.0,
+      5.0,
+      5.0,
+      5.0,
+      5.0,
+      5.0,
+      5.0,
+      5.0,
+      5.0,
+      5.0,
+      5.0,
+      5.0,
+      5.0,
+      5.0,
+      5.0
+    ],
+    "south": [
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0,
+      10.0
+    ]
+  },
+  "reserve_product": "declared upward spinning"
+}

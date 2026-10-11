@@ -7,9 +7,15 @@ This effort is supported by Qollab & IonQ.
 
 ---
 
-## Energy Grid Optimization · [Project 1](./Project_1:EnergyGridOptimization/)
+## Energy Grid Optimization · [Project 1](./Project_1_EnergyGridOptimization/)
 
-Not started yet.
+A day-ahead energy-market optimizer using public SPP offers and fixed demand, with an interactive view. It compares QAOA, classical one-bit search and random sampling on a small SPP-derived dispatch subproblem to explore optimal-solution hit rates.
+
+![SPP day-ahead energy-market interface showing optimized model price and resource dispatch](Project_1_EnergyGridOptimization/docs/images/energy-market-interface.png)
+
+![Classical random sampling, classical one-bit search and QAOA comparison on an SPP-derived dispatch subproblem](Project_1_EnergyGridOptimization/docs/images/energy-market-comparison.png)
+
+See the [Project 1 README](./Project_1_EnergyGridOptimization/README.md) for setup, usage and modeling assumptions.
 
 ## Freight Decision Intelligence · [Project 2](./Project_2:FreightDecisionInteligence/)
 

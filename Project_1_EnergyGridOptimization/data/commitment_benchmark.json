@@ -1,0 +1,182 @@
+{
+  "interpretation": "Small synthetic analytic commitment benchmark; not an SPP resource mapping or operating-day reconstruction.",
+  "assumptions": [
+    "P01",
+    "P06",
+    "P08"
+  ],
+  "network": {
+    "buses": [
+      "a",
+      "b"
+    ],
+    "branches": [
+      {
+        "name": "ab",
+        "from_bus": "a",
+        "to_bus": "b",
+        "reactance_pu": 0.1,
+        "limit_mw": 100.0
+      }
+    ],
+    "reference": "a",
+    "base_mva": 100.0
+  },
+  "units": [
+    {
+      "unit_id": "cheap",
+      "node": "a",
+      "minimum_mw": [
+        0.0,
+        0.0
+      ],
+      "maximum_mw": [
+        20.0,
+        20.0
+      ],
+      "available": [
+        true,
+        true
+      ],
+      "initial_dispatch_mw": 0.0,
+      "ramp_up_mw_per_hour": 20.0,
+      "ramp_down_mw_per_hour": 20.0,
+      "commitment": {
+        "startup_cost_dollars": 10.0,
+        "no_load_dollars_per_hour": 0.0,
+        "minimum_up_hours": 0.0,
+        "minimum_down_hours": 0.0,
+        "initial_on": false,
+        "initial_status_hours": 10.0,
+        "minimum_output_mw": [
+          0.0,
+          0.0
+        ],
+        "startup_ramp_mw": 20.0,
+        "shutdown_ramp_mw": 20.0
+      },
+      "block_price": 20.0
+    },
+    {
+      "unit_id": "local",
+      "node": "b",
+      "minimum_mw": [
+        0.0,
+        0.0
+      ],
+      "maximum_mw": [
+        20.0,
+        20.0
+      ],
+      "available": [
+        true,
+        true
+      ],
+      "initial_dispatch_mw": 0.0,
+      "ramp_up_mw_per_hour": 20.0,
+      "ramp_down_mw_per_hour": 20.0,
+      "commitment": {
+        "startup_cost_dollars": 0.0,
+        "no_load_dollars_per_hour": 0.0,
+        "minimum_up_hours": 0.0,
+        "minimum_down_hours": 0.0,
+        "initial_on": true,
+        "initial_status_hours": 10.0,
+        "minimum_output_mw": [
+          0.0,
+          0.0
+        ],
+        "startup_ramp_mw": 20.0,
+        "shutdown_ramp_mw": 20.0
+      },
+      "block_price": 50.0
+    }
+  ],
+  "intervals": [
+    {
+      "end": "2026-07-01T06:00:00+00:00",
+      "duration_hours": 1.0,
+      "demand_mw": [
+        0.0,
+        10.0
+      ],
+      "submissions": [
+        {
+          "row_id": "cheap-0",
+          "RCode": "1_cheap",
+          "side": 1,
+          "points": [
+            [
+              20.0,
+              20.0
+            ]
+          ],
+          "slope": false,
+          "node": "a",
+          "unit_id": "cheap",
+          "type": "physical"
+        },
+        {
+          "row_id": "local-0",
+          "RCode": "1_local",
+          "side": 1,
+          "points": [
+            [
+              20.0,
+              50.0
+            ]
+          ],
+          "slope": false,
+          "node": "b",
+          "unit_id": "local",
+          "type": "physical"
+        }
+      ]
+    },
+    {
+      "end": "2026-07-01T07:00:00+00:00",
+      "duration_hours": 1.0,
+      "demand_mw": [
+        0.0,
+        10.0
+      ],
+      "submissions": [
+        {
+          "row_id": "cheap-1",
+          "RCode": "1_cheap",
+          "side": 1,
+          "points": [
+            [
+              20.0,
+              20.0
+            ]
+          ],
+          "slope": false,
+          "node": "a",
+          "unit_id": "cheap",
+          "type": "physical"
+        },
+        {
+          "row_id": "local-1",
+          "RCode": "1_local",
+          "side": 1,
+          "points": [
+            [
+              20.0,
+              50.0
+            ]
+          ],
+          "slope": false,
+          "node": "b",
+          "unit_id": "local",
+          "type": "physical"
+        }
+      ]
+    }
+  ],
+  "terminal_policy": "complete_minimum_times_for_in_horizon_switches",
+  "startup_sensitivity_dollars": [
+    10.0,
+    1000.0
+  ]
+}

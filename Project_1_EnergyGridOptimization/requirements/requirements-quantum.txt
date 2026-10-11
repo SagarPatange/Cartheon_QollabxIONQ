@@ -1,0 +1,3 @@
+# Local benchmark dependency; install after requirements/requirements-local-lock.txt in the project .venv.
+# The generated Qollab ZIP has its own browser-runtime requirements.txt.
+qiskit==2.5.2
