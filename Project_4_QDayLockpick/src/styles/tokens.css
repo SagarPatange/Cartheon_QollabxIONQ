@@ -1,0 +1,102 @@
+/* Cartheon design tokens (packages/design-system on feat/neue-frutiger), dark by default like the portal.
+   Principles carried over: square corners, hairline rules, a 2px solid outline means "this one",
+   hierarchy by size and weight (muted text is the text colour on purpose), one typeface, and colour only
+   for state. Purple: selection and the primary action. Green: open, under way. Amber: waiting on you.
+   Red: failed. Everything else neutral.
+
+   The app roles at the bottom are built from these, so a theme only has to redefine the base set. */
+:root {
+  --bg: #23201d;
+  --panel: #171717;
+  --border: #302c29;
+  --chip-bg: #282522;
+  --text: #ededed;
+  --text-muted: #ededed;
+  --accent: #955ff0;
+  --accent-soft: #17122f;
+  --error: #da5151;
+  --on-fill: #171717;
+  --moving: #7ee7a9;
+  --waiting: #eab154;
+  --warning-fg: #ffd691;
+  --warning-bg: #8d6900;
+  --kind-recover: #faa13c;
+  --kind-delivery: #70f2c6;
+  --kind-direct: #5888ff;
+  --kind-transfer: #7f8792;
+  --kind-import: #6bb0f5;
+  --kind-export: #955ff0;
+  color-scheme: dark;
+
+  --font: 'Neue Frutiger', 'Source Sans 3', system-ui, sans-serif;
+  --tracking: -0.01em;
+  --radius: 0px;
+  --outline: 2px;
+
+  /* app roles */
+  --muted: var(--text-muted);
+  --rail: color-mix(in srgb, var(--text) 50%, transparent);
+  --accent-2: color-mix(in srgb, var(--accent) 72%, var(--text));
+  --metal: var(--kind-transfer);
+  --pin: color-mix(in srgb, var(--text) 82%, var(--bg));
+  --lockbody: var(--panel);
+  --chamber: var(--bg);
+  --quantum: var(--kind-import);
+  /* the four remainder classes a^x mod N cycles through: Cartheon's move-kind colours */
+  --r0: var(--kind-direct);
+  --r1: var(--kind-recover);
+  --r2: var(--kind-delivery);
+  --r3: var(--kind-export);
+  --r4: var(--waiting);
+  --r5: var(--kind-transfer);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    --bg: #f6f4f2;
+    --panel: #ffffff;
+    --border: #e9e4e1;
+    --chip-bg: #f1efec;
+    --text: #000000;
+    --text-muted: #000000;
+    --accent: #7c3aed;
+    --accent-soft: #ede9fe;
+    --error: #d32f2f;
+    --on-fill: #ffffff;
+    --moving: #1b8f4a;
+    --waiting: #e5a030;
+    --warning-fg: #7a4c00;
+    --warning-bg: #fff1c8;
+    --kind-recover: #d97706;
+    --kind-delivery: #0e9f6e;
+    --kind-direct: #2f6bff;
+    --kind-transfer: #64748b;
+    --kind-import: #0b57a4;
+    --kind-export: #7c3aed;
+    color-scheme: light;
+  }
+}
+
+:root[data-theme='light'] {
+  --bg: #f6f4f2;
+  --panel: #ffffff;
+  --border: #e9e4e1;
+  --chip-bg: #f1efec;
+  --text: #000000;
+  --text-muted: #000000;
+  --accent: #7c3aed;
+  --accent-soft: #ede9fe;
+  --error: #d32f2f;
+  --on-fill: #ffffff;
+  --moving: #1b8f4a;
+  --waiting: #e5a030;
+  --warning-fg: #7a4c00;
+  --warning-bg: #fff1c8;
+  --kind-recover: #d97706;
+  --kind-delivery: #0e9f6e;
+  --kind-direct: #2f6bff;
+  --kind-transfer: #64748b;
+  --kind-import: #0b57a4;
+  --kind-export: #7c3aed;
+  color-scheme: light;
+}

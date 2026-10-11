@@ -1,0 +1,33 @@
+{
+  "name": "project-3-qdaylockpick",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint src",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "review:watch": "node tools/review/review.mjs watch",
+    "review:list": "node tools/review/review.mjs list",
+    "review:done": "node tools/review/review.mjs done"
+  },
+  "dependencies": {
+    "gsap": "^3.12.5",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "html-to-image": "1.11.11",
+    "magic-string": "0.30.17",
+    "oxlint": "^1.81.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.0",
+    "vitest": "^3.2.4"
+  }
+}

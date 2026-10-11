@@ -1,0 +1,1021 @@
+@import './tokens.css';
+
+/* Organisation borrowed from Super Mario Bros. 3: a world map is the hub, each step of Shor's algorithm is a
+   stop on its path, the padlock is the castle. Every screen is the scene plus one panel, always top-left,
+   which holds all menus and information. No bars.
+   Look borrowed from Cartheon: square, ruled, one typeface, colour only for state. The map path is
+   Cartheon's backbone line: accent where travelled, grey where still owed. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.45;
+  letter-spacing: var(--tracking);
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+}
+button {
+  font: inherit;
+  letter-spacing: inherit;
+}
+:focus-visible {
+  outline: var(--outline) solid var(--accent);
+  outline-offset: 2px;
+}
+
+.screen {
+  position: relative;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--bg);
+  animation: fade 0.3s ease-out;
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* ── buttons: square, 2px outline, one filled primary per surface ───────── */
+.go-btn,
+.ghost-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+.ghost-btn {
+  border: var(--outline) solid var(--text);
+  background: var(--panel);
+  color: var(--text);
+}
+.go-btn {
+  flex: 1;
+  border: var(--outline) solid var(--accent);
+  background: var(--accent);
+  color: var(--on-fill);
+}
+.go-btn:hover:not(:disabled) {
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+}
+.go-btn:disabled,
+.ghost-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ── the panel: the one place for menus and information, top-left ───────── */
+.hud {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 2;
+  width: min(400px, calc(100% - 40px));
+  max-height: calc(100% - 40px);
+  overflow-y: auto;
+  display: grid;
+  gap: 14px;
+  padding: 16px 18px 18px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
+  scrollbar-width: thin;
+}
+.hud-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.hud-course {
+  all: unset;
+  display: grid;
+  gap: 2px;
+  line-height: 1.15;
+  cursor: pointer;
+  padding: 4px 8px;
+  margin: -4px -8px;
+  border: var(--outline) solid transparent;
+}
+.hud-course:hover {
+  border-color: var(--text);
+}
+.hud-course:focus-visible {
+  outline: var(--outline) solid var(--accent);
+  outline-offset: 2px;
+}
+.hud-course.static {
+  cursor: default;
+}
+.hud-course.static:hover {
+  border-color: transparent;
+}
+.hud-course span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.hud-course b {
+  font-size: 20px;
+  font-weight: 700;
+}
+.hud-i {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius);
+  border: var(--outline) solid var(--text);
+  background: var(--panel);
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 700;
+  font-style: italic;
+  cursor: pointer;
+}
+.hud-i[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-fill);
+}
+.hud-body {
+  display: grid;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  animation: rise 0.25s ease-out;
+}
+.hud-body h2 {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 0;
+  text-wrap: balance;
+}
+.hud-body p {
+  margin: 0;
+  font-size: 14px;
+}
+.hud-body .circ {
+  display: grid;
+  gap: 4px;
+}
+.hud-body .circ span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.hud-body .circ code {
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: pre-wrap;
+}
+.hud-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* "Course clear" / "World clear" */
+.banner {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--bg) 40%, transparent);
+}
+.banner span {
+  padding: 14px 32px;
+  background: var(--panel);
+  border: var(--outline) solid var(--text);
+  font-size: clamp(36px, 5.5vw, 76px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  animation: pop 0.45s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.banner.win span {
+  border-color: var(--moving);
+  color: var(--moving);
+}
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.75);
+  }
+}
+
+/* ── level readout inside the panel ──────────────────────────────────────── */
+.ro {
+  display: grid;
+  gap: 10px;
+}
+.ro-side {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  font-size: 13px;
+}
+.ro-side div {
+  display: flex;
+  gap: 10px;
+}
+.ro-side dt {
+  min-width: 64px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.7;
+}
+.ro-side dd {
+  margin: 0;
+  font-weight: 500;
+}
+.ro .ok {
+  color: var(--moving);
+  font-weight: 700;
+}
+.ro .muted {
+  font-weight: 400;
+}
+.ro .cycle {
+  display: inline-flex;
+  gap: 8px;
+  font-weight: 700;
+}
+.ro-result {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.ro-result.ok {
+  color: var(--moving);
+}
+.ro-result.bad {
+  color: var(--error);
+  font-size: 22px;
+}
+
+.bars svg {
+  display: block;
+  width: 100%;
+  height: 48px;
+}
+.bar-labels {
+  position: relative;
+  height: 16px;
+  margin-top: 3px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.bar-labels span {
+  position: absolute;
+  top: 0;
+  white-space: nowrap;
+}
+.bar-labels span.strong {
+  font-weight: 700;
+}
+
+.regs {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.reg {
+  display: grid;
+  gap: 4px;
+}
+.reg small {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.chips {
+  display: flex;
+  gap: 4px;
+}
+.chip-q {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+.chip-q.blade {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.chip-q.pin {
+  background: var(--chip-bg);
+  color: var(--text);
+}
+
+.keys {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+}
+.keys .bar-btn {
+  min-width: 64px;
+  font-size: 20px;
+}
+.keys .bar-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.key-a {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  min-width: 140px;
+  font-size: 28px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  border: 1px solid var(--border);
+}
+
+/* ── world map ───────────────────────────────────────────────────────────── */
+.worldmap {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: clamp(140px, 18vh, 180px) clamp(12px, 3vw, 48px) clamp(16px, 4vh, 48px);
+  font-family: var(--font);
+}
+.plate {
+  fill: var(--panel);
+  stroke: var(--border);
+  stroke-width: 1.5;
+}
+.path {
+  fill: none;
+  stroke: var(--rail);
+  stroke-width: 4;
+  stroke-linejoin: round;
+}
+.path.lit {
+  stroke: var(--accent);
+}
+.stop {
+  cursor: pointer;
+  outline: none;
+}
+/* locked stops dim their contents but keep an opaque tile, so the path never shows through */
+.stop.locked {
+  cursor: not-allowed;
+}
+.stop.locked .glyph,
+.stop.locked .chip,
+.stop.locked .shackle-map,
+.stop.locked .castle-n,
+.stop.locked .keyhole {
+  opacity: 0.4;
+}
+.stop .ring {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 3;
+  opacity: 0;
+}
+.stop.sel .ring {
+  opacity: 1;
+}
+.stop:focus-visible .ring {
+  opacity: 1;
+  stroke: var(--accent);
+}
+.stop .tile {
+  fill: var(--panel);
+  stroke: var(--border);
+  stroke-width: 1.5;
+  transition: stroke 0.15s;
+}
+.stop:not(.locked):hover .tile {
+  stroke: var(--text);
+}
+.stop.done .tile {
+  stroke: var(--accent);
+}
+.stop .glyph {
+  font-size: 26px;
+  font-weight: 700;
+  fill: var(--text);
+}
+.stop.done .glyph {
+  fill: var(--accent);
+}
+/* status chip under each stop: neutral, waiting (amber: yours to play next), done (accent), open (green) */
+.chip rect {
+  fill: var(--chip-bg);
+}
+.chip text {
+  font-size: 13px;
+  font-weight: 700;
+  fill: var(--text);
+}
+.chip.waiting rect {
+  fill: var(--waiting);
+}
+.chip.waiting text {
+  fill: var(--on-fill);
+}
+.chip.done rect {
+  fill: var(--accent-soft);
+}
+.chip.done text {
+  fill: var(--accent);
+}
+.chip.open rect {
+  fill: var(--moving);
+}
+.chip.open text {
+  fill: var(--on-fill);
+}
+.shackle-map {
+  fill: none;
+  stroke: var(--metal);
+  stroke-width: 18;
+  transition: transform 0.6s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.lockbody {
+  fill: var(--lockbody);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+.castle.done .lockbody {
+  stroke: var(--moving);
+}
+.castle-n {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  fill: var(--text);
+}
+.keyhole {
+  fill: var(--bg);
+}
+.castle-win {
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  fill: var(--moving);
+  animation: rise 0.5s ease-out;
+}
+.marker {
+  pointer-events: none;
+}
+.marker .bob {
+  animation: bob 1.1s ease-in-out infinite alternate;
+}
+@keyframes bob {
+  to {
+    transform: translateY(-7px);
+  }
+}
+.kmetal {
+  fill: var(--accent);
+}
+.kgroove {
+  stroke: color-mix(in srgb, var(--bg) 45%, transparent);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.ktick {
+  stroke: var(--on-fill);
+  opacity: 0.5;
+}
+.marker .key-shape {
+  filter: drop-shadow(0 6px 6px color-mix(in srgb, var(--bg) 70%, transparent));
+}
+.big-play.gone {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.marker .shadow {
+  fill: color-mix(in srgb, var(--text) 18%, transparent);
+}
+
+/* ── level scene ─────────────────────────────────────────────────────────── */
+.stage {
+  position: absolute;
+  inset: 0;
+  padding: clamp(16px, 4vh, 48px) clamp(16px, 4vw, 64px);
+  display: grid;
+  place-items: center;
+}
+.stage svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  font-family: var(--font);
+}
+
+@media (max-width: 640px) {
+  .hud {
+    top: 12px;
+    left: 12px;
+    width: calc(100% - 24px);
+    max-height: 58%;
+    padding: 12px 14px 14px;
+  }
+  .hud-course b {
+    font-size: 17px;
+  }
+  .worldmap {
+    padding-top: 150px;
+  }
+}
+
+/* ── the lock (SVG) ──────────────────────────────────────────────────────── */
+.svl {
+  font-size: 12px;
+  font-weight: 700;
+  fill: var(--text);
+}
+.svl.fg {
+  fill: var(--text);
+}
+.brass {
+  fill: var(--accent);
+}
+.brass2,
+.bsolid {
+  fill: var(--accent-2);
+}
+.body {
+  fill: var(--lockbody);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+.window {
+  fill: var(--chamber);
+}
+.chamber {
+  fill: var(--chip-bg);
+}
+.spring {
+  fill: none;
+  stroke: var(--rail);
+  stroke-width: 2;
+}
+.driver {
+  fill: var(--quantum);
+}
+.keypin {
+  fill: var(--pin);
+  transition: fill 0.4s;
+}
+.keypin.measured,
+.keypin.set {
+  fill: var(--moving);
+}
+.keypin.jammed {
+  fill: var(--error);
+}
+.gpin {
+  opacity: 0.9;
+}
+.r0 {
+  fill: var(--r0);
+}
+.r1 {
+  fill: var(--r1);
+}
+.r2 {
+  fill: var(--r2);
+}
+.r3 {
+  fill: var(--r3);
+}
+.r4 {
+  fill: var(--r4);
+}
+.r5 {
+  fill: var(--r5);
+}
+.ghost rect {
+  fill: var(--quantum);
+  stroke: var(--text);
+  stroke-width: 1.2;
+  stroke-dasharray: 3 3;
+  animation: shimmer 1.3s ease-in-out infinite alternate;
+}
+@keyframes shimmer {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.bit {
+  font-size: 14px;
+  font-weight: 700;
+  fill: var(--text);
+  text-anchor: middle;
+}
+.shear {
+  stroke: var(--rail);
+  stroke-dasharray: 6 5;
+  stroke-width: 1.5;
+}
+.shackle {
+  fill: none;
+  stroke: var(--metal);
+  stroke-width: 26;
+}
+.open {
+  font-size: 34px;
+  font-weight: 800;
+  fill: var(--moving);
+  letter-spacing: -0.02em;
+}
+.open.bad {
+  fill: var(--error);
+  font-size: 26px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ghost rect,
+  .marker .bob {
+    animation: none;
+  }
+  .screen,
+  .hud-body,
+  .banner span,
+  .castle-win {
+    animation: none;
+  }
+}
+
+/* ── map as Shor's circuit ───────────────────────────────────────────────── */
+.wire {
+  stroke: var(--rail);
+  stroke-width: 3;
+}
+.wire.lit {
+  stroke: var(--accent);
+}
+.tile.dashed {
+  stroke-dasharray: 6 5;
+}
+.stop .glyph.small {
+  font-size: 22px;
+}
+.meter-arc {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 3;
+}
+.stop.done .meter-arc {
+  stroke: var(--accent);
+}
+.stop.locked .meter-arc {
+  opacity: 0.4;
+}
+
+/* ── the panel lives bottom centre; the scene leaves room for it ─────────── */
+.hud {
+  top: auto;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(440px, calc(100% - 32px));
+  max-height: calc(100% - 48px);
+}
+.hud-back {
+  font-weight: 400;
+  margin-right: 2px;
+}
+.stage {
+  padding-bottom: 150px;
+}
+.worldmap {
+  padding: 40px clamp(12px, 3vw, 48px) 150px;
+}
+@media (max-width: 640px) {
+  .hud {
+    top: auto;
+    left: 50%;
+    bottom: 12px;
+    width: calc(100% - 24px);
+  }
+}
+
+/* ── title screen ────────────────────────────────────────────────────────── */
+.title-screen {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  padding-bottom: 120px;
+}
+.title-art svg {
+  width: clamp(70px, 9vw, 120px);
+  height: auto;
+  display: block;
+}
+.title {
+  margin: 0;
+  font-size: clamp(56px, 10vw, 140px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  animation: rise 0.6s ease-out;
+}
+
+/* map: one big Play button, no panel */
+.big-play {
+  position: absolute;
+  left: 50%;
+  bottom: 40px;
+  transform: translateX(-50%);
+  flex: none;
+  min-width: 280px;
+  min-height: 72px;
+  font-size: 26px;
+  font-weight: 800;
+}
+
+/* ── level controls: a fixed bar at the bottom, instructions as a card top left ── */
+.hud.bar {
+  width: auto;
+  max-width: calc(100% - 32px);
+  padding: 12px;
+  gap: 12px;
+  overflow: visible;
+}
+.bar-row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+.bar-btn {
+  min-height: 56px;
+  min-width: 120px;
+  padding: 0 20px;
+  border-radius: var(--radius);
+  border: var(--outline) solid var(--text);
+  background: var(--panel);
+  color: var(--text);
+  font: 700 18px var(--font);
+  cursor: pointer;
+}
+.bar-btn:hover {
+  background: color-mix(in srgb, var(--text) 10%, var(--panel));
+}
+.bar-btn[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-fill);
+}
+.bar-btn:focus-visible {
+  outline: var(--outline) solid var(--accent);
+  outline-offset: 2px;
+}
+.bar-go {
+  flex: none;
+  min-height: 56px;
+  min-width: 200px;
+  font-size: 20px;
+  font-weight: 800;
+}
+.level-tag {
+  position: absolute;
+  top: 20px;
+  left: 24px;
+  z-index: 2;
+  font-size: 20px;
+  font-weight: 700;
+}
+.level-tag span {
+  color: var(--muted, inherit);
+  opacity: 0.6;
+  margin-right: 6px;
+}
+.info-card {
+  position: absolute;
+  top: 60px;
+  left: 24px;
+  z-index: 2;
+  width: min(360px, calc(100% - 48px));
+  max-height: calc(100% - 200px);
+  overflow-y: auto;
+  display: grid;
+  gap: 12px;
+  padding: 16px 18px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
+  animation: rise 0.25s ease-out;
+  scrollbar-width: thin;
+}
+.info-card h2 {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 0;
+  text-wrap: balance;
+}
+.info-card p {
+  margin: 0;
+  font-size: 14px;
+}
+.info-card .circ {
+  display: grid;
+  gap: 4px;
+}
+.info-card .circ span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.info-card .circ code {
+  font-family: var(--font);
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+@media (max-width: 640px) {
+  .bar-btn {
+    min-width: 0;
+    flex: 1;
+    padding: 0 10px;
+    font-size: 15px;
+  }
+  .bar-go {
+    min-width: 0;
+    flex: 2;
+  }
+  .info-card {
+    top: 52px;
+    left: 12px;
+    width: calc(100% - 24px);
+    max-height: calc(100% - 230px);
+  }
+  .level-tag {
+    left: 12px;
+    top: 14px;
+  }
+}
+/* the lock moves right to make room for the open instructions card */
+@media (min-width: 900px) {
+  .scene:has(.info-card) .stage {
+    padding-left: 400px;
+  }
+}
+
+/* challenge: the question and its answers sit in the bar, above Menu / Info / the next move */
+.bar-goal {
+  margin: 0;
+  max-width: 640px;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+.bar-step {
+  margin-right: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  opacity: 0.6;
+}
+.bar-miss {
+  margin: 0;
+  font-size: 14px;
+  color: var(--error);
+  animation: shake 0.3s;
+}
+@keyframes shake {
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+.bar-options .opt {
+  flex: 1;
+  min-width: 80px;
+  font-size: 20px;
+}
+
+.keyway {
+  fill: var(--chamber);
+}
+
+/* level bar without a box; continue is a plus */
+.hud.bar {
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+.bar-row {
+  justify-content: center;
+}
+.bar-go.plus {
+  min-width: 72px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+.level-tag {
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  width: min(720px, calc(100% - 32px));
+}
+.level-tag p {
+  margin: 4px 0 0;
+  font-size: 15px;
+  font-weight: 500;
+  opacity: 0.8;
+}
+.info-card {
+  top: 96px;
+}
+
+.factor-try input {
+  width: 180px;
+  min-height: 56px;
+  padding: 0 14px;
+  border: var(--outline) solid var(--text);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--text);
+  font: 700 22px var(--font);
+}
+.factor-try input:focus-visible {
+  outline: var(--outline) solid var(--accent);
+}
+.factor-try .tries {
+  align-self: center;
+  font-size: 14px;
+  opacity: 0.7;
+}
+/* the title's Start sits on the page, no frame */
+.title-screen .hud {
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+.bar-goal {
+  max-width: none;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.spec {
+  fill: var(--quantum);
+}
+
+/* the lock sits centred between the header and the bottom bar, never under either */
+.stage {
+  padding: 96px clamp(16px, 3vw, 48px) 210px;
+}
+.scene:has(.info-card) .stage {
+  padding-left: clamp(16px, 3vw, 48px);
+}
+@media (max-width: 640px) {
+  .stage {
+    padding: 110px 8px 230px;
+  }
+}
