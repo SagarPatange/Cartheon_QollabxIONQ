@@ -153,7 +153,36 @@ function mountQpuPanel() {
     document.body.append(panel);
 }
 
+// On Qollab the game runs in a frame, and after Run the keyboard focus can stay on Qollab's own page, so key presses
+// never reach the game and Enter seems to do nothing. While the frame has no focus, a full-window prompt asks for one
+// click, which gives it focus; it comes back if focus leaves, so the keys never stop working silently.
+function mountFocusPrompt() {
+    const prompt = document.createElement('button');
+    prompt.type = 'button';
+    prompt.style.cssText = 'position:fixed;inset:0;z-index:100;display:none;place-items:center;width:100%;'
+        + 'height:100%;padding:0;border:0;background:rgba(0,0,0,0.6);cursor:pointer;';
+    // A solid box, so the prompt never sits on top of the page's own text.
+    const label = document.createElement('span');
+    label.textContent = '▶ Click to play, then use the keyboard';
+    label.style.cssText = 'padding:18px 26px;color:#000;background:#f8b800;border:4px solid #000;'
+        + 'box-shadow:6px 6px 0 #000;font:16px/1.6 "Press Start 2P",monospace;';
+    prompt.append(label);
+    const showIfUnfocused = () => {
+        prompt.style.display = document.hasFocus() ? 'none' : 'grid';
+    };
+    prompt.addEventListener('click', () => {
+        window.focus();
+        prompt.style.display = 'none';
+    });
+    window.addEventListener('focus', showIfUnfocused);
+    window.addEventListener('blur', showIfUnfocused);
+    document.body.append(prompt);
+    // A page may take focus itself while it loads (the title screen focuses Continue); check once it has had the chance.
+    setTimeout(showIfUnfocused, 300);
+}
+
 showPage();
+mountFocusPrompt();
 """
 
 INDEX_HTML = """<!doctype html>
